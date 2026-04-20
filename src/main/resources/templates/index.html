@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layouts/header::head"></head>
+<body>
+	<div th:replace="layouts/cabecera::cabecera"></div>
+	<br>
+	<div class="container">
+
+		<!-- Consultar - GET -->
+		<div class="card text-bg-warning mb-3" style="max-width: 100rem;">
+			<div class="card-body">
+				<table width="100%">
+					<tr>
+						<td rowspan="2" width="25%"><h2>Consultar - GET</h2></td>
+						<td width="75%"><h3><span>Listar usuarios : <b>http://localhost:8080/usuarios</b></span></h3></td>
+					</tr>
+					<tr>
+						<td width="75%"><h3><span>Consultar un usuario 1 : <b>http://localhost:8080/usuario/1</b></span></h3></td>
+					</tr>
+				</table>
+			</div>
+		</div>		
+
+		<!-- Añadir - POST -->
+		<div class="card text-bg-success mb-3" style="max-width: 100rem;">
+			<div class="card-body">
+				<table width="100%">
+					<tr>
+						<td width="25%"><h2>Añadir - POST</h2></td>
+						<td width="75%"><h3><span>Añadir un usuario : <b>http://localhost:8080/usuario</b></span></h3></td>
+					</tr>
+				</table>
+			</div>
+		</div>		
+
+		<!-- Editar - PUT -->
+		<div class="card text-bg-primary mb-3" style="max-width: 100rem;">
+			<div class="card-body">
+				<table width="100%">
+					<tr>
+						<td width="25%"><h2>Editar - PUT</h2></td>
+						<td width="75%"><h3><span>Editar usuario 1 : <b>http://localhost:8080/usuario/1</b></span></h3></td>
+					</tr>
+				</table>
+			</div>
+		</div>		
+
+		<!-- Borrar - DELETE -->
+		<div class="card text-bg-danger mb-3" style="max-width: 100rem;">
+			<div class="card-body">
+				<table width="100%">
+					<tr>
+						<td width="25%"><h2>Borrar - DELETE</h2></td>
+						<td width="75%"><h3><span>Borrar usuario 1 : <b>http://localhost:8080/usuario/1</b></span></h3></td>
+					</tr>
+				</table>
+			</div>
+		</div>		
+
+    </div><!-- /.container -->
+	<div th:replace="layouts/footer::footer"></div>
+</body>
+</html>

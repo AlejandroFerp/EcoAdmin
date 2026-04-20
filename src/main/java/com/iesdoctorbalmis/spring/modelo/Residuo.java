@@ -1,0 +1,113 @@
+package com.iesdoctorbalmis.spring.modelo;
+
+import java.util.Objects;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="residuos")
+public class Residuo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private double cantidad;
+    private String unidad;
+    private String estado;
+
+    @ManyToOne
+    @JoinColumn(name = "centro_id")
+    private Centro centro;
+
+    public Residuo() {
+    }
+    
+    public Residuo(double cantidad, String unidad, String estado, Centro centro) {
+        this.cantidad = cantidad;
+        this.unidad = unidad;
+        this.estado = estado;
+        this.centro = centro;
+    }
+
+    public Residuo(double cantidad, String unidad, String estado) {
+        this.cantidad = cantidad;
+        this.unidad = unidad;
+        this.estado = estado;
+    }
+    public Long getId() {
+        return id;
+    }
+    public Centro getCentro() {
+        return centro;
+    }
+    public void setCentro(Centro centro) {
+        this.centro = centro;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public double getCantidad() {
+        return cantidad;
+    }
+    public void setCantidad(double cantidad) {
+        this.cantidad = cantidad;
+    }
+    public String getUnidad() {
+        return unidad;
+    }
+    public void setUnidad(String unidad) {
+        this.unidad = unidad;
+    }
+    public String getEstado() {
+        return estado;
+    }
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+    @Override
+    public String toString() {
+        return "Residuo [id=" + id + ", cantidad=" + cantidad + ", unidad=" + unidad + ", estado=" + estado + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.id);
+        hash = 89 * hash + (int) (Double.doubleToLongBits(this.cantidad) ^ (Double.doubleToLongBits(this.cantidad) >>> 32));
+        hash = 89 * hash + Objects.hashCode(this.unidad);
+        hash = 89 * hash + Objects.hashCode(this.estado);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Residuo other = (Residuo) obj;
+        if (Double.doubleToLongBits(this.cantidad) != Double.doubleToLongBits(other.cantidad)) {
+            return false;
+        }
+        if (!Objects.equals(this.unidad, other.unidad)) {
+            return false;
+        }
+        if (!Objects.equals(this.estado, other.estado)) {
+            return false;
+        }
+        return Objects.equals(this.id, other.id);
+    }
+    
+}
