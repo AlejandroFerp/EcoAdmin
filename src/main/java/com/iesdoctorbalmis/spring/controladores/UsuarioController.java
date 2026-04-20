@@ -42,15 +42,17 @@ public class UsuarioController {
 
     // POST
     @PostMapping
-    public Usuario crear(@RequestBody Usuario u) {
-        return service.save(u);
+    public UsuarioDTO crear(@RequestBody Usuario u) {
+        Usuario saved = service.save(u);
+        return new UsuarioDTO(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getRol(), saved.getFechaAlta());
     }
 
     // PUT
     @PutMapping("/{id}")
-    public Usuario editar(@PathVariable Long id, @RequestBody Usuario u) {
+    public UsuarioDTO editar(@PathVariable Long id, @RequestBody Usuario u) {
         u.setId(id);
-        return service.save(u);
+        Usuario saved = service.save(u);
+        return new UsuarioDTO(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getRol(), saved.getFechaAlta());
     }
 
     // DELETE
