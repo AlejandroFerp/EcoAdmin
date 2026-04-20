@@ -6,10 +6,10 @@ Proyecto intermodular de 2.º DAM. Sistema de trazabilidad para el traslado de r
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Spring Boot 4.0.0 + Java 21 |
+| Backend | Spring Boot 4.0.0 + Java 25 |
 | Persistencia | SQLite 3 + Hibernate 7 + Spring Data JPA |
 | Seguridad | Spring Security 6 + BCrypt |
-| Plantillas | Thymeleaf + Bootstrap 5.3.3 (CDN) |
+| Plantillas | Thymeleaf + Tailwind CSS (CDN) + DaisyUI 4 |
 | PDF | OpenPDF 2.0.3 |
 | QR | ZXing 3.5.3 |
 | Email | Spring Mail (SMTP, async) |
@@ -18,7 +18,7 @@ Proyecto intermodular de 2.º DAM. Sistema de trazabilidad para el traslado de r
 
 ## Requisitos
 
-- Java 21 (temurin21-jdk recomendado)
+- Java 25 LTS (Temurin 25, instalado en `~/.jdk/jdk-25`)
 - Maven Wrapper incluido (`mvnw` / `mvnw.cmd`)
 - No requiere base de datos externa — SQLite embebida (`ecoadmin.db`)
 
@@ -26,7 +26,7 @@ Proyecto intermodular de 2.º DAM. Sistema de trazabilidad para el traslado de r
 
 ```bash
 # Windows
-$env:JAVA_HOME = "$env:USERPROFILE\scoop\apps\temurin21-jdk\current"
+$env:JAVA_HOME = "$env:USERPROFILE\.jdk\jdk-25"
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 .\mvnw.cmd spring-boot:run
 ```
