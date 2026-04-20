@@ -12,35 +12,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.iesdoctorbalmis.spring.modelo.Centro;
-import com.iesdoctorbalmis.spring.servicios.CentroService;
+import com.iesdoctorbalmis.spring.modelo.Direccion;
+import com.iesdoctorbalmis.spring.servicios.DireccionService;
 
 @RestController
-@RequestMapping("/api/centros")
-public class CentroController {
+@RequestMapping("/api/direcciones")
+public class DireccionController {
 
     @Autowired
-    private CentroService service;
+    private DireccionService service;
 
     @GetMapping
-    public List<Centro> listar() {
+    public List<Direccion> listar() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Centro buscar(@PathVariable Long id) {
+    public Direccion buscar(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PostMapping
-    public Centro crear(@RequestBody Centro c) {
-        return service.save(c);
+    public Direccion crear(@RequestBody Direccion d) {
+        return service.save(d);
     }
 
     @PutMapping("/{id}")
-    public Centro editar(@PathVariable Long id, @RequestBody Centro c) {
-        c.setId(id);
-        return service.save(c);
+    public Direccion editar(@PathVariable Long id, @RequestBody Direccion d) {
+        d.setId(id);
+        return service.save(d);
     }
 
     @DeleteMapping("/{id}")
@@ -48,4 +48,3 @@ public class CentroController {
         service.delete(id);
     }
 }
-

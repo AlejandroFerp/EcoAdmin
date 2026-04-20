@@ -22,6 +22,9 @@ public class Residuo {
     private String unidad;
     private String estado;
 
+    // Código del Catálogo Europeo de Residuos (p.ej. "16 06 01*" para baterías de plomo)
+    private String codigoLER;
+
     @ManyToOne
     @JoinColumn(name = "centro_id")
     private Centro centro;
@@ -70,6 +73,12 @@ public class Residuo {
     }
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+    public String getCodigoLER() {
+        return codigoLER;
+    }
+    public void setCodigoLER(String codigoLER) {
+        this.codigoLER = codigoLER;
     }
     @Override
     public String toString() {

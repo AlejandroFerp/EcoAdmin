@@ -1,0 +1,21 @@
+package com.iesdoctorbalmis.spring.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Traslado;
+import com.iesdoctorbalmis.spring.modelo.Usuario;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
+
+public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
+
+    List<Traslado> findByEstado(EstadoTraslado estado);
+
+    List<Traslado> findByCentroProductor(Centro centro);
+
+    List<Traslado> findByCentroGestor(Centro centro);
+
+    List<Traslado> findByTransportista(Usuario transportista);
+}
