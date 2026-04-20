@@ -74,7 +74,7 @@ public class SeguridadConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutRequestMatcher(request -> request.getRequestURI().equals("/logout"))
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/public/login?logout")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
