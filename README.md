@@ -138,6 +138,84 @@ Cada transición genera automáticamente un `EventoTraslado` con la marca de tie
 - CORS configurado centralmente para `localhost:8080` y `localhost:3000`.
 - Roles: `PRODUCTOR`, `GESTOR`, `TRANSPORTISTA`, `ADMIN`.
 
+## Tests E2E (Playwright)
+
+Tests end-to-end con [Playwright](https://playwright.dev) que verifican el flujo real en navegador contra `http://localhost:8080`.
+
+### Requisitos
+
+- Node.js 18+
+- La aplicación Spring Boot **debe estar arrancada** antes de ejecutar los tests
+
+### Instalación
+
+```bash
+cd tests
+npm install
+npx playwright install chromium
+```
+
+### Ejecución
+
+```bash
+# Todos los tests (headless)
+npm test
+
+# Con interfaz visual interactiva
+npm run test:ui
+
+# Con navegador visible
+npm run test:headed
+
+# En modo debug (paso a paso)
+npm run test:debug
+
+# Abrir informe HTML del último run
+npm run test:report
+```
+
+### Filtrar por suite o tag
+
+```bash
+npx playwright test --grep "Login"
+npx playwright test --grep "@critical"
+npx playwright test tests/login/
+```
+
+### Cobertura de tests
+
+| Suite | ID | Tests | Descripción |
+|-------|----|-------|-------------|
+| Login | `LOGIN-E2E` | 5 | Redirección sin sesión, login correcto, error credenciales, protección de ruta, cierre de sesión |
+| Dashboard | `DASH-E2E` | 5 | Carga post-login, navegación a Centros / Residuos / Traslados / Usuarios desde sidebar |
+| Traslados + API | `TRAS-E2E` | 5 | Carga página, GET `/api/traslados`, `/api/centros`, `/api/residuos`, rechazo sin sesión |
+
+**15 tests** en total — todos en Chromium.
+
+### Estructura de tests
+
+```
+tests/
+├── package.json              # Dependencias Playwright
+├── playwright.config.ts      # Config: baseURL, retries, screenshot on fail
+├── base-page.ts              # Clase base para todos los Page Objects
+├── helpers.ts                # Credenciales y rutas compartidas
+├── login/
+│   ├── login-page.ts         # Page Object: formulario de login
+│   ├── login.spec.ts         # Tests LOGIN-E2E-001..005
+│   └── login.md              # Documentación de casos
+├── dashboard/
+│   ├── dashboard-page.ts     # Page Object: sidebar y navegación
+│   ├── dashboard.spec.ts     # Tests DASH-E2E-001..005
+│   └── dashboard.md          # Documentación de casos
+└── traslados/
+    ├── traslados-page.ts     # Page Object: página de traslados
+    ├── traslados.spec.ts     # Tests TRAS-E2E-001..005
+    └── traslados.md          # Documentación de casos
+```
+
+---
+
 ## Estado del MVP
 
 | Funcionalidad | Estado |
@@ -152,6 +230,7 @@ Cada transición genera automáticamente un `EventoTraslado` con la marca de tie
 | Dashboard con métricas y gráficos (Chart.js) | ✅ Completo |
 | Historial de auditoría por traslado | ✅ Completo |
 | Interfaz de gestión CRUD (frontend) | ⬜ Pendiente |
+| Tests E2E Playwright (login, dashboard, API) | ✅ 15 tests — `tests/` |
 
 ## Antecedente: prototipo Reflex
 
