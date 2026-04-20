@@ -118,7 +118,8 @@ public class TrasladoController {
     }
 
     @GetMapping("/{id}/pdf/{tipo}")
-    public ResponseEntity<byte[]> generarPdf(@PathVariable Long id, @PathVariable String tipo) {
+    public ResponseEntity<byte[]> generarPdf(@PathVariable Long id, @PathVariable String tipo,
+                                              @RequestParam(defaultValue = "false") boolean inline) {
         Traslado traslado = service.findById(id);
         if (traslado == null) return ResponseEntity.notFound().build();
 
@@ -131,9 +132,12 @@ public class TrasladoController {
 
         if (pdf == null) return ResponseEntity.badRequest().build();
 
+        String disposition = inline
+                ? "inline; filename=\"traslado-" + id + "-" + tipo + ".pdf\""
+                : "attachment; filename=\"traslado-" + id + "-" + tipo + ".pdf\"";
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"traslado-" + id + "-" + tipo + ".pdf\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
