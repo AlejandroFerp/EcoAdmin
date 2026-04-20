@@ -28,17 +28,16 @@ public class UsuarioController {
     public List<UsuarioDTO> listar() {
         return service.findAll()
                     .stream()
-                    .map(u -> new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail()))
+                    .map(u -> new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail(), u.getRol(), u.getFechaAlta()))
                     .toList();
     }
-
 
     // GET usuario por ID
     @GetMapping("/{id}")
     public UsuarioDTO buscar(@PathVariable Long id) {
         Usuario u = service.findById(id);
-        if (u == null) return null; // o lanzar excepción 404
-        return new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail());
+        if (u == null) return null;
+        return new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail(), u.getRol(), u.getFechaAlta());
     }
 
     // POST

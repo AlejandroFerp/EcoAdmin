@@ -1,90 +1,56 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>EcoAdmin — Acceso</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #1a6b3c 0%, #2d9e5f 100%);
-            min-height: 100vh;
-        }
-        .login-card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        }
-        .login-logo {
-            width: 64px;
-            height: 64px;
-            background: #1a6b3c;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.2rem;
-        }
-        .form-control:focus {
-            border-color: #2d9e5f;
-            box-shadow: 0 0 0 0.2rem rgba(45,158,95,.2);
-        }
-        .btn-acceder {
-            background: #1a6b3c;
-            border: none;
-            padding: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.4px;
-            transition: background 0.2s;
-        }
-        .btn-acceder:hover {
-            background: #155930;
-        }
-    </style>
+    <title>EcoAdmin — Acceso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>*{font-family:'Inter',sans-serif;}</style>
 </head>
-<body>
+<body class="min-h-screen bg-gradient-to-br from-[#1a6b3c] to-[#2d9e5f] flex items-center justify-center p-4">
 
-<div class="d-flex justify-content-center align-items-center min-vh-100">
-    <div class="login-card card p-4" style="width: 400px;">
+<div class="w-full max-w-sm">
+    <!-- Logo card -->
+    <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-4xl">🌿</div>
+        <h1 class="text-3xl font-bold text-white">EcoAdmin</h1>
+        <p class="text-white/70 text-sm mt-1">Gestión de residuos peligrosos</p>
+    </div>
 
-        <div class="text-center mb-4">
-            <div class="login-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 16 16">
-                    <path d="M11 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5v4H1.5a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5H11V.5zm-1 0V4H6V.5h4zM2 5.5h12v6H2v-6z"/>
-                </svg>
-            </div>
-            <h4 class="fw-bold mb-1">EcoAdmin</h4>
-            <p class="text-muted small mb-0">Gestión de residuos peligrosos</p>
+    <!-- Login card -->
+    <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Iniciar sesión</h2>
+
+        <div th:if="${param.error}" class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            Email o contraseña incorrectos.
         </div>
-
-        <div th:if="${param.error}" class="alert alert-danger py-2 small mb-3" role="alert">
-            <strong>Acceso denegado.</strong> Comprueba tu email o contraseña.
-        </div>
-        <div th:if="${param.logout}" class="alert alert-success py-2 small mb-3" role="alert">
+        <div th:if="${param.logout}" class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
             Sesión cerrada correctamente.
         </div>
 
-        <form th:action="@{/public/login}" method="post">
-            <div class="mb-3">
-                <label for="username" class="form-label fw-semibold small">Email</label>
+        <form th:action="@{/public/login}" method="post" class="space-y-5">
+            <div>
+                <label for="username" class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
                 <input type="email" id="username" name="username"
-                       class="form-control form-control-lg"
-                       placeholder="usuario@ejemplo.com" required autofocus>
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                       placeholder="usuario@empresa.com" required autofocus>
             </div>
-            <div class="mb-4">
-                <label for="password" class="form-label fw-semibold small">Contraseña</label>
+            <div>
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">Contraseña</label>
                 <input type="password" id="password" name="password"
-                       class="form-control form-control-lg"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                        placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn btn-acceder btn-lg w-100 text-white">
+            <button type="submit"
+                    class="w-full py-2.5 rounded-xl bg-[#1a6b3c] hover:bg-[#155c33] text-white font-semibold text-sm transition-colors">
                 Acceder
             </button>
         </form>
-
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

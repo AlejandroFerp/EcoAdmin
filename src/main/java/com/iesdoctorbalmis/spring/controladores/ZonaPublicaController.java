@@ -40,4 +40,19 @@ public class ZonaPublicaController {
     public String login() {
         return "login";
     }
+
+    @GetMapping("/centros")
+    public String centros() { return "centros"; }
+
+    @GetMapping("/residuos")
+    public String residuos() { return "residuos"; }
+
+    @GetMapping("/usuarios")
+    public String usuarios() { return "usuarios"; }
+
+    @GetMapping("/traslados")
+    public String traslados() { return "traslados"; }
+
+    @GetMapping("/direcciones")
+    public String direcciones() { return "direcciones"; }
 }

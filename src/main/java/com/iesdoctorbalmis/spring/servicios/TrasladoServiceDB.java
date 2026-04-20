@@ -7,12 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.EventoTraslado;
+import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
+import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.EventoTrasladoRepository;
+import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
+import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 
 @Service
 public class TrasladoServiceDB implements TrasladoService {
@@ -22,6 +27,15 @@ public class TrasladoServiceDB implements TrasladoService {
 
     @Autowired
     private EventoTrasladoRepository eventoRepo;
+
+    @Autowired
+    private CentroRepository centroRepo;
+
+    @Autowired
+    private ResiduoRepository residuoRepo;
+
+    @Autowired
+    private UsuarioRepository usuarioRepo;
 
     @Override
     public List<Traslado> findAll() {
@@ -35,6 +49,14 @@ public class TrasladoServiceDB implements TrasladoService {
 
     @Override
     public Traslado save(Traslado t) {
+        if (t.getCentroProductor() != null && t.getCentroProductor().getId() != null)
+            t.setCentroProductor(centroRepo.findById(t.getCentroProductor().getId()).orElseThrow());
+        if (t.getCentroGestor() != null && t.getCentroGestor().getId() != null)
+            t.setCentroGestor(centroRepo.findById(t.getCentroGestor().getId()).orElseThrow());
+        if (t.getResiduo() != null && t.getResiduo().getId() != null)
+            t.setResiduo(residuoRepo.findById(t.getResiduo().getId()).orElseThrow());
+        if (t.getTransportista() != null && t.getTransportista().getId() != null)
+            t.setTransportista(usuarioRepo.findById(t.getTransportista().getId()).orElseThrow());
         return trasladoRepo.save(t);
     }
 
