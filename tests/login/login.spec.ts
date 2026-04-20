@@ -60,4 +60,53 @@ test.describe("Login", () => {
       await loginPage.expectLogoutMessageVisible();
     }
   );
+
+  test(
+    "Página de login tiene título 'EcoAdmin — Acceso'",
+    { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-006"] },
+    async ({ page }) => {
+      await page.goto("/public/login");
+      await expect(page).toHaveTitle("EcoAdmin — Acceso");
+    }
+  );
+
+  test(
+    "Campo contraseña es de tipo password (enmascarado)",
+    { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-007"] },
+    async ({ page }) => {
+      await page.goto("/public/login");
+      const passwordInput = page.getByLabel("Contraseña");
+      await expect(passwordInput).toHaveAttribute("type", "password");
+    }
+  );
+
+  test(
+    "Label 'Email' visible en formulario de login",
+    { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-008"] },
+    async ({ page }) => {
+      await page.goto("/public/login");
+      await expect(page.getByLabel("Email")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Acceder" })).toBeVisible();
+    }
+  );
+
+  test(
+    "El campo email tiene atributo required (validación HTML5)",
+    { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-009"] },
+    async ({ page }) => {
+      await page.goto("/public/login");
+      const emailInput = page.getByLabel("Email");
+      await expect(emailInput).toHaveAttribute("required", "");
+    }
+  );
+
+  test(
+    "El campo email tiene placeholder con formato de correo",
+    { tag: ["@low", "@e2e", "@auth", "@LOGIN-E2E-010"] },
+    async ({ page }) => {
+      await page.goto("/public/login");
+      const emailInput = page.getByLabel("Email");
+      await expect(emailInput).toHaveAttribute("placeholder", /empresa|@/);
+    }
+  );
 });

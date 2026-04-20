@@ -174,44 +174,75 @@ npm run test:debug
 npm run test:report
 ```
 
-### Filtrar por suite o tag
+### Filtrar por suite, tag o ID
 
 ```bash
 npx playwright test --grep "Login"
 npx playwright test --grep "@critical"
+npx playwright test --grep "@CENT-E2E"
 npx playwright test tests/login/
+npx playwright test tests/centros/
+npx playwright test tests/seguridad/
 ```
 
 ### Cobertura de tests
 
 | Suite | ID | Tests | Descripción |
 |-------|----|-------|-------------|
-| Login | `LOGIN-E2E` | 5 | Redirección sin sesión, login correcto, error credenciales, protección de ruta, cierre de sesión |
-| Dashboard | `DASH-E2E` | 5 | Carga post-login, navegación a Centros / Residuos / Traslados / Usuarios desde sidebar |
-| Traslados + API | `TRAS-E2E` | 5 | Carga página, GET `/api/traslados`, `/api/centros`, `/api/residuos`, rechazo sin sesión |
+| Login | `LOGIN-E2E` | 10 | Redirección sin sesión, login correcto, error credenciales, protección de ruta, cierre de sesión, título de página, campo enmascarado, labels visibles, HTML5 required, placeholder |
+| Dashboard | `DASH-E2E` | 10 | Carga post-login, navegación a Centros / Residuos / Traslados / Usuarios / Direcciones, sidebar, API `/api/estadisticas`, breadcrumb |
+| Traslados | `TRAS-E2E` | 13 | Carga página, GET API, botones QR/Nuevo, columnas, POST validación, por-estado, historial, búsqueda |
+| Centros | `CENT-E2E` | 9 | UI (título, heading, botón, búsqueda, columnas) + CRUD completo API (GET / POST / PUT / DELETE) |
+| Residuos | `RESI-E2E` | 8 | UI (título, heading, botón, columnas, búsqueda) + CRUD API (GET / POST / DELETE) |
+| Usuarios | `USUA-E2E` | 7 | UI (título, heading, botón, columnas) + API GET lista + POST / DELETE usuarios |
+| Estadísticas | `ESTA-E2E` | 5 | Campos DTO, valores ≥ 0, rechazo sin sesión, consistencia con `/api/centros` |
+| Seguridad | `SECU-E2E` | 9 | Protección de todos los endpoints sin sesión (GET + POST + DELETE) + expiración tras logout |
+| Direcciones | `DIRE-E2E` | 6 | UI (título, botón, columnas) + CRUD API (GET / POST / DELETE) |
 
-**15 tests** en total — todos en Chromium.
+**77 tests** en total — todos en Chromium headless.
 
 ### Estructura de tests
 
 ```
 tests/
-├── package.json              # Dependencias Playwright
-├── playwright.config.ts      # Config: baseURL, retries, screenshot on fail
-├── base-page.ts              # Clase base para todos los Page Objects
-├── helpers.ts                # Credenciales y rutas compartidas
+├── package.json                  # Dependencias Playwright
+├── playwright.config.ts          # Config: baseURL, retries, screenshot on fail
+├── base-page.ts                  # Clase base para todos los Page Objects
+├── helpers.ts                    # Credenciales y rutas compartidas
 ├── login/
-│   ├── login-page.ts         # Page Object: formulario de login
-│   ├── login.spec.ts         # Tests LOGIN-E2E-001..005
-│   └── login.md              # Documentación de casos
+│   ├── login-page.ts             # Page Object: formulario de login
+│   ├── login.spec.ts             # Tests LOGIN-E2E-001..010
+│   └── login.md                  # Documentación de casos
 ├── dashboard/
-│   ├── dashboard-page.ts     # Page Object: sidebar y navegación
-│   ├── dashboard.spec.ts     # Tests DASH-E2E-001..005
-│   └── dashboard.md          # Documentación de casos
-└── traslados/
-    ├── traslados-page.ts     # Page Object: página de traslados
-    ├── traslados.spec.ts     # Tests TRAS-E2E-001..005
-    └── traslados.md          # Documentación de casos
+│   ├── dashboard-page.ts         # Page Object: sidebar y navegación
+│   ├── dashboard.spec.ts         # Tests DASH-E2E-001..010
+│   └── dashboard.md              # Documentación de casos
+├── traslados/
+│   ├── traslados-page.ts         # Page Object: página de traslados
+│   ├── traslados.spec.ts         # Tests TRAS-E2E-001..013
+│   └── traslados.md              # Documentación de casos
+├── centros/
+│   ├── centros-page.ts           # Page Object: gestión de centros
+│   ├── centros.spec.ts           # Tests CENT-E2E-001..009
+│   └── centros.md                # Documentación de casos
+├── residuos/
+│   ├── residuos-page.ts          # Page Object: catálogo de residuos
+│   ├── residuos.spec.ts          # Tests RESI-E2E-001..008
+│   └── residuos.md               # Documentación de casos
+├── usuarios/
+│   ├── usuarios-page.ts          # Page Object: gestión de usuarios
+│   ├── usuarios.spec.ts          # Tests USUA-E2E-001..007
+│   └── usuarios.md               # Documentación de casos
+├── direcciones/
+│   ├── direcciones-page.ts       # Page Object: gestión de direcciones
+│   ├── direcciones.spec.ts       # Tests DIRE-E2E-001..006
+│   └── direcciones.md            # Documentación de casos
+├── estadisticas/
+│   ├── estadisticas.spec.ts      # Tests ESTA-E2E-001..005
+│   └── estadisticas.md           # Documentación de casos
+└── seguridad/
+    ├── seguridad.spec.ts         # Tests SECU-E2E-001..009
+    └── seguridad.md              # Documentación de casos
 ```
 
 ---
@@ -230,7 +261,7 @@ tests/
 | Dashboard con métricas y gráficos (Chart.js) | ✅ Completo |
 | Historial de auditoría por traslado | ✅ Completo |
 | Interfaz de gestión CRUD (frontend) | ⬜ Pendiente |
-| Tests E2E Playwright (login, dashboard, API) | ✅ 15 tests — `tests/` |
+| Tests E2E Playwright (9 suites, todas las páginas + API) | ✅ 77 tests — `tests/` |
 
 ## Antecedente: prototipo Reflex
 
