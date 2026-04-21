@@ -68,9 +68,12 @@
                         <option value="ELIMINADO">ELIMINADO</option>
                     </select>
                 </div>
-                <div>
+                <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo LER</label>
-                    <input type="text" id="fCodigoLER" class="form-control-eco" placeholder="ej. 06 01 01*">
+                    <input type="text" id="fFiltroLer" class="form-control-eco mb-1" placeholder="Filtrar codigo LER..." oninput="filtrarLer(this.value)">
+                    <select id="fCodigoLER" size="4" class="form-control-eco" onchange="alSeleccionarLer(this.value)" style="height:auto">
+                        <option value="">Cargando...</option>
+                    </select>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
@@ -100,7 +103,7 @@ function initModales() {
     if (el && typeof Modal !== 'undefined') mForm = new Modal(el, { backdrop:'dynamic', closable:true });
 }
 
-document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); cargarCentros(); });
+document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); cargarCentros(); cargarListaLer(); });
 
 var estadoBadge = { PENDIENTE:'badge-warning', ALMACENADO:'badge-info', EN_TRANSITO:'badge-warning', TRATADO:'badge-success', ELIMINADO:'badge-error' };
 
@@ -111,6 +114,37 @@ async function cargarCentros() {
     sel.innerHTML = '<option value="">Sin asignar</option>' + list.map(function(c) {
         return '<option value="' + c.id + '">' + esc(c.nombre) + '</option>';
     }).join('');
+}
+
+var _listaLer = [];
+async function cargarListaLer() {
+    try {
+        var res = await fetch('/api/lista-ler');
+        if (!res.ok) return;
+        _listaLer = await res.json();
+        renderOpcionesLer(_listaLer);
+    } catch(e) { /* silencioso */ }
+}
+function renderOpcionesLer(lista) {
+    var sel = document.getElementById('fCodigoLER');
+    sel.innerHTML = '<option value="">Seleccionar...</option>' + lista.map(function(l) {
+        return '<option value="' + esc(l.codigo) + '">' + esc(l.codigo) + ' — ' + esc(l.descripcion) + '</option>';
+    }).join('');
+}
+function filtrarLer(q) {
+    var lower = q.toLowerCase();
+    var filtrado = q ? _listaLer.filter(function(l) {
+        return l.codigo.toLowerCase().includes(lower) || l.descripcion.toLowerCase().includes(lower);
+    }) : _listaLer;
+    renderOpcionesLer(filtrado);
+}
+function alSeleccionarLer(codigo) {
+    if (!codigo) return;
+    var item = _listaLer.find(function(l) { return l.codigo === codigo; });
+    if (item) {
+        var desc = document.getElementById('fDescripcion');
+        if (desc && !desc.value.trim()) desc.value = item.descripcion;
+    }
 }
 
 async function cargar() {
@@ -171,7 +205,9 @@ function irPagina(n) { pagina = n; renderTabla(); }
 function abrirCrear() {
     document.getElementById('modalTitulo').textContent = 'Crear Residuo';
     document.getElementById('itemId').value = '';
-    ['fCantidad','fUnidad','fCodigoLER','fDescripcion'].forEach(function(id) { document.getElementById(id).value = ''; });
+    ['fCantidad','fUnidad','fDescripcion'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('fFiltroLer').value = '';
+    document.getElementById('fCodigoLER').value = '';
     document.getElementById('fEstado').value = 'PENDIENTE';
     document.getElementById('fCentro').value = '';
     mForm && mForm.show();
@@ -184,6 +220,8 @@ async function abrirEditar(id) {
     document.getElementById('fCantidad').value = r.cantidad != null ? r.cantidad : '';
     document.getElementById('fUnidad').value = r.unidad || '';
     document.getElementById('fEstado').value = r.estado || 'PENDIENTE';
+    document.getElementById('fFiltroLer').value = '';
+    filtrarLer('');
     document.getElementById('fCodigoLER').value = r.codigoLER || '';
     document.getElementById('fDescripcion').value = r.descripcion || '';
     document.getElementById('fCentro').value = r.centro ? r.centro.id : '';

@@ -11,12 +11,6 @@
             <p class="text-sm text-slate-500 mt-0.5">Seguimiento y gestion de traslados</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-            <button type="button" onclick="toggleVista()" id="btnVista"
-                    class="btn btn-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 normal-case shrink-0">
-                <svg id="iconTabla" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18M3 6h18M3 18h18"/></svg>
-                <svg id="iconKanban" class="w-4 h-4 mr-1 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="15" rx="1"/></svg>
-                <span id="lblVista">Vista Kanban</span>
-            </button>
             <button type="button" onclick="abrirQr()"
                     class="btn btn-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 normal-case shrink-0">
                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
@@ -28,30 +22,10 @@
             </button>
         </div>
     </div>
-    <div th:replace="~{layouts/fragments :: searchBar('Buscar traslados...')}"></div>
-    <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-100">
-        <table class="table table-zebra table-sm w-full">
-            <thead>
-                <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
-                    <th class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs" id="selAll" onclick="seleccionarTodos(this)"></th>
-                    <th class="w-12">ID</th>
-                    <th>Productor</th>
-                    <th>Gestor</th>
-                    <th class="hidden md:table-cell">Residuo</th>
-                    <th>Estado</th>
-                    <th class="hidden lg:table-cell">Transportista</th>
-                    <th class="text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaCuerpo">
-                <tr><td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td></tr>
-            </tbody>
-        </table>
-    </div>
-    <div th:replace="~{layouts/fragments :: paginationBar}"></div>
+
 
     <!-- Vista Kanban -->
-    <div id="kanbanView" class="hidden mt-2">
+    <div id="kanbanView" class="mt-2">
         <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <!-- Columna PENDIENTE -->
             <div class="flex flex-col gap-2">
@@ -279,7 +253,6 @@
 var todos = [], pagina = 1, filtro = '';
 var POR_PAGINA = 15;
 var mForm, mEstado, mHistorial, mQr, mPdf;
-var vistaActual = 'tabla'; // 'tabla' | 'kanban'
 var sortableInstances = [];
 
 function initModales() {
@@ -318,60 +291,12 @@ async function cargar() {
         var data = await res.json();
         todos = Array.isArray(data) ? data : [];
     } catch (err) {
-        document.getElementById('tablaCuerpo').innerHTML =
-            '<tr><td colspan="8" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la página.</td></tr>';
+        document.getElementById('kanbanView').innerHTML =
+            '<p class="text-center py-12 text-red-400">Error al cargar datos. Recarga la página.</p>';
         return;
     }
-    pagina = 1;
-    if (vistaActual === 'kanban') {
-        renderKanban();
-    } else {
-        renderTabla();
-    }
+    renderKanban();
 }
-
-function filtrar() { filtro = document.getElementById('busqueda').value.toLowerCase(); pagina = 1; renderTabla(); }
-
-function renderTabla() {
-    var lista = todos.filter(function(t) {
-        return (t.centroProductor && t.centroProductor.nombre || '').toLowerCase().includes(filtro) ||
-               (t.centroGestor && t.centroGestor.nombre || '').toLowerCase().includes(filtro) ||
-               (t.estado || '').toLowerCase().includes(filtro);
-    });
-    var inicio = (pagina - 1) * POR_PAGINA;
-    var slice = lista.slice(inicio, inicio + POR_PAGINA);
-    var total = lista.length;
-    var totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
-
-    document.getElementById('infoReg').textContent = total === 0
-        ? 'Sin registros'
-        : 'Mostrando ' + (inicio + 1) + '\u2013' + Math.min(inicio + POR_PAGINA, total) + ' de ' + total;
-
-    document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
-        ? '<tr><td colspan="8" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
-        : slice.map(function(t) {
-            return '<tr class="hover" ondblclick="abrirEditar(' + t.id + ')">'
-                + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + t.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
-                + '<td class="text-xs text-slate-400">' + t.id + '</td>'
-                + '<td class="font-medium text-sm">' + esc(t.centroProductor ? t.centroProductor.nombre : '\u2014') + '</td>'
-                + '<td class="text-sm">' + esc(t.centroGestor ? t.centroGestor.nombre : '\u2014') + '</td>'
-                + '<td class="text-sm text-slate-500 hidden md:table-cell">' + esc(t.residuo ? (t.residuo.codigoLER || String(t.residuo.id)) : '\u2014') + '</td>'
-                + '<td><span class="badge badge-sm ' + (estadoBadge[t.estado] || 'badge-ghost') + '">' + esc(t.estado || '\u2014') + '</span></td>'
-                + '<td class="text-sm text-slate-500 hidden lg:table-cell">' + esc(t.transportista ? t.transportista.nombre : '\u2014') + '</td>'
-                + '<td class="text-right whitespace-nowrap">'
-                + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Editar" onclick="abrirEditar(' + t.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
-                + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Estado" onclick="abrirEstado(' + t.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></button>'
-                + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Historial" onclick="verHistorial(' + t.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></button>'
-                + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="PDF" onclick="verPdf(' + t.id + ',\'carta-porte\')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></button>'
-                + '  <button class="btn btn-ghost btn-xs text-red-500 tooltip" data-tip="Eliminar" onclick="pedirBorrar(' + t.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>'
-                + '</td></tr>';
-        }).join('');
-
-    document.getElementById('pgBotones').innerHTML = Array.from({ length: totalPags }, function(_, i) { return i + 1; })
-        .map(function(i) { return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>'; }).join('');
-}
-
-function irPagina(n) { pagina = n; renderTabla(); }
 
 function abrirCrear() {
     document.getElementById('modalTitulo').textContent = 'Nuevo Traslado';
@@ -410,13 +335,6 @@ async function guardar() {
     };
     var transpId = parseInt(document.getElementById('fTransportista').value);
     if (transpId) body.transportista = { id: transpId };
-    var res = await fetch(id ? '/api/traslados/' + id : '/api/traslados', {
-        method: id ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    });
-    if (res.ok) { mForm && mForm.hide(); await cargar(); }
-    else { Swal.fire({ icon: 'error', title: 'Error', text: 
     var res = await fetch(id ? '/api/traslados/' + id : '/api/traslados', {
         method: id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -576,38 +494,6 @@ async function guardarCentroRapido() {
 }
 
 /* ── Vista Kanban ── */
-
-function toggleVista() {
-    vistaActual = vistaActual === 'tabla' ? 'kanban' : 'tabla';
-    var tablaWrap = document.querySelector('.bg-white.rounded-xl.shadow-sm.overflow-x-auto');
-    var paginacion = document.getElementById('pgBotones').parentElement;
-    var kanbanWrap = document.getElementById('kanbanView');
-    var iconTabla = document.getElementById('iconTabla');
-    var iconKanban = document.getElementById('iconKanban');
-    var lblVista = document.getElementById('lblVista');
-    var infoReg = document.getElementById('infoReg');
-
-    if (vistaActual === 'kanban') {
-        tablaWrap && tablaWrap.classList.add('hidden');
-        paginacion && paginacion.classList.add('hidden');
-        infoReg && infoReg.classList.add('hidden');
-        kanbanWrap.classList.remove('hidden');
-        iconTabla.classList.add('hidden');
-        iconKanban.classList.remove('hidden');
-        lblVista.textContent = 'Vista Tabla';
-        renderKanban();
-    } else {
-        tablaWrap && tablaWrap.classList.remove('hidden');
-        paginacion && paginacion.classList.remove('hidden');
-        infoReg && infoReg.classList.remove('hidden');
-        kanbanWrap.classList.add('hidden');
-        iconTabla.classList.remove('hidden');
-        iconKanban.classList.add('hidden');
-        lblVista.textContent = 'Vista Kanban';
-        sortableInstances.forEach(function(s) { s.destroy(); });
-        sortableInstances = [];
-    }
-}
 
 var ESTADOS_KANBAN = ['PENDIENTE', 'EN_TRANSITO', 'ENTREGADO', 'COMPLETADO'];
 

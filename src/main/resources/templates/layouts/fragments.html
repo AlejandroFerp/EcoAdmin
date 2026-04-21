@@ -50,7 +50,9 @@
      class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
     <button type="button" th:attr="data-modal-hide=${modalId}"
             class="btn btn-ghost btn-sm normal-case">Cancelar</button>
-    <button type="button" th:onclick="|${saveAction}()|"
+    <button type="button"
+            th:attr="data-action=${saveAction}"
+            onclick="window[this.dataset.action] && window[this.dataset.action]()"
             class="btn btn-sm bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case px-6 shadow"
             th:text="${saveLabel}">Guardar</button>
 </div>
