@@ -1,10 +1,8 @@
-HELP.md
 target/
 
 ### Secrets ###
 .env
 *.env
-ecoadmin.db
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -36,3 +34,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### AI tools ###
+.gga
+AGENTS.md
