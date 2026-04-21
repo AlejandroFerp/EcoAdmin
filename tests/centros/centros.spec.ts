@@ -84,8 +84,6 @@ test.describe("Centros", () => {
       const centroData = {
         nombre: "Centro E2E Test",
         tipo: "Productor",
-        direccion: "Calle Test 1",
-        ciudad: "Ciudad Test",
       };
       const response = await page.request.post("/api/centros", {
         data: centroData,
@@ -111,14 +109,14 @@ test.describe("Centros", () => {
 
       // Create
       const created = await page.request.post("/api/centros", {
-        data: { nombre: "Centro Update Test", tipo: "Gestor", direccion: "Calle 2", ciudad: "Ciudad 2" },
+        data: { nombre: "Centro Update Test", tipo: "Gestor" },
         headers: { "Content-Type": "application/json" },
       });
       const centro = await created.json();
 
       // Update
       const updated = await page.request.put(`/api/centros/${centro.id}`, {
-        data: { nombre: "Centro Actualizado", tipo: "Gestor", direccion: "Calle 2", ciudad: "Ciudad 2" },
+        data: { nombre: "Centro Actualizado", tipo: "Gestor" },
         headers: { "Content-Type": "application/json" },
       });
       expect([200, 204]).toContain(updated.status());
@@ -137,7 +135,7 @@ test.describe("Centros", () => {
       await loginPage.login(ADMIN_CREDENTIALS);
 
       const created = await page.request.post("/api/centros", {
-        data: { nombre: "Centro a Borrar", tipo: "Transportista", direccion: "Calle Borrar", ciudad: "Ciudad Borrar" },
+        data: { nombre: "Centro a Borrar", tipo: "Transportista" },
         headers: { "Content-Type": "application/json" },
       });
       const centro = await created.json();

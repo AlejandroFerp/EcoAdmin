@@ -11,7 +11,7 @@ test.describe("Traslados", () => {
       const trasladosPage = new TrasladosPage(page);
       await trasladosPage.loginAndGoto();
       await expect(page).toHaveURL(/\/public\/traslados/);
-      await expect(page).toHaveTitle(/Traslados/);
+      await expect(page).toHaveTitle(/Recogidas/);
     }
   );
 

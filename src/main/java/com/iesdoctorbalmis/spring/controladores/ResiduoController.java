@@ -23,6 +23,9 @@ import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.servicios.ResiduoService;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Residuos", description = "Catalogo de residuos peligrosos con codigos LER")
 @RestController
 @RequestMapping("/api/residuos")
 public class ResiduoController {

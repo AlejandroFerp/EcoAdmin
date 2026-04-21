@@ -24,6 +24,9 @@ import com.iesdoctorbalmis.spring.servicios.DocumentoService;
 import com.iesdoctorbalmis.spring.servicios.PdfService;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Documentos", description = "Gestion de documentos legales y cartas de porte en PDF")
 @RestController
 @RequestMapping("/api/documentos")
 public class DocumentoController {

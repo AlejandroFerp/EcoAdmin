@@ -27,11 +27,16 @@ import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
+import com.iesdoctorbalmis.spring.servicios.EmailService;
 import com.iesdoctorbalmis.spring.servicios.PdfService;
 import com.iesdoctorbalmis.spring.servicios.QrService;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Traslados", description = "Gestion de traslados de residuos y maquina de estados")
 @RestController
 @RequestMapping("/api/traslados")
 public class TrasladoController {
@@ -40,15 +45,19 @@ public class TrasladoController {
     private final PdfService pdfService;
     private final QrService qrService;
     private final UsuarioAutenticadoService authService;
+    private final EmailService emailService;
 
     public TrasladoController(TrasladoService service, PdfService pdfService,
-                              QrService qrService, UsuarioAutenticadoService authService) {
+                              QrService qrService, UsuarioAutenticadoService authService,
+                              EmailService emailService) {
         this.service = service;
         this.pdfService = pdfService;
         this.qrService = qrService;
         this.authService = authService;
+        this.emailService = emailService;
     }
 
+    @Operation(summary = "Listar traslados", description = "Devuelve traslados segun el rol del usuario autenticado")
     @GetMapping
     public List<Traslado> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
@@ -87,6 +96,7 @@ public class TrasladoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
     public ResponseEntity<Traslado> crear(@RequestBody Traslado t) {
         Traslado saved = service.save(t);
+        if (emailService != null) emailService.notificarNuevoTraslado(saved);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -103,6 +113,7 @@ public class TrasladoController {
         return ResponseEntity.ok(service.save(t));
     }
 
+    @Operation(summary = "Cambiar estado de traslado", description = "Maquina de estados: PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO")
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Traslado> cambiarEstado(
             @PathVariable Long id,
@@ -115,6 +126,7 @@ public class TrasladoController {
         verificarAccesoTraslado(traslado);
 
         Traslado actualizado = service.cambiarEstado(id, estado, comentario, usuario);
+        if (emailService != null) emailService.notificarCambioEstado(actualizado);
         return ResponseEntity.ok(actualizado);
     }
 

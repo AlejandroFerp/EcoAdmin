@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Lista LER", description = "Catalogo europeo de residuos (lista LER, ~953 codigos)")
 @RestController
 @RequestMapping("/api/lista-ler")
 public class ListaLerController {

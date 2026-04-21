@@ -12,6 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.iesdoctorbalmis.spring.servicios.QrService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "QR", description = "Generacion y lectura de codigos QR para traslados")
 @RestController
 @RequestMapping("/api/qr")
 public class QrController {

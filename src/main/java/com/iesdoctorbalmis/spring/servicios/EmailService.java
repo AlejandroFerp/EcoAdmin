@@ -12,7 +12,7 @@ import com.iesdoctorbalmis.spring.modelo.Traslado;
 @Service
 public class EmailService {
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender mailSender;
 
     @Value("${ecoadmin.mail.from}")
@@ -55,6 +55,10 @@ public class EmailService {
     // -------------------------------------------------------------------------
 
     private void enviar(String destino, String asunto, String cuerpo) {
+        if (mailSender == null) {
+            System.out.println("[EmailService] Sin JavaMailSender — email no enviado a " + destino);
+            return;
+        }
         try {
             SimpleMailMessage mensaje = new SimpleMailMessage();
             mensaje.setFrom(remitente);

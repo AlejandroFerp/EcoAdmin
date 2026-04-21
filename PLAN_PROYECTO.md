@@ -51,38 +51,38 @@ Garantiza trazabilidad completa desde generacion hasta tratamiento final, con ge
 ## Fases pendientes
 
 ### FASE 11 — Sistema de theming (dark mode + componentes) [EN PROGRESO]
-- [ ] 11.1 Tema oscuro azulado: fondo slate-900, paneles slate-800, acento blue-500
-- [ ] 11.2 Toggle dark/light en sidebar con persistencia en localStorage
-- [ ] 11.3 Sistema de clases CSS global (btn-primary, btn-danger, etc.)
-- [ ] 11.4 Iconos consistentes: editar=lapiz, borrar=papelera con tooltip, QR coherente
-- [ ] 11.5 Layout compartido: extraer sidebar/header/footer a Thymeleaf fragments
+- [x] 11.1 Tema oscuro azulado: fondo slate-900, paneles slate-800, acento blue-500
+- [x] 11.2 Toggle dark/light en sidebar con persistencia en localStorage
+- [x] 11.3 Sistema de clases CSS global (btn-primary, btn-danger, etc.)
+- [x] 11.4 Iconos consistentes: editar=lapiz, borrar=papelera con tooltip, QR coherente
+- [x] 11.5 Layout compartido: extraer sidebar/header/footer a Thymeleaf fragments
 
 ### FASE 12 — UX de tablas
-- [ ] 12.1 Doble clic para abrir detalle/edicion
-- [ ] 12.2 Seleccion batch + acciones masivas (eliminar, cambiar estado, exportar)
-- [ ] 12.3 Crear entidad desde dropdown (opcion "+ Crear nuevo" en selects)
+- [x] 12.1 Doble clic para abrir detalle/edicion
+- [x] 12.2 Seleccion batch + acciones masivas (eliminar, cambiar estado, exportar)
+- [x] 12.3 Crear entidad desde dropdown (opcion "+ Crear nuevo" en selects)
 
 ### FASE 13 — Vistas separadas (crear vs detalle)
-- [ ] 13.1 Modal ligero para crear (campos obligatorios)
-- [ ] 13.2 Vista de detalle expandida con tabs (datos, documentos, historial, fotos)
-- [ ] 13.3 Timeline visual del historial de estados en traslados
+- [x] 13.1 Modal ligero para crear (campos obligatorios)
+- [x] 13.2 Vista de detalle expandida con tabs (datos, documentos, historial, fotos)
+- [x] 13.3 Timeline visual del historial de estados en traslados
 - [ ] 13.4 Seccion de fotos/adjuntos en centros y traslados
 
 ### FASE 14 — Direcciones y mapa
-- [ ] 14.1 Vista de mapa con Leaflet.js (marcadores de centros)
-- [ ] 14.2 Selector de direccion con mapa (clic para establecer lat/lon)
-- [ ] 14.3 Geocodificacion inversa con Nominatim/OpenStreetMap
+- [x] 14.1 Vista de mapa con Leaflet.js (marcadores de centros y direcciones)
+- [x] 14.2 Selector de direccion con mapa (clic para establecer lat/lon)
+- [x] 14.3 Geocodificacion inversa con Nominatim/OpenStreetMap
 
 ### FASE 15 — Generacion de PDFs
-- [ ] 15.1 PdfService con OpenPDF: carta de porte, certificado recepcion, notificacion previa
-- [ ] 15.2 Endpoint GET /api/traslados/{id}/pdf/{tipo}
-- [ ] 15.3 Informe resumen desde dashboard (estadisticas por periodo)
+- [x] 15.1 PdfService con OpenPDF: carta de porte, certificado recepcion, notificacion previa
+- [x] 15.2 Endpoint GET /api/traslados/{id}/pdf/{tipo}
+- [x] 15.3 Informe resumen desde dashboard (estadisticas por periodo)
 - [ ] 15.4 Referencia de formatos: repo PHP myshipment
 
 ### FASE 16 — Email y QR (extras)
-- [ ] 16.1 Email en cambios de estado
+- [x] 16.1 Email en cambios de estado
 - [ ] 16.2 QR mejorado con logo EcoAdmin
-- [ ] 16.3 Anotar controllers con @Operation y @Tag (Swagger)
+- [x] 16.3 Anotar controllers con @Operation y @Tag (Swagger)
 
 ---
 
@@ -184,13 +184,13 @@ No se elimina funcionalidad, se reorganiza y renombra.
 
 **Tareas:**
 
-- [ ] 17.1 Sidebar con grupos colapsables: Principal (con subnivel), Almacen, Contactos, Negocio, Mis Datos, Documentos, Informes
-- [ ] 17.2 Rutas de Thymeleaf: `/dashboard`, `/recogidas`, `/rutas`, `/almacen`, `/contactos`, `/negocio`, `/mis-datos`, `/documentos`, `/informes`
-- [ ] 17.3 Renombrar "Traslados" → "Recogidas" en toda la UI (backend mantiene nombre, solo vista cambia)
+- [x] 17.1 Sidebar con grupos colapsables: Principal (con subnivel), Almacen, Contactos, Negocio, Mis Datos, Documentos, Informes
+- [x] 17.2 Rutas de Thymeleaf: `/rutas`, `/negocio`, `/mis-datos`
+- [x] 17.3 Renombrar "Traslados" → "Recogidas" en toda la UI (backend mantiene nombre, solo vista cambia)
 - [ ] 17.4 Renombrar "Residuos" → "Almacen" en la navegacion
 - [ ] 17.5 Mover centros + usuarios bajo "Contactos" (centros = instalaciones, usuarios = personas)
-- [ ] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
-- [ ] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
+- [x] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
+- [x] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
 - [ ] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
 
 **Impacto en backend:** Minimo. Solo anadir endpoints de vista en ZonaPublicaController.

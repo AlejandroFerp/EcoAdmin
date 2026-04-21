@@ -19,6 +19,9 @@ import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.servicios.UsuarioService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Usuarios", description = "Gestion de usuarios del sistema (solo ADMIN)")
 @RestController
 @RequestMapping("/api/usuarios")
 @PreAuthorize("hasRole('ADMIN')")

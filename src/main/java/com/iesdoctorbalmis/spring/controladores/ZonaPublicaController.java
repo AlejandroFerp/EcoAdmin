@@ -60,4 +60,13 @@ public class ZonaPublicaController {
 
     @GetMapping("/public/documentos")
     public String documentos() { return "documentos"; }
+
+    @GetMapping("/public/rutas")
+    public String rutas() { return "rutas"; }
+
+    @GetMapping("/public/negocio")
+    public String negocio() { return "negocio"; }
+
+    @GetMapping("/public/mis-datos")
+    public String misDatos() { return "mis-datos"; }
 }

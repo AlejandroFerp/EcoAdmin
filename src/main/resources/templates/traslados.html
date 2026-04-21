@@ -1,16 +1,27 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/main :: layout('traslados', 'EcoAdmin - Traslados', 'Gestion de traslados', ~{::pageContent}, ~{::pageScripts})}">
+      th:replace="~{layouts/main :: layout('traslados', 'EcoAdmin — Recogidas', 'Gestion de recogidas', ~{::pageContent}, ~{::pageScripts})}">
 <body>
 
 <th:block th:fragment="pageContent">
 <main class="flex-1 p-4 sm:p-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h2 class="text-xl font-bold text-slate-900">Traslados</h2>
-            <p class="text-sm text-slate-500 mt-0.5">Seguimiento y gestion de traslados</p>
+            <h2 class="text-xl font-bold text-slate-900">Recogidas</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Seguimiento y gestión de recogidas de residuos</p>
         </div>
         <div class="flex gap-2 flex-wrap">
+            <!-- View toggle -->
+            <div class="flex border border-slate-200 rounded-lg overflow-hidden">
+                <button id="btnVistaTbla" type="button" onclick="cambiarVista('tabla')"
+                        class="px-3 py-1.5 text-xs font-medium bg-[#3b82f6] text-white transition-colors">
+                    ☰ Lista
+                </button>
+                <button id="btnVistaKbn" type="button" onclick="cambiarVista('kanban')"
+                        class="px-3 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors">
+                    ⬜ Kanban
+                </button>
+            </div>
             <button type="button" onclick="abrirQr()"
                     class="btn btn-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 normal-case shrink-0">
                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
@@ -23,9 +34,34 @@
         </div>
     </div>
 
+    <!-- Vista Lista (tabla) -->
+    <div id="listaView" class="mt-2">
+        <div class="mb-3">
+            <input id="busqueda" type="text" placeholder="Buscar traslado..." oninput="filtrarTabla(this.value)"
+                   class="input input-bordered input-sm w-full max-w-xs bg-white border-slate-200 focus:border-blue-400 focus:outline-none" />
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+            <table class="table table-zebra table-sm w-full">
+                <thead>
+                    <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
+                        <th class="w-12">ID</th>
+                        <th>Residuo</th>
+                        <th>Estado</th>
+                        <th>Productor</th>
+                        <th class="hidden md:table-cell">Gestor</th>
+                        <th class="hidden lg:table-cell">Transportista</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaCuerpo">
+                    <tr><td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Vista Kanban -->
-    <div id="kanbanView" class="mt-2">
+    <div id="kanbanView" class="mt-2 hidden">
         <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <!-- Columna PENDIENTE -->
             <div class="flex flex-col gap-2">
@@ -99,7 +135,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Residuo *</label>
-                        <select id="fResiduo" class="form-control-eco"><option value="">Seleccionar...</option></select>
+                        <div class="flex gap-1">
+                            <select id="fResiduo" class="form-control-eco"><option value="">Seleccionar...</option></select>
+                            <button type="button" onclick="abrirCrearResiduoRapido()" class="btn btn-sm btn-outline border-slate-300 px-2" title="Crear residuo">+</button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
@@ -211,6 +250,62 @@
         </div>
     </div>
 </div>
+<!-- MODAL DETALLE (tabs: Datos | Documentos | Historial) -->
+<div id="modalDetalle" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/20">
+    <div class="relative p-4 w-full max-w-2xl">
+        <div class="relative bg-white rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+                <h3 id="detalleTitulo" class="text-base font-semibold text-slate-900">Traslado #—</h3>
+                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalDetalle')}"></button>
+            </div>
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-100 px-5 gap-1 pt-1">
+                <button type="button" id="tabDatos" onclick="cambiarTabDetalle('datos')"
+                        class="tab-detalle-btn px-4 py-2 text-sm font-medium border-b-2 border-[#3b82f6] text-[#3b82f6] -mb-px transition-colors">Datos</button>
+                <button type="button" id="tabDocumentos" onclick="cambiarTabDetalle('documentos')"
+                        class="tab-detalle-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-colors">Documentos</button>
+                <button type="button" id="tabHistorial" onclick="cambiarTabDetalle('historial')"
+                        class="tab-detalle-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 -mb-px transition-colors">Historial</button>
+            </div>
+            <!-- Tab: Datos -->
+            <div id="panelDatos" class="p-5">
+                <dl class="grid grid-cols-2 gap-3 text-sm" id="detalleInfo">
+                    <div class="col-span-2 text-slate-400">Cargando...</div>
+                </dl>
+            </div>
+            <!-- Tab: Documentos -->
+            <div id="panelDocumentos" class="p-5 hidden">
+                <div id="detalleIdActual" class="hidden"></div>
+                <div class="grid grid-cols-1 gap-3">
+                    <button type="button" onclick="verPdfDetalle('carta-porte')"
+                            class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-colors text-left">
+                        <svg class="w-8 h-8 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <div><div class="font-medium text-slate-800">Carta de Porte</div><div class="text-xs text-slate-400">Documento de transporte oficial</div></div>
+                        <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button type="button" onclick="verPdfDetalle('notificacion')"
+                            class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-colors text-left">
+                        <svg class="w-8 h-8 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <div><div class="font-medium text-slate-800">Notificacion Previa</div><div class="text-xs text-slate-400">Aviso previo al traslado</div></div>
+                        <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button type="button" onclick="verPdfDetalle('certificado')"
+                            class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-colors text-left">
+                        <svg class="w-8 h-8 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        <div><div class="font-medium text-slate-800">Certificado de Recepcion</div><div class="text-xs text-slate-400">Confirmacion de entrega</div></div>
+                        <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Tab: Historial -->
+            <div id="panelHistorial" class="p-5 hidden max-h-96 overflow-y-auto">
+                <p class="text-slate-400">Cargando...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MINI MODAL: Crear Centro Rapido -->
 <div id="modalCentroRapido" tabindex="-1" aria-hidden="true"
      class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-[60] flex justify-center items-center bg-black/30">
@@ -245,6 +340,43 @@
     </div>
 </div>
 
+<!-- MINI MODAL: Crear Residuo Rapido -->
+<div id="modalResiduoRapido" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-[60] flex justify-center items-center bg-black/30">
+    <div class="relative p-4 w-full max-w-md">
+        <div class="relative bg-white rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+                <h3 class="text-base font-semibold text-slate-900">Nuevo Residuo</h3>
+                <button type="button" onclick="cerrarCrearResiduoRapido()" class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100"><svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg></button>
+            </div>
+            <div class="p-5 space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Código LER *</label>
+                    <input type="text" id="rrCodigoLer" class="form-control-eco" placeholder="Ej: 16 06 01*">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                    <input type="text" id="rrDescripcion" class="form-control-eco" placeholder="Descripción del residuo">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Cantidad</label>
+                        <input type="number" id="rrCantidad" class="form-control-eco" placeholder="0" min="0" step="any">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Unidad</label>
+                        <input type="text" id="rrUnidad" class="form-control-eco" placeholder="kg / ud / l">
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
+                <button type="button" onclick="cerrarCrearResiduoRapido()" class="btn btn-ghost btn-sm normal-case">Cancelar</button>
+                <button type="button" onclick="guardarResiduoRapido()" class="btn btn-sm bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case px-6 shadow">Crear Residuo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </th:block>
 
 <th:block th:fragment="pageScripts">
@@ -252,16 +384,16 @@
 <script>
 var todos = [], pagina = 1, filtro = '';
 var POR_PAGINA = 15;
-var mForm, mEstado, mHistorial, mQr, mPdf;
+var mForm, mEstado, mHistorial, mQr, mPdf, mDetalle;
 var sortableInstances = [];
 
 function initModales() {
-    var ids = ['modalForm','modalEstado','modalHistorial','modalQr','modalPdf'];
+    var ids = ['modalForm','modalEstado','modalHistorial','modalQr','modalPdf','modalDetalle'];
     var modals = ids.map(function(id) {
         var el = document.getElementById(id);
         return (el && typeof Modal !== 'undefined') ? new Modal(el, { backdrop:'dynamic', closable:true }) : null;
     });
-    mForm = modals[0]; mEstado = modals[1]; mHistorial = modals[2]; mQr = modals[3]; mPdf = modals[4];
+    mForm = modals[0]; mEstado = modals[1]; mHistorial = modals[2]; mQr = modals[3]; mPdf = modals[4]; mDetalle = modals[5];
 }
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); poblarSelects(); });
@@ -284,6 +416,75 @@ async function poblarSelects() {
     document.getElementById('fTransportista').innerHTML = '<option value="">Sin asignar</option>' + userOpts;
 }
 
+var vistaActual = 'tabla';
+
+function cambiarVista(vista) {
+    vistaActual = vista;
+    var listaView = document.getElementById('listaView');
+    var kanbanView = document.getElementById('kanbanView');
+    var btnTbla = document.getElementById('btnVistaTbla');
+    var btnKbn = document.getElementById('btnVistaKbn');
+    if (vista === 'tabla') {
+        listaView.classList.remove('hidden');
+        kanbanView.classList.add('hidden');
+        btnTbla.classList.remove('bg-white', 'text-slate-600');
+        btnTbla.classList.add('bg-[#3b82f6]', 'text-white');
+        btnKbn.classList.remove('bg-[#3b82f6]', 'text-white');
+        btnKbn.classList.add('bg-white', 'text-slate-600');
+    } else {
+        listaView.classList.add('hidden');
+        kanbanView.classList.remove('hidden');
+        btnKbn.classList.remove('bg-white', 'text-slate-600');
+        btnKbn.classList.add('bg-[#3b82f6]', 'text-white');
+        btnTbla.classList.remove('bg-[#3b82f6]', 'text-white');
+        btnTbla.classList.add('bg-white', 'text-slate-600');
+        renderKanban();
+    }
+}
+
+function filtrarTabla(txt) {
+    filtro = (txt || '').toLowerCase().trim();
+    renderLista();
+}
+
+function renderLista() {
+    var tbody = document.getElementById('tablaCuerpo');
+    if (!tbody) return;
+    var lista = filtro ? todos.filter(function(t) {
+        var prod = (t.centroProductor && t.centroProductor.nombre) || '';
+        var gest = (t.centroGestor && t.centroGestor.nombre) || '';
+        var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '';
+        return (prod + gest + res + (t.estado || '') + String(t.id)).toLowerCase().indexOf(filtro) !== -1;
+    }) : todos;
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(function(t) {
+        var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
+        var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
+        var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '—';
+        var transp = (t.transportista && t.transportista.nombre) || '—';
+        var badgeClass = estadoBadge[t.estado] || 'badge-ghost';
+        return '<tr class="hover cursor-pointer" ondblclick="abrirDetalle(' + t.id + ')">'
+            + '<td class="text-xs text-slate-400">' + t.id + '</td>'
+            + '<td class="text-sm font-medium text-slate-800 max-w-[160px] truncate">' + escHtml(res) + '</td>'
+            + '<td><span class="badge badge-sm ' + badgeClass + '">' + esc(t.estado) + '</span></td>'
+            + '<td class="text-sm text-slate-700 max-w-[140px] truncate">' + escHtml(prod) + '</td>'
+            + '<td class="hidden md:table-cell text-sm text-slate-600 max-w-[140px] truncate">' + escHtml(gest) + '</td>'
+            + '<td class="hidden lg:table-cell text-sm text-slate-500">' + escHtml(transp) + '</td>'
+            + '<td class="text-right">'
+            + '  <div class="flex items-center justify-end gap-1">'
+            + '    <button onclick="abrirEditar(' + t.id + ')" class="btn btn-ghost btn-xs" title="Editar"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
+            + '    <button onclick="abrirEstado(' + t.id + ')" class="btn btn-ghost btn-xs" title="Cambiar estado"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>'
+            + '    <button onclick="verHistorial(' + t.id + ')" class="btn btn-ghost btn-xs hidden lg:inline-flex" title="Historial"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>'
+            + '    <button onclick="pedirBorrar(' + t.id + ')" class="btn btn-ghost btn-xs text-red-400 hover:text-red-600" title="Eliminar"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>'
+            + '  </div>'
+            + '</td>'
+            + '</tr>';
+    }).join('');
+}
+
 async function cargar() {
     try {
         var res = await fetch('/api/traslados');
@@ -295,6 +496,7 @@ async function cargar() {
             '<p class="text-center py-12 text-red-400">Error al cargar datos. Recarga la página.</p>';
         return;
     }
+    renderLista();
     renderKanban();
 }
 
@@ -365,15 +567,24 @@ async function verHistorial(id) {
     var eventos = await fetch('/api/traslados/' + id + '/historial').then(function(r) { return r.json(); });
     var div = document.getElementById('contenidoHistorial');
     if (!eventos || eventos.length === 0) {
-        div.innerHTML = '<p class="text-slate-400 text-sm">Sin eventos registrados.</p>';
+        div.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Sin eventos registrados.</p>';
     } else {
-        div.innerHTML = '<ol class="relative border-l border-slate-200 ml-3 space-y-4">'
-            + eventos.map(function(e) {
-                return '<li class="ml-4">'
-                    + '<div class="absolute w-3 h-3 bg-blue-200 rounded-full -left-1.5 border border-white"></div>'
-                    + '<span class="badge badge-sm ' + (estadoBadge[e.estado] || 'badge-ghost') + ' mb-1">' + esc(e.estado) + '</span>'
-                    + '<p class="text-xs text-slate-400">' + (e.fechaEvento ? new Date(e.fechaEvento).toLocaleString('es-ES') : '') + '</p>'
-                    + (e.comentario ? '<p class="text-sm text-slate-600 mt-0.5">' + esc(e.comentario) + '</p>' : '')
+        var colorMap = { PENDIENTE: 'bg-yellow-400', EN_TRANSITO: 'bg-blue-500', ENTREGADO: 'bg-indigo-500', COMPLETADO: 'bg-emerald-500', CANCELADO: 'bg-red-400' };
+        div.innerHTML = '<ol class="relative border-l-2 border-slate-200 ml-4 space-y-5 py-1">'
+            + eventos.map(function(e, i) {
+                var color = colorMap[e.estado] || 'bg-slate-400';
+                var isLast = (i === eventos.length - 1);
+                return '<li class="ml-5">'
+                    + '<span class="absolute -left-2.5 w-5 h-5 rounded-full border-2 border-white shadow ' + color + ' flex items-center justify-center">'
+                    + (isLast ? '<svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : '')
+                    + '</span>'
+                    + '<div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">'
+                    + '<div class="flex items-center justify-between gap-2 flex-wrap">'
+                    + '<span class="badge badge-sm ' + (estadoBadge[e.estado] || 'badge-ghost') + '">' + esc(e.estado) + '</span>'
+                    + '<time class="text-[11px] text-slate-400">' + (e.fechaEvento ? new Date(e.fechaEvento).toLocaleString('es-ES') : '') + '</time>'
+                    + '</div>'
+                    + (e.comentario ? '<p class="text-sm text-slate-600 mt-2">' + esc(e.comentario) + '</p>' : '')
+                    + '</div>'
                     + '</li>';
             }).join('')
             + '</ol>';
@@ -431,6 +642,88 @@ async function leerQr() {
 }
 
 var pdfLabels = { 'carta-porte':'Carta de Porte', 'notificacion':'Notificacion', 'certificado':'Certificado' };
+
+/* ── Vista de detalle con tabs ── */
+var detalleIdActual = null;
+
+async function abrirDetalle(id) {
+    detalleIdActual = id;
+    document.getElementById('detalleTitulo').textContent = 'Traslado #' + id;
+    cambiarTabDetalle('datos');
+    mDetalle && mDetalle.show();
+    // cargar datos
+    try {
+        var t = await fetch('/api/traslados/' + id).then(function(r) { return r.json(); });
+        var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
+        var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
+        var res = (t.residuo && (t.residuo.descripcion || t.residuo.codigoLER)) || '—';
+        var transp = (t.transportista && t.transportista.nombre) || '—';
+        var badgeClass = estadoBadge[t.estado] || 'badge-ghost';
+        document.getElementById('detalleInfo').innerHTML =
+            '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd><span class="badge badge-sm ' + badgeClass + '">' + esc(t.estado) + '</span></dd></div>'
+          + '<div><dt class="text-xs text-slate-400 mb-0.5">Residuo</dt><dd class="font-medium">' + esc(res) + '</dd></div>'
+          + '<div><dt class="text-xs text-slate-400 mb-0.5">Productor</dt><dd>' + esc(prod) + '</dd></div>'
+          + '<div><dt class="text-xs text-slate-400 mb-0.5">Gestor</dt><dd>' + esc(gest) + '</dd></div>'
+          + '<div><dt class="text-xs text-slate-400 mb-0.5">Transportista</dt><dd>' + esc(transp) + '</dd></div>'
+          + (t.observaciones ? '<div class="col-span-2"><dt class="text-xs text-slate-400 mb-0.5">Observaciones</dt><dd class="text-slate-600">' + esc(t.observaciones) + '</dd></div>' : '');
+    } catch(e) {
+        document.getElementById('detalleInfo').innerHTML = '<div class="col-span-2 text-red-400">Error al cargar.</div>';
+    }
+}
+
+function cambiarTabDetalle(tab) {
+    var panels = { datos: 'panelDatos', documentos: 'panelDocumentos', historial: 'panelHistorial' };
+    var btns = { datos: 'tabDatos', documentos: 'tabDocumentos', historial: 'tabHistorial' };
+    Object.keys(panels).forEach(function(k) {
+        var panel = document.getElementById(panels[k]);
+        var btn = document.getElementById(btns[k]);
+        if (k === tab) {
+            panel.classList.remove('hidden');
+            btn.classList.add('border-[#3b82f6]', 'text-[#3b82f6]');
+            btn.classList.remove('border-transparent', 'text-slate-500');
+        } else {
+            panel.classList.add('hidden');
+            btn.classList.remove('border-[#3b82f6]', 'text-[#3b82f6]');
+            btn.classList.add('border-transparent', 'text-slate-500');
+        }
+    });
+    if (tab === 'historial' && detalleIdActual) {
+        cargarHistorialDetalle(detalleIdActual);
+    }
+}
+
+async function cargarHistorialDetalle(id) {
+    var panel = document.getElementById('panelHistorial');
+    panel.innerHTML = '<p class="text-slate-400">Cargando...</p>';
+    try {
+        var eventos = await fetch('/api/traslados/' + id + '/historial').then(function(r) { return r.json(); });
+        if (!eventos || !eventos.length) { panel.innerHTML = '<p class="text-slate-400">Sin eventos.</p>'; return; }
+        var colors = { PENDIENTE:'#f59e0b', EN_TRANSITO:'#3b82f6', ENTREGADO:'#6366f1', COMPLETADO:'#10b981', CANCELADO:'#f87171' };
+        panel.innerHTML = '<ol class="relative border-l border-slate-200 ml-3 space-y-4">'
+            + eventos.map(function(e, i) {
+                var color = colors[e.estado] || '#94a3b8';
+                var last = (i === eventos.length - 1);
+                return '<li class="ml-6">'
+                    + '<span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center rounded-full ring-2 ring-white" style="background:' + color + '"></span>'
+                    + '<div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">'
+                    + '<div class="flex items-center justify-between gap-2 flex-wrap">'
+                    + '<span class="badge badge-sm ' + (estadoBadge[e.estado] || 'badge-ghost') + '">' + esc(e.estado) + '</span>'
+                    + '<time class="text-[11px] text-slate-400">' + (e.fechaEvento ? new Date(e.fechaEvento).toLocaleString('es-ES') : '') + '</time>'
+                    + '</div>'
+                    + (e.comentario ? '<p class="text-sm text-slate-600 mt-2">' + esc(e.comentario) + '</p>' : '')
+                    + '</div></li>';
+            }).join('')
+            + '</ol>';
+    } catch(e) {
+        panel.innerHTML = '<p class="text-red-400">Error al cargar historial.</p>';
+    }
+}
+
+function verPdfDetalle(tipo) {
+    if (!detalleIdActual) return;
+    mDetalle && mDetalle.hide();
+    setTimeout(function() { verPdf(detalleIdActual, tipo); }, 150);
+}
 
 function verPdf(id, tipo) {
     var label = pdfLabels[tipo] || tipo;
@@ -491,6 +784,37 @@ async function guardarCentroRapido() {
     var targetSel = document.getElementById(_crTargetSelect);
     if (targetSel) targetSel.value = centro.id;
     cerrarCrearCentroRapido();
+}
+
+function abrirCrearResiduoRapido() {
+    document.getElementById('rrCodigoLer').value = '';
+    document.getElementById('rrDescripcion').value = '';
+    document.getElementById('rrCantidad').value = '';
+    document.getElementById('rrUnidad').value = 'kg';
+    document.getElementById('modalResiduoRapido').classList.remove('hidden');
+}
+function cerrarCrearResiduoRapido() {
+    document.getElementById('modalResiduoRapido').classList.add('hidden');
+}
+async function guardarResiduoRapido() {
+    var codigoLer = document.getElementById('rrCodigoLer').value.trim();
+    if (!codigoLer) {
+        Swal.fire({ icon: 'warning', title: 'Código LER requerido', text: 'Introduce el código LER del residuo.' });
+        return;
+    }
+    var body = {
+        codigoLER: codigoLer,
+        descripcion: document.getElementById('rrDescripcion').value.trim() || null,
+        cantidad: parseFloat(document.getElementById('rrCantidad').value) || 0,
+        unidad: document.getElementById('rrUnidad').value.trim() || 'kg'
+    };
+    var res = await fetch('/api/residuos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear el residuo.' }); return; }
+    var residuo = await res.json();
+    await poblarSelects();
+    var sel = document.getElementById('fResiduo');
+    if (sel) sel.value = residuo.id;
+    cerrarCrearResiduoRapido();
 }
 
 /* ── Vista Kanban ── */

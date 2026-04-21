@@ -1,5 +1,6 @@
 package com.iesdoctorbalmis.spring.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,10 @@ public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
     List<Traslado> findByEstado(EstadoTraslado estado);
 
     long countByEstado(EstadoTraslado estado);
+
+    long countByEstadoAndFechaCreacionAfter(EstadoTraslado estado, LocalDateTime desde);
+
+    long countByFechaCreacionAfter(LocalDateTime desde);
 
     List<Traslado> findByCentroProductor(Centro centro);
 

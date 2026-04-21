@@ -21,6 +21,9 @@ import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.servicios.DireccionService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Direcciones", description = "Gestion de direcciones fisicas de los centros")
 @RestController
 @RequestMapping("/api/direcciones")
 public class DireccionController {

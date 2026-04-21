@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/main :: layout('index', 'EcoAdmin - Dashboard', 'Panel de Control', ~{::pageContent}, ~{::pageScripts})}">
+      th:replace="~{layouts/main :: layout('index', 'EcoAdmin — Dashboard', 'Panel de Control', ~{::pageContent}, ~{::pageScripts})}">
 <body>
 
 <th:block th:fragment="pageContent">
@@ -10,7 +10,20 @@
         <p class="text-sm text-slate-500 mt-1">Resumen del sistema EcoAdmin</p>
     </div>
 
-    <!-- STATS CARDS -->
+    <!-- BARRA DE PERÍODO + EXPORTAR -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit" id="periodoBtns">
+            <button type="button" onclick="setPeriodo('hoy')"    id="pHoy"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm">Hoy</button>
+            <button type="button" onclick="setPeriodo('semana')" id="pSemana" class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">7 días</button>
+            <button type="button" onclick="setPeriodo('mes')"    id="pMes"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">30 días</button>
+            <button type="button" onclick="setPeriodo('todo')"   id="pTodo"  class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">Todo</button>
+        </div>
+        <button type="button" onclick="imprimirInforme()"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-colors">
+            <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Imprimir informe
+        </button>
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-7">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
@@ -135,15 +148,39 @@ function formatFecha(iso) {
     return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+var periodoActual = 'hoy';
+var chartInstance = null;
+
+function getDesdeParam(periodo) {
+    var d = new Date();
+    if (periodo === 'hoy')    { return d.toISOString().slice(0, 10); }
+    if (periodo === 'semana') { d.setDate(d.getDate() - 7);  return d.toISOString().slice(0, 10); }
+    if (periodo === 'mes')    { d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10); }
+    return null; // 'todo'
+}
+
+function setPeriodo(periodo) {
+    periodoActual = periodo;
+    document.querySelectorAll('.periodo-btn').forEach(function(btn) {
+        btn.className = 'periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700';
+    });
+    var active = document.getElementById('p' + periodo.charAt(0).toUpperCase() + periodo.slice(1));
+    if (active) active.className = 'periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm';
+    cargarDatos();
+}
+
 async function cargarDatos() {
+    var desde = getDesdeParam(periodoActual);
+    var statsUrl = '/api/estadisticas' + (desde ? '?desde=' + desde : '');
     var results = await Promise.all([
-        fetch('/api/estadisticas').then(function(r) { return r.json(); }),
+        fetch(statsUrl).then(function(r) { return r.json(); }),
         fetch('/api/traslados').then(function(r) { return r.json(); })
     ]);
     var stats = results[0], traslados = results[1];
 
     var ctx = document.getElementById('chartEstados').getContext('2d');
-    new Chart(ctx, {
+    if (chartInstance) { chartInstance.destroy(); }
+    chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Pendiente', 'En transito', 'Entregado', 'Completado'],
@@ -199,6 +236,24 @@ async function cargarDatos() {
                 + '<td class="px-6 py-3.5 text-slate-400 text-xs hidden sm:table-cell">' + formatFecha(t.fechaCreacion) + '</td>'
                 + '</tr>';
         }).join('');
+}
+
+function imprimirInforme() {
+    var periodoLabels = { hoy: 'Hoy', semana: 'Últimos 7 días', mes: 'Últimos 30 días', todo: 'Todo el histórico' };
+    var label = periodoLabels[periodoActual] || 'Todo';
+    var win = window.open('', '_blank', 'width=800,height=600');
+    var rows = document.getElementById('tablaRecientes').innerHTML;
+    var detalle = document.getElementById('estadoDetalle').innerText;
+    win.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe EcoAdmin</title>'
+        + '<style>body{font-family:sans-serif;padding:32px;color:#1e293b}h1{font-size:22px;font-weight:700;margin-bottom:4px}p.sub{color:#64748b;font-size:13px;margin-bottom:24px}h2{font-size:15px;font-weight:600;margin:20px 0 8px}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f8fafc;color:#64748b;text-align:left;padding:8px 12px;font-weight:600;border-bottom:2px solid #e2e8f0}td{padding:8px 12px;border-bottom:1px solid #f1f5f9}@media print{button{display:none}}</style>'
+        + '</head><body>'
+        + '<h1>Informe EcoAdmin</h1><p class="sub">Período: ' + label + ' &nbsp;·&nbsp; Generado: ' + new Date().toLocaleString('es-ES') + '</p>'
+        + '<h2>Traslados recientes</h2>'
+        + '<table><thead><tr><th>ID</th><th>Productor</th><th>Gestor</th><th>Residuo</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>' + rows + '</tbody></table>'
+        + '<p style="margin-top:32px;font-size:11px;color:#94a3b8">EcoAdmin · Sistema de gestión de residuos</p>'
+        + '<script>window.print();<\/script>'
+        + '</body></html>');
+    win.document.close();
 }
 
 document.addEventListener('DOMContentLoaded', cargarDatos);

@@ -7,10 +7,16 @@ public enum EstadoTraslado {
     COMPLETADO;
 
     /**
-     * Permite cualquier transicion entre estados distintos.
-     * Las restricciones direccionales se pueden imponer mas tarde si el negocio lo exige.
+     * Maquina de estados: solo permite transiciones lineales hacia adelante.
+     * PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO (estado final)
      */
     public boolean puedeTransicionarA(EstadoTraslado destino) {
-        return destino != null && destino != this;
+        if (destino == null) return false;
+        return switch (this) {
+            case PENDIENTE    -> destino == EN_TRANSITO;
+            case EN_TRANSITO  -> destino == ENTREGADO;
+            case ENTREGADO    -> destino == COMPLETADO;
+            case COMPLETADO   -> false;
+        };
     }
 }

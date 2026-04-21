@@ -21,7 +21,7 @@ test.describe("Residuos", () => {
     async ({ page }) => {
       const residuosPage = new ResiduosPage(page);
       await residuosPage.loginAndGoto();
-      await expect(page.getByText("Residuos peligrosos")).toBeVisible();
+      await expect(page.getByText("Residuos peligrosos", { exact: true })).toBeVisible();
     }
   );
 

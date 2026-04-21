@@ -92,8 +92,8 @@ test.describe("Seguridad — Protección de rutas API", () => {
       const before = await page.request.get("/api/centros");
       expect(before.status()).toBe(200);
 
-      // Logout
-      await page.goto("/logout");
+      // Logout via sidebar button (POST with CSRF)
+      await page.locator('button[title="Cerrar sesion"]').click();
       await page.waitForURL(/\/public\/login/);
 
       // After logout, session cookie is invalid

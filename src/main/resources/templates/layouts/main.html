@@ -54,6 +54,42 @@
         textarea.form-control-eco { resize: vertical; min-height: 64px; }
         /* Modal animation */
         .modal-eco { transition: opacity 0.18s ease, transform 0.18s ease; }
+
+        /* ─── Dark mode ──────────────────────────────────────────────── */
+        body.dark-mode { background-color: #0f172a !important; color: #e2e8f0; }
+        body.dark-mode .bg-white { background-color: #1e293b !important; }
+        body.dark-mode .bg-\[\#f1f5f9\] { background-color: #0f172a !important; }
+        body.dark-mode header { background-color: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
+        body.dark-mode .text-slate-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-slate-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-slate-500 { color: #64748b !important; }
+        body.dark-mode .border-slate-200 { border-color: #334155 !important; }
+        body.dark-mode .border-slate-100 { border-color: #1e293b !important; }
+        body.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+        body.dark-mode table thead tr { background-color: #0f172a !important; }
+        body.dark-mode table tbody tr:hover { background-color: #1e293b !important; }
+        body.dark-mode table tbody tr { border-color: #334155 !important; }
+        body.dark-mode .form-control-eco { background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+        body.dark-mode .form-control-eco:focus { border-color: #3b82f6 !important; }
+        body.dark-mode .bg-slate-50 { background-color: #1e293b !important; }
+        body.dark-mode .bg-slate-100 { background-color: #0f172a !important; }
+        body.dark-mode .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
+        body.dark-mode .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
+            background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important;
+        }
+        body.dark-mode .badge { border-color: #475569; }
+        body.dark-mode [class*="bg-blue-50"] { background-color: rgba(59,130,246,0.15) !important; }
+        body.dark-mode [class*="bg-green-50"] { background-color: rgba(34,197,94,0.15) !important; }
+        body.dark-mode [class*="bg-red-50"] { background-color: rgba(239,68,68,0.15) !important; }
+        body.dark-mode [class*="bg-yellow-50"] { background-color: rgba(234,179,8,0.15) !important; }
+        body.dark-mode .kanban-col { background-color: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .kanban-card { background-color: #0f172a !important; border-color: #334155 !important; }
+        /* Rounded panels / cards */
+        body.dark-mode .rounded-2xl.bg-white,
+        body.dark-mode .rounded-xl.bg-white,
+        body.dark-mode .rounded-lg.bg-white { background-color: #1e293b !important; }
     </style>
 </head>
 <body class="bg-[#f1f5f9] min-h-screen" data-theme="light">
@@ -91,11 +127,10 @@
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                 Recogidas
             </a>
-            <a href="#" onclick="return false" title="Próximamente"
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 cursor-not-allowed opacity-50">
+            <a th:href="@{/public/rutas}"
+               th:class="${pageId == 'rutas'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                 Rutas
-                <span class="ml-auto text-[9px] font-semibold text-slate-600 border border-slate-600 rounded px-1">Pronto</span>
             </a>
         </div>
 
@@ -103,7 +138,7 @@
         <a th:href="@{/public/residuos}"
            th:class="${pageId == 'residuos'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all mt-1' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all mt-1'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-            Almacén
+            Residuos
         </a>
 
         <!-- CONTACTOS group -->
@@ -131,19 +166,17 @@
         </div>
 
         <!-- NEGOCIO -->
-        <a href="#" onclick="return false" title="Próximamente"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 cursor-not-allowed opacity-50 mt-1">
+        <a th:href="@{/public/negocio}"
+           th:class="${pageId == 'negocio'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all mt-1' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all mt-1'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             Negocio
-            <span class="ml-auto text-[9px] font-semibold text-slate-600 border border-slate-600 rounded px-1">Pronto</span>
         </a>
 
         <!-- MIS DATOS -->
-        <a href="#" onclick="return false" title="Próximamente"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 cursor-not-allowed opacity-50">
+        <a th:href="@{/public/mis-datos}"
+           th:class="${pageId == 'mis-datos'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Mis Datos
-            <span class="ml-auto text-[9px] font-semibold text-slate-600 border border-slate-600 rounded px-1">Pronto</span>
         </a>
 
         <!-- DOCUMENTOS -->
@@ -154,11 +187,10 @@
         </a>
 
         <!-- INFORMES -->
-        <a href="#" onclick="return false" title="Próximamente"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 cursor-not-allowed opacity-50">
+        <a th:href="@{/public/index}" title="Ver estadísticas en el dashboard"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Informes
-            <span class="ml-auto text-[9px] font-semibold text-slate-600 border border-slate-600 rounded px-1">Pronto</span>
         </a>
 
     </nav>
@@ -171,8 +203,15 @@
                 <p class="text-sm font-semibold text-white truncate" sec:authentication="name">Admin</p>
                 <p class="text-[11px] text-slate-400">Administrador</p>
             </div>
+            <button id="darkToggle" type="button" title="Modo oscuro"
+                    onclick="toggleDarkMode()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-all">
+                <svg id="darkIcon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
             <form th:action="@{/logout}" method="post" class="shrink-0 m-0 p-0">
-                <button type="submit" title="Cerrar sesión"
+                <button type="submit" title="Cerrar sesion"
                         class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -230,7 +269,32 @@
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 
-<script>
+<script>// ─── Dark mode ───────────────────────────────────────────────────────────────
+(function() {
+    if (localStorage.getItem('darkMode') === '1') {
+        document.documentElement.classList.add('dark-mode');
+        document.body.classList.add('dark-mode');
+    }
+})();
+function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    document.documentElement.classList.toggle('dark-mode', isDark);
+    localStorage.setItem('darkMode', isDark ? '1' : '0');
+    var icon = document.getElementById('darkIcon');
+    if (icon) {
+        icon.innerHTML = isDark
+            ? '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>'
+            : '<path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var isDark = localStorage.getItem('darkMode') === '1';
+    document.body.classList.toggle('dark-mode', isDark);
+    var icon = document.getElementById('darkIcon');
+    if (icon && isDark) {
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
+    }
+});
 // ─── Sidebar ────────────────────────────────────────────────────────────────
 function openSidebar() {
     document.getElementById('sidebar').classList.remove('-translate-x-full');

@@ -14,7 +14,7 @@ export class DashboardPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.sidebarLogo = page.locator("aside").getByText("EcoAdmin");
+    this.sidebarLogo = page.locator("aside").getByText("EcoAdmin", { exact: true });
     this.navDashboard = page.getByRole("link", { name: "Dashboard" });
     this.navCentros = page.getByRole("link", { name: "Centros" });
     this.navResiduos = page.getByRole("link", { name: "Residuos" });

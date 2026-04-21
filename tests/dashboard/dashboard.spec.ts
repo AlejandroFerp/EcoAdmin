@@ -51,7 +51,7 @@ test.describe("Dashboard", () => {
       await dashboard.navTraslados.click();
       await page.waitForLoadState("domcontentloaded");
       await expect(page).toHaveURL(/\/public\/traslados/);
-      await expect(page).toHaveTitle(/Traslados/);
+      await expect(page).toHaveTitle(/Recogidas/);
     }
   );
 
@@ -134,6 +134,100 @@ test.describe("Dashboard", () => {
       await page.waitForLoadState("domcontentloaded");
       await expect(page.locator("#busqueda")).toBeVisible();
       await expect(page.locator("#tablaCuerpo")).toBeVisible();
+    }
+  );
+
+  test(
+    "Dashboard muestra selector de período con 4 opciones @medium @e2e @dashboard @DASH-E2E-011",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-011"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      await expect(page.locator("#pHoy")).toBeVisible();
+      await expect(page.locator("#pSemana")).toBeVisible();
+      await expect(page.locator("#pMes")).toBeVisible();
+      await expect(page.locator("#pTodo")).toBeVisible();
+    }
+  );
+
+  test(
+    "Selector de período actualiza estadísticas al cambiar @medium @e2e @dashboard @DASH-E2E-012",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-012"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      // Wait for chart to render
+      await page.waitForSelector("#chartEstados", { state: "visible" });
+      // Click '7 días'
+      await page.locator("#pSemana").click();
+      await page.waitForTimeout(800);
+      // Button should now be active (has shadow-sm class)
+      const cls = await page.locator("#pSemana").getAttribute("class");
+      expect(cls).toContain("shadow-sm");
+    }
+  );
+
+  test(
+    "Botón imprimir informe está visible en el dashboard @medium @e2e @dashboard @DASH-E2E-013",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-013"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      await expect(page.getByRole("button", { name: /Imprimir informe/i })).toBeVisible();
+    }
+  );
+
+  test(
+    "API /api/estadisticas acepta param desde y devuelve JSON @medium @e2e @dashboard @DASH-E2E-014",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-014"] },
+    async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login(ADMIN_CREDENTIALS);
+      const response = await page.request.get("/api/estadisticas?desde=2020-01-01");
+      expect(response.status()).toBe(200);
+      const body = await response.json();
+      expect(typeof body.trasladosPendientes).toBe("number");
+      expect(typeof body.trasladosCompletados).toBe("number");
+    }
+  );
+
+  test(
+    "Página Rutas carga correctamente con placeholder @medium @e2e @dashboard @DASH-E2E-015",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-015"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      await page.goto("/public/rutas");
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page).toHaveTitle(/Rutas/);
+      await expect(page.getByText("Módulo de Rutas")).toBeVisible();
+    }
+  );
+
+  test(
+    "Página Negocio carga correctamente con placeholder @medium @e2e @dashboard @DASH-E2E-016",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-016"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      await page.goto("/public/negocio");
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page).toHaveTitle(/Negocio/);
+      await expect(page.getByText("Módulo de Negocio")).toBeVisible();
+    }
+  );
+
+  test(
+    "Página Mis Datos carga correctamente con placeholder @medium @e2e @dashboard @DASH-E2E-017",
+    { tag: ["@medium", "@e2e", "@dashboard", "@DASH-E2E-017"] },
+    async ({ page }) => {
+      const dashboard = new DashboardPage(page);
+      await dashboard.loginAndGoto();
+      await page.goto("/public/mis-datos");
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page).toHaveTitle(/Mis Datos/);
+      await expect(page.getByText("Próximamente")).toBeVisible();
     }
   );
 });
