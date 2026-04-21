@@ -7,16 +7,12 @@ public enum EstadoTraslado {
     COMPLETADO;
 
     /**
-     * Maquina de estados: solo permite transiciones lineales hacia adelante.
-     * PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO (estado final)
+     * Permite transiciones libres entre cualquier estado para facilitar rectificaciones manuales.
+     * La trazabilidad se mantiene mediante el historial de eventos (EventoTraslado).
      */
     public boolean puedeTransicionarA(EstadoTraslado destino) {
         if (destino == null) return false;
-        return switch (this) {
-            case PENDIENTE    -> destino == EN_TRANSITO;
-            case EN_TRANSITO  -> destino == ENTREGADO;
-            case ENTREGADO    -> destino == COMPLETADO;
-            case COMPLETADO   -> false;
-        };
+        // El usuario requiere libertad total para rectificar errores; el historial registra el log
+        return this != destino;
     }
 }

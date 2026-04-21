@@ -136,7 +136,7 @@ com.iesdoctorbalmis.spring
 |   +-- EventoTraslado            id, traslado, estadoAnterior, estadoNuevo, fecha, comentario, usuario
 |   +-- ListaLer                  id, codigo, descripcion (953 codigos europeos)
 |   +-- enums/Rol                 PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN
-|   +-- enums/EstadoTraslado      PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO
+ |   +-- enums/EstadoTraslado      Libertad total entre estados (rectificable, con historial)
 +-- repository/                   JpaRepository para cada entidad
 +-- servicios/                    Interface + DB impl para cada entidad
 ```

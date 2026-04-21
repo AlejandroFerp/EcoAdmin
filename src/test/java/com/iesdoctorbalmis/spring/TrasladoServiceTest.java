@@ -80,21 +80,15 @@ class TrasladoServiceTest {
     }
 
     @Test
-    @DisplayName("Transicion invalida PENDIENTE -> COMPLETADO lanza excepcion")
-    void cambiarEstado_transicionInvalida() {
-        assertThatThrownBy(() ->
-            trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.COMPLETADO, null, transportista)
-        ).isInstanceOf(TransicionEstadoInvalidaException.class);
-    }
+    @DisplayName("Cualquier estado es alcanzable desde cualquier otro (libertad de rectificacion)")
+    void cambiarEstado_libertadTotal() {
+        // De PENDIENTE a COMPLETADO (salto adelante)
+        trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.COMPLETADO, "Salto", transportista);
+        assertThat(trasladoRepo.findById(traslado.getId()).get().getEstado()).isEqualTo(EstadoTraslado.COMPLETADO);
 
-    @Test
-    @DisplayName("Transicion invalida EN_TRANSITO -> PENDIENTE (retroceso) lanza excepcion")
-    void cambiarEstado_retroceso() {
-        trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.EN_TRANSITO, null, transportista);
-
-        assertThatThrownBy(() ->
-            trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.PENDIENTE, null, transportista)
-        ).isInstanceOf(TransicionEstadoInvalidaException.class);
+        // De COMPLETADO a PENDIENTE (salto atras)
+        trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.PENDIENTE, "Reset", transportista);
+        assertThat(trasladoRepo.findById(traslado.getId()).get().getEstado()).isEqualTo(EstadoTraslado.PENDIENTE);
     }
 
     @Test
