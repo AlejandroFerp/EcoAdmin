@@ -2,11 +2,11 @@ package com.iesdoctorbalmis.spring.controladores;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,40 +20,53 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import com.iesdoctorbalmis.spring.excepciones.AccesoDenegadoException;
+import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.EventoTraslado;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
-import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.servicios.PdfService;
 import com.iesdoctorbalmis.spring.servicios.QrService;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
+import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
 @RestController
 @RequestMapping("/api/traslados")
 public class TrasladoController {
 
-    @Autowired
-    private TrasladoService service;
+    private final TrasladoService service;
+    private final PdfService pdfService;
+    private final QrService qrService;
+    private final UsuarioAutenticadoService authService;
 
-    @Autowired
-    private UsuarioRepository usuarioRepo;
-
-    @Autowired
-    private PdfService pdfService;
-
-    @Autowired
-    private QrService qrService;
+    public TrasladoController(TrasladoService service, PdfService pdfService,
+                              QrService qrService, UsuarioAutenticadoService authService) {
+        this.service = service;
+        this.pdfService = pdfService;
+        this.qrService = qrService;
+        this.authService = authService;
+    }
 
     @GetMapping
     public List<Traslado> listar() {
-        return service.findAll();
+        Usuario usuario = authService.obtenerUsuarioActual();
+        if (usuario == null) return List.of();
+
+        return switch (usuario.getRol()) {
+            case ADMIN, GESTOR -> service.findAll();
+            case PRODUCTOR -> service.findByUsuario(usuario);
+            case TRANSPORTISTA -> service.findByTransportista(usuario);
+        };
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Traslado> buscar(@PathVariable Long id) {
         Traslado t = service.findById(id);
-        return t != null ? ResponseEntity.ok(t) : ResponseEntity.notFound().build();
+        if (t == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(t);
+        return ResponseEntity.ok(t);
     }
 
     @GetMapping("/por-estado/{estado}")
@@ -63,19 +76,30 @@ public class TrasladoController {
 
     @GetMapping("/{id}/historial")
     public ResponseEntity<List<EventoTraslado>> historial(@PathVariable Long id) {
+        Traslado t = service.findById(id);
+        if (t == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(t);
         List<EventoTraslado> eventos = service.historialDeTraslado(id);
         return ResponseEntity.ok(eventos);
     }
 
     @PostMapping
-    public Traslado crear(@RequestBody Traslado t) {
-        return service.save(t);
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
+    public ResponseEntity<Traslado> crear(@RequestBody Traslado t) {
+        Traslado saved = service.save(t);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<Traslado> editar(@PathVariable Long id, @RequestBody Traslado t) {
-        if (service.findById(id) == null) return ResponseEntity.notFound().build();
+        Traslado existing = service.findById(id);
+        if (existing == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(existing);
         t.setId(id);
+        t.setEstado(existing.getEstado());
+        t.setFechaInicioTransporte(existing.getFechaInicioTransporte());
+        t.setFechaEntrega(existing.getFechaEntrega());
         return ResponseEntity.ok(service.save(t));
     }
 
@@ -83,20 +107,23 @@ public class TrasladoController {
     public ResponseEntity<Traslado> cambiarEstado(
             @PathVariable Long id,
             @RequestParam EstadoTraslado estado,
-            @RequestParam(required = false) String comentario,
-            Authentication auth) {
+            @RequestParam(required = false) String comentario) {
 
-        Usuario usuario = auth != null
-                ? usuarioRepo.findByEmail(auth.getName()).orElse(null)
-                : null;
+        Usuario usuario = authService.obtenerUsuarioActual();
+        Traslado traslado = service.findById(id);
+        if (traslado == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(traslado);
 
         Traslado actualizado = service.cambiarEstado(id, estado, comentario, usuario);
-        return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(actualizado);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (service.findById(id) == null) return ResponseEntity.notFound().build();
+        Traslado t = service.findById(id);
+        if (t == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(t);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -104,7 +131,8 @@ public class TrasladoController {
     @GetMapping("/{id}/qr")
     public ResponseEntity<byte[]> generarQr(@PathVariable Long id, HttpServletRequest request) {
         Traslado traslado = service.findById(id);
-        if (traslado == null) return ResponseEntity.notFound().build();
+        if (traslado == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(traslado);
 
         String baseUrl = request.getScheme() + "://" + request.getServerName()
                 + ":" + request.getServerPort();
@@ -121,7 +149,8 @@ public class TrasladoController {
     public ResponseEntity<byte[]> generarPdf(@PathVariable Long id, @PathVariable String tipo,
                                               @RequestParam(defaultValue = "false") boolean inline) {
         Traslado traslado = service.findById(id);
-        if (traslado == null) return ResponseEntity.notFound().build();
+        if (traslado == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + id);
+        verificarAccesoTraslado(traslado);
 
         byte[] pdf = switch (tipo.toLowerCase()) {
             case "carta-porte"   -> pdfService.generarCartaDePorte(traslado);
@@ -140,5 +169,26 @@ public class TrasladoController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    private void verificarAccesoTraslado(Traslado traslado) {
+        Usuario usuario = authService.obtenerUsuarioActual();
+        if (usuario == null) throw new AccesoDenegadoException("No autenticado");
+        if (authService.esAdmin(usuario)) return;
+
+        Rol rol = usuario.getRol();
+        boolean tieneAcceso = switch (rol) {
+            case GESTOR -> true;
+            case PRODUCTOR -> traslado.getCentroProductor() != null
+                    && traslado.getCentroProductor().getUsuario() != null
+                    && traslado.getCentroProductor().getUsuario().getId().equals(usuario.getId());
+            case TRANSPORTISTA -> traslado.getTransportista() != null
+                    && traslado.getTransportista().getId().equals(usuario.getId());
+            default -> false;
+        };
+
+        if (!tieneAcceso) {
+            throw new AccesoDenegadoException("No tiene acceso a este traslado");
+        }
     }
 }

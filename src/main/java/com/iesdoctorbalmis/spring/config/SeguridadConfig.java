@@ -51,13 +51,11 @@ public class SeguridadConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/public/**", "/webjars/**", "/css/**",
+                    "/public/login", "/webjars/**", "/css/**",
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
-                // Only admins can manage users
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                // Traslados, Centros, Residuos accessible to all authenticated roles
                 .requestMatchers("/api/traslados/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
                 .requestMatchers("/api/centros/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
                 .requestMatchers("/api/residuos/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
@@ -83,4 +81,3 @@ public class SeguridadConfig {
         return http.build();
     }
 }
-

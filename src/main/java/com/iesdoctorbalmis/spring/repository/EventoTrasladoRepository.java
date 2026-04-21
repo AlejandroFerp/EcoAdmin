@@ -9,5 +9,5 @@ import com.iesdoctorbalmis.spring.modelo.Traslado;
 
 public interface EventoTrasladoRepository extends JpaRepository<EventoTraslado, Long> {
 
-    List<EventoTraslado> findByTrasladoOrderByFechaDesc(Traslado traslado);
+    List<EventoTraslado> findByTrasladoOrderByFechaDescIdDesc(Traslado traslado);
 }

@@ -2,26 +2,35 @@ package com.iesdoctorbalmis.spring.servicios;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
+import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 
 @Service
 public class ResiduoServiceDB implements ResiduoService {
 
-    @Autowired
-    private ResiduoRepository repo;
+    private final ResiduoRepository repo;
+    private final CentroRepository centroRepo;
 
-    @Autowired
-    private CentroRepository centroRepo;
+    public ResiduoServiceDB(ResiduoRepository repo, CentroRepository centroRepo) {
+        this.repo = repo;
+        this.centroRepo = centroRepo;
+    }
 
     @Override
     public List<Residuo> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<Residuo> findByUsuario(Usuario usuario) {
+        List<Centro> centros = centroRepo.findByUsuario(usuario);
+        if (centros.isEmpty()) return List.of();
+        return repo.findByCentroIn(centros);
     }
 
     @Override
@@ -40,6 +49,4 @@ public class ResiduoServiceDB implements ResiduoService {
     public void delete(Long id) {
         repo.deleteById(id);
     }
-    
 }
-

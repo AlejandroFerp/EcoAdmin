@@ -2,21 +2,29 @@ package com.iesdoctorbalmis.spring.servicios;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 
 @Service
 public class CentroServiceDB implements CentroService {
 
-    @Autowired
-    private CentroRepository repo;
+    private final CentroRepository repo;
+
+    public CentroServiceDB(CentroRepository repo) {
+        this.repo = repo;
+    }
 
     @Override
     public List<Centro> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<Centro> findByUsuario(Usuario usuario) {
+        return repo.findByUsuario(usuario);
     }
 
     @Override

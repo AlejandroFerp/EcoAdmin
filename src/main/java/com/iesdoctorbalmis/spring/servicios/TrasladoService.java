@@ -22,4 +22,10 @@ public interface TrasladoService {
     Traslado cambiarEstado(Long id, EstadoTraslado nuevoEstado, String comentario, Usuario usuario);
 
     List<EventoTraslado> historialDeTraslado(Long id);
+
+    List<Traslado> findByUsuario(Usuario usuario);
+
+    List<Traslado> findByGestor(Usuario usuario);
+
+    List<Traslado> findByTransportista(Usuario usuario);
 }
