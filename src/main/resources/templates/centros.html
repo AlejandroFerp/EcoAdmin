@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('centros', 'EcoAdmin - Centros', 'Centros de tratamiento', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -38,7 +38,7 @@
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -64,11 +64,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
-                        <input type="text" id="fNombre" class="input input-bordered input-sm w-full" placeholder="Nombre del centro">
+                        <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre del centro">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
-                        <select id="fTipo" class="select select-bordered select-sm w-full">
+                        <select id="fTipo" class="form-control-eco">
                             <option value="">Seleccionar...</option>
                             <option value="PRODUCTOR">Productor</option>
                             <option value="GESTOR">Gestor</option>
@@ -76,25 +76,25 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">NIMA</label>
-                        <input type="text" id="fNima" class="input input-bordered input-sm w-full" placeholder="NIMA/2024/001">
+                        <input type="text" id="fNima" class="form-control-eco" placeholder="NIMA/2024/001">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Direccion *</label>
-                        <select id="fDireccion" class="select select-bordered select-sm w-full">
+                        <select id="fDireccion" class="form-control-eco">
                             <option value="">Seleccionar direccion...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Contacto</label>
-                        <input type="text" id="fContacto" class="input input-bordered input-sm w-full" placeholder="Nombre de contacto">
+                        <input type="text" id="fContacto" class="form-control-eco" placeholder="Nombre de contacto">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Telefono</label>
-                        <input type="text" id="fTelefono" class="input input-bordered input-sm w-full" placeholder="966 112 233">
+                        <input type="text" id="fTelefono" class="form-control-eco" placeholder="966 112 233">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                        <input type="email" id="fEmail" class="input input-bordered input-sm w-full" placeholder="contacto@centro.es">
+                        <input type="email" id="fEmail" class="form-control-eco" placeholder="contacto@centro.es">
                     </div>
                 </div>
             </div>
@@ -121,10 +121,17 @@ function initModales() {
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
 
 async function cargar() {
-    var centrosRes = await fetch('/api/centros');
-    var dirsRes = await fetch('/api/direcciones');
-    todos = await centrosRes.json();
-    direcciones = await dirsRes.json();
+    try {
+        var centrosRes = await fetch('/api/centros');
+        var dirsRes = await fetch('/api/direcciones');
+        if (!centrosRes.ok) throw new Error('HTTP ' + centrosRes.status);
+        todos = await centrosRes.json();
+        direcciones = await dirsRes.json();
+    } catch (err) {
+        document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="9" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la p\u00e1gina.</td></tr>';
+        return;
+    }
     pagina = 1;
     renderTabla();
     renderDirecciones();

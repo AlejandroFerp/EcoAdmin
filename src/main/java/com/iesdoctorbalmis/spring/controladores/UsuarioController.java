@@ -69,8 +69,6 @@ public class UsuarioController {
         existing.setRol(u.getRol());
         if (u.getPassword() != null && !u.getPassword().isBlank()) {
             existing.setPassword(u.getPassword());
-        } else {
-            existing.setPassword(null);
         }
         try {
             Usuario saved = service.save(existing);

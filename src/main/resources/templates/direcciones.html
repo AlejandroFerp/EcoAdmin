@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('direcciones', 'EcoAdmin - Direcciones', 'Gestion de direcciones', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -38,7 +38,7 @@
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -63,35 +63,35 @@
                 <input type="hidden" id="itemId">
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
-                    <input type="text" id="fNombre" class="input input-bordered input-sm w-full" placeholder="Nombre identificativo">
+                    <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre identificativo">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Calle *</label>
-                    <input type="text" id="fCalle" class="input input-bordered input-sm w-full" placeholder="Calle y numero">
+                    <input type="text" id="fCalle" class="form-control-eco" placeholder="Calle y numero">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Ciudad</label>
-                    <input type="text" id="fCiudad" class="input input-bordered input-sm w-full" placeholder="Ciudad">
+                    <input type="text" id="fCiudad" class="form-control-eco" placeholder="Ciudad">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo Postal</label>
-                    <input type="text" id="fCP" class="input input-bordered input-sm w-full" placeholder="00000">
+                    <input type="text" id="fCP" class="form-control-eco" placeholder="00000">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Provincia</label>
-                    <input type="text" id="fProvincia" class="input input-bordered input-sm w-full" placeholder="Provincia">
+                    <input type="text" id="fProvincia" class="form-control-eco" placeholder="Provincia">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Pais</label>
-                    <input type="text" id="fPais" class="input input-bordered input-sm w-full" value="Espana" placeholder="Espana">
+                    <input type="text" id="fPais" class="form-control-eco" value="Espana" placeholder="Espana">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Latitud</label>
-                    <input type="number" step="any" id="fLat" class="input input-bordered input-sm w-full" placeholder="38.3452">
+                    <input type="number" step="any" id="fLat" class="form-control-eco" placeholder="38.3452">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Longitud</label>
-                    <input type="number" step="any" id="fLon" class="input input-bordered input-sm w-full" placeholder="-0.4815">
+                    <input type="number" step="any" id="fLon" class="form-control-eco" placeholder="-0.4815">
                 </div>
             </div>
             <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
@@ -117,8 +117,15 @@ function initModales() {
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
 
 async function cargar() {
-    var res = await fetch('/api/direcciones');
-    todos = await res.json();
+    try {
+        var res = await fetch('/api/direcciones');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        todos = await res.json();
+    } catch (err) {
+        document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="9" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la p\u00e1gina.</td></tr>';
+        return;
+    }
     pagina = 1;
     renderTabla();
 }
