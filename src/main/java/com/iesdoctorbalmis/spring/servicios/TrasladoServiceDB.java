@@ -17,6 +17,9 @@ import com.iesdoctorbalmis.spring.repository.EventoTrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
+import com.iesdoctorbalmis.spring.modelo.Documento;
+import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
 
 @Service
 public class TrasladoServiceDB implements TrasladoService {
@@ -26,17 +29,20 @@ public class TrasladoServiceDB implements TrasladoService {
     private final CentroRepository centroRepo;
     private final ResiduoRepository residuoRepo;
     private final UsuarioRepository usuarioRepo;
+    private final DocumentoRepository documentoRepo;
 
     public TrasladoServiceDB(TrasladoRepository trasladoRepo,
                              EventoTrasladoRepository eventoRepo,
                              CentroRepository centroRepo,
                              ResiduoRepository residuoRepo,
-                             UsuarioRepository usuarioRepo) {
+                             UsuarioRepository usuarioRepo,
+                             DocumentoRepository documentoRepo) {
         this.trasladoRepo = trasladoRepo;
         this.eventoRepo = eventoRepo;
         this.centroRepo = centroRepo;
         this.residuoRepo = residuoRepo;
         this.usuarioRepo = usuarioRepo;
+        this.documentoRepo = documentoRepo;
     }
 
     @Override
@@ -102,7 +108,29 @@ public class TrasladoServiceDB implements TrasladoService {
             traslado.setFechaEntrega(LocalDateTime.now());
         }
 
-        return trasladoRepo.save(traslado);
+        Traslado guardado = trasladoRepo.save(traslado);
+
+        // Al completar: marcar salida del residuo y generar DI automático
+        if (nuevoEstado == EstadoTraslado.COMPLETADO) {
+            if (traslado.getResiduo() != null) {
+                traslado.getResiduo().setFechaSalidaAlmacen(LocalDateTime.now());
+                residuoRepo.save(traslado.getResiduo());
+            }
+            boolean yaExisteDi = documentoRepo.existsByTrasladoAndTipo(
+                    guardado, TipoDocumento.DOCUMENTO_IDENTIFICACION);
+            if (!yaExisteDi) {
+                String anio = String.valueOf(java.time.LocalDate.now().getYear());
+                long count = documentoRepo.count() + 1;
+                String referencia = "DI-" + anio + "-" + String.format("%03d", count);
+                Documento di = new Documento(
+                        TipoDocumento.DOCUMENTO_IDENTIFICACION, guardado, referencia);
+                di.setEstado(com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento.EMITIDO);
+                di.setObservaciones("DI generado al completar traslado #" + guardado.getId());
+                documentoRepo.save(di);
+            }
+        }
+
+        return guardado;
     }
 
     @Override

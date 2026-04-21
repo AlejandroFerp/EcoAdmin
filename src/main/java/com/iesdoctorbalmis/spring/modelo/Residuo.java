@@ -1,7 +1,9 @@
 package com.iesdoctorbalmis.spring.modelo;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +25,12 @@ public class Residuo {
     private String estado;
     private String codigoLER;
     private String descripcion;
+
+    private LocalDateTime fechaEntradaAlmacen;
+    private LocalDateTime fechaSalidaAlmacen;
+
+    @Column(columnDefinition = "INTEGER DEFAULT 180")
+    private Integer diasMaximoAlmacenamiento = 180;
 
     @ManyToOne
     @JoinColumn(name = "centro_id")
@@ -57,6 +65,12 @@ public class Residuo {
     public void setCodigoLER(String codigoLER) { this.codigoLER = codigoLER; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public LocalDateTime getFechaEntradaAlmacen() { return fechaEntradaAlmacen; }
+    public void setFechaEntradaAlmacen(LocalDateTime fechaEntradaAlmacen) { this.fechaEntradaAlmacen = fechaEntradaAlmacen; }
+    public LocalDateTime getFechaSalidaAlmacen() { return fechaSalidaAlmacen; }
+    public void setFechaSalidaAlmacen(LocalDateTime fechaSalidaAlmacen) { this.fechaSalidaAlmacen = fechaSalidaAlmacen; }
+    public Integer getDiasMaximoAlmacenamiento() { return diasMaximoAlmacenamiento; }
+    public void setDiasMaximoAlmacenamiento(Integer diasMaximoAlmacenamiento) { this.diasMaximoAlmacenamiento = diasMaximoAlmacenamiento; }
 
     @Override
     public String toString() {

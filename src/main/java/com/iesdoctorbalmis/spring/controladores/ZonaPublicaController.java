@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 
@@ -21,6 +22,9 @@ public class ZonaPublicaController {
 
     @Autowired
     private TrasladoRepository trasladoRepo;
+
+    @Autowired
+    private DocumentoRepository documentoRepo;
 
     @GetMapping("/public/login")
     public String login() {
@@ -53,4 +57,7 @@ public class ZonaPublicaController {
 
     @GetMapping("/public/direcciones")
     public String direcciones() { return "direcciones"; }
+
+    @GetMapping("/public/documentos")
+    public String documentos() { return "documentos"; }
 }

@@ -548,27 +548,11 @@ function renderKanban() {
 }
 
 async function confirmarCambioEstadoKanban(id, nuevoEstado, estadoAnterior, item, fromCol, oldIndex) {
-    var result = await Swal.fire({
-        title: 'Cambiar estado?',
-        text: 'Mover traslado #' + id + ' a ' + nuevoEstado.replace('_', ' ') + '.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3b82f6',
-        cancelButtonText: 'Cancelar',
-        confirmButtonText: 'Confirmar'
-    });
-    if (!result.isConfirmed) {
-        // revertir posicion visual
-        var oldRef = fromCol.children[oldIndex] || null;
-        fromCol.insertBefore(item, oldRef);
-        return;
-    }
     var url = '/api/traslados/' + id + '/estado?estado=' + encodeURIComponent(nuevoEstado);
     var res = await fetch(url, { method: 'PATCH' });
     if (res.ok) {
         var t = todos.find(function(x) { return x.id === id; });
         if (t) t.estado = nuevoEstado;
-        // actualizar contadores
         ['PENDIENTE','EN_TRANSITO','ENTREGADO','COMPLETADO'].forEach(function(e) {
             var cnt = document.getElementById('kCount_' + e);
             if (cnt) cnt.textContent = todos.filter(function(x) { return x.estado === e; }).length;

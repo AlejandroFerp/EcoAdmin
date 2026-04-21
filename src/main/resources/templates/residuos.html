@@ -16,7 +16,7 @@
         </button>
     </div>
     <div th:replace="~{layouts/fragments :: searchBar('Buscar residuos...')}"></div>
-    <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-100">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100">
         <table class="table table-zebra table-sm w-full">
             <thead>
                 <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
@@ -27,12 +27,13 @@
                     <th>Cantidad</th>
                     <th>Unidad</th>
                     <th>Estado</th>
+                    <th class="hidden md:table-cell">Días alm.</th>
                     <th class="hidden lg:table-cell">Centro</th>
                     <th class="text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -70,14 +71,21 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo LER</label>
-                    <input type="text" id="fFiltroLer" class="form-control-eco mb-1" placeholder="Filtrar codigo LER..." oninput="filtrarLer(this.value)">
-                    <select id="fCodigoLER" size="4" class="form-control-eco" onchange="alSeleccionarLer(this.value)" style="height:auto">
-                        <option value="">Cargando...</option>
+                    <select id="fCodigoLER" class="form-control-eco" onchange="alSeleccionarLer(this.value)">
+                        <option value="">Seleccionar...</option>
                     </select>
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
-                    <input type="text" id="fDescripcion" class="form-control-eco" placeholder="Descripcion del residuo">
+                    <input type="text" id="fDescripcion" class="form-control-eco bg-slate-50 text-slate-500" readonly placeholder="Se rellena al seleccionar LER">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Entrada almacen</label>
+                    <input type="datetime-local" id="fFechaEntrada" class="form-control-eco">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Días max. alm.</label>
+                    <input type="number" id="fDiasMaximo" class="form-control-eco" placeholder="180" min="1">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Centro</label>
@@ -106,6 +114,30 @@ function initModales() {
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); cargarCentros(); cargarListaLer(); });
 
 var estadoBadge = { PENDIENTE:'badge-warning', ALMACENADO:'badge-info', EN_TRANSITO:'badge-warning', TRATADO:'badge-success', ELIMINADO:'badge-error' };
+
+function diasAlmacenBadge(r) {
+    if (!r.fechaEntradaAlmacen) return '<span class="text-slate-400">\u2014</span>';
+    if (r.fechaSalidaAlmacen) return '<span class="text-slate-400 text-xs">Salido</span>';
+    var entrada = Array.isArray(r.fechaEntradaAlmacen)
+        ? new Date(r.fechaEntradaAlmacen[0], r.fechaEntradaAlmacen[1]-1, r.fechaEntradaAlmacen[2])
+        : new Date(r.fechaEntradaAlmacen);
+    var dias = Math.floor((Date.now() - entrada.getTime()) / 86400000);
+    var maximo = r.diasMaximoAlmacenamiento || 180;
+    if (dias > maximo) return '<span class="badge badge-xs badge-error font-bold" title="Supera l\u00edmite FIFO">FIFO !' + dias + 'd</span>';
+    if (dias > maximo * 0.8) return '<span class="badge badge-xs badge-warning">' + dias + 'd</span>';
+    return '<span class="text-slate-500 text-xs">' + dias + 'd</span>';
+}
+
+function localDateTimeParaInput(arr) {
+    if (!arr) return '';
+    if (Array.isArray(arr)) {
+        var y = arr[0], mo = arr[1].toString().padStart(2,'0'), d = arr[2].toString().padStart(2,'0');
+        var h = arr[3] ? arr[3].toString().padStart(2,'0') : '00';
+        var mi = arr[4] ? arr[4].toString().padStart(2,'0') : '00';
+        return y + '-' + mo + '-' + d + 'T' + h + ':' + mi;
+    }
+    return arr.substring(0, 16);
+}
 
 async function cargarCentros() {
     var res = await fetch('/api/centros');
@@ -139,12 +171,10 @@ function filtrarLer(q) {
     renderOpcionesLer(filtrado);
 }
 function alSeleccionarLer(codigo) {
-    if (!codigo) return;
+    var desc = document.getElementById('fDescripcion');
+    if (!codigo) { if (desc) desc.value = ''; return; }
     var item = _listaLer.find(function(l) { return l.codigo === codigo; });
-    if (item) {
-        var desc = document.getElementById('fDescripcion');
-        if (desc && !desc.value.trim()) desc.value = item.descripcion;
-    }
+    if (item && desc) desc.value = item.descripcion;
 }
 
 async function cargar() {
@@ -189,6 +219,7 @@ function renderTabla() {
                 + '<td class="text-sm">' + (r.cantidad != null ? r.cantidad : '\u2014') + '</td>'
                 + '<td class="text-sm">' + esc(r.unidad || '\u2014') + '</td>'
                 + '<td><span class="badge badge-sm ' + (estadoBadge[r.estado] || 'badge-ghost') + '">' + esc(r.estado || '\u2014') + '</span></td>'
+                + '<td class="hidden md:table-cell">' + diasAlmacenBadge(r) + '</td>'
                 + '<td class="text-sm text-slate-500 hidden lg:table-cell">' + esc(r.centro ? r.centro.nombre : '\u2014') + '</td>'
                 + '<td class="text-right whitespace-nowrap">'
                 + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Editar" onclick="abrirEditar(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
@@ -205,10 +236,12 @@ function irPagina(n) { pagina = n; renderTabla(); }
 function abrirCrear() {
     document.getElementById('modalTitulo').textContent = 'Crear Residuo';
     document.getElementById('itemId').value = '';
-    ['fCantidad','fUnidad','fDescripcion'].forEach(function(id) { document.getElementById(id).value = ''; });
-    document.getElementById('fFiltroLer').value = '';
+    ['fCantidad','fUnidad'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fCodigoLER').value = '';
+    document.getElementById('fDescripcion').value = '';
     document.getElementById('fEstado').value = 'PENDIENTE';
+    document.getElementById('fFechaEntrada').value = '';
+    document.getElementById('fDiasMaximo').value = '180';
     document.getElementById('fCentro').value = '';
     mForm && mForm.show();
 }
@@ -220,10 +253,10 @@ async function abrirEditar(id) {
     document.getElementById('fCantidad').value = r.cantidad != null ? r.cantidad : '';
     document.getElementById('fUnidad').value = r.unidad || '';
     document.getElementById('fEstado').value = r.estado || 'PENDIENTE';
-    document.getElementById('fFiltroLer').value = '';
-    filtrarLer('');
     document.getElementById('fCodigoLER').value = r.codigoLER || '';
     document.getElementById('fDescripcion').value = r.descripcion || '';
+    document.getElementById('fFechaEntrada').value = r.fechaEntradaAlmacen ? localDateTimeParaInput(r.fechaEntradaAlmacen) : '';
+    document.getElementById('fDiasMaximo').value = r.diasMaximoAlmacenamiento != null ? r.diasMaximoAlmacenamiento : '180';
     document.getElementById('fCentro').value = r.centro ? r.centro.id : '';
     mForm && mForm.show();
 }
@@ -237,6 +270,8 @@ async function guardar() {
         estado: document.getElementById('fEstado').value,
         codigoLER: document.getElementById('fCodigoLER').value.trim(),
         descripcion: document.getElementById('fDescripcion').value.trim(),
+        fechaEntradaAlmacen: document.getElementById('fFechaEntrada').value || null,
+        diasMaximoAlmacenamiento: parseInt(document.getElementById('fDiasMaximo').value) || 180,
         centro: centroId ? { id: parseInt(centroId) } : null
     };
     var res = await fetch(id ? '/api/residuos/' + id : '/api/residuos', {
