@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('residuos', 'EcoAdmin - Residuos', 'Residuos peligrosos', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -16,7 +16,7 @@
         </button>
     </div>
     <div th:replace="~{layouts/fragments :: searchBar('Buscar residuos...')}"></div>
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
         <table class="table table-zebra table-sm w-full">
             <thead>
                 <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
@@ -71,13 +71,9 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo LER</label>
-                    <select id="fCodigoLER" class="form-control-eco" onchange="alSeleccionarLer(this.value)">
-                        <option value="">Seleccionar...</option>
-                    </select>
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Descripcion</label>
-                    <input type="text" id="fDescripcion" class="form-control-eco bg-slate-50 text-slate-500" readonly placeholder="Se rellena al seleccionar LER">
+                    <input type="text" id="fCodigoLER" class="form-control-eco" list="lerOpts" autocomplete="off"
+                           placeholder="Escribe codigo o descripcion..." oninput="alEscribirLer(this.value)">
+                    <datalist id="lerOpts"></datalist>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Entrada almacen</label>
@@ -158,23 +154,25 @@ async function cargarListaLer() {
     } catch(e) { /* silencioso */ }
 }
 function renderOpcionesLer(lista) {
-    var sel = document.getElementById('fCodigoLER');
-    sel.innerHTML = '<option value="">Seleccionar...</option>' + lista.map(function(l) {
-        return '<option value="' + esc(l.codigo) + '">' + esc(l.codigo) + ' — ' + esc(l.descripcion) + '</option>';
+    var dl = document.getElementById('lerOpts');
+    if (!dl) return;
+    dl.innerHTML = lista.map(function(l) {
+        return '<option value="' + esc(l.codigo) + '">' + esc(l.codigo) + ' - ' + esc(l.descripcion) + '</option>';
     }).join('');
 }
-function filtrarLer(q) {
-    var lower = q.toLowerCase();
-    var filtrado = q ? _listaLer.filter(function(l) {
-        return l.codigo.toLowerCase().includes(lower) || l.descripcion.toLowerCase().includes(lower);
-    }) : _listaLer;
-    renderOpcionesLer(filtrado);
+function alEscribirLer(value) {
+    var v = (value || '').toLowerCase();
+    var item = _listaLer.find(function(l) {
+        return l.codigo.toLowerCase() === v || l.descripcion.toLowerCase() === v;
+    });
+    if (item) {
+        var input = document.getElementById('fCodigoLER');
+        if (input && input.value !== item.codigo) input.value = item.codigo;
+    }
 }
-function alSeleccionarLer(codigo) {
-    var desc = document.getElementById('fDescripcion');
-    if (!codigo) { if (desc) desc.value = ''; return; }
+function descripcionDeLer(codigo) {
     var item = _listaLer.find(function(l) { return l.codigo === codigo; });
-    if (item && desc) desc.value = item.descripcion;
+    return item ? item.descripcion : '';
 }
 
 async function cargar() {
@@ -238,7 +236,6 @@ function abrirCrear() {
     document.getElementById('itemId').value = '';
     ['fCantidad','fUnidad'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fCodigoLER').value = '';
-    document.getElementById('fDescripcion').value = '';
     document.getElementById('fEstado').value = 'PENDIENTE';
     document.getElementById('fFechaEntrada').value = '';
     document.getElementById('fDiasMaximo').value = '180';
@@ -254,7 +251,6 @@ async function abrirEditar(id) {
     document.getElementById('fUnidad').value = r.unidad || '';
     document.getElementById('fEstado').value = r.estado || 'PENDIENTE';
     document.getElementById('fCodigoLER').value = r.codigoLER || '';
-    document.getElementById('fDescripcion').value = r.descripcion || '';
     document.getElementById('fFechaEntrada').value = r.fechaEntradaAlmacen ? localDateTimeParaInput(r.fechaEntradaAlmacen) : '';
     document.getElementById('fDiasMaximo').value = r.diasMaximoAlmacenamiento != null ? r.diasMaximoAlmacenamiento : '180';
     document.getElementById('fCentro').value = r.centro ? r.centro.id : '';
@@ -269,7 +265,7 @@ async function guardar() {
         unidad: document.getElementById('fUnidad').value.trim(),
         estado: document.getElementById('fEstado').value,
         codigoLER: document.getElementById('fCodigoLER').value.trim(),
-        descripcion: document.getElementById('fDescripcion').value.trim(),
+        descripcion: descripcionDeLer(document.getElementById('fCodigoLER').value.trim()),
         fechaEntradaAlmacen: document.getElementById('fFechaEntrada').value || null,
         diasMaximoAlmacenamiento: parseInt(document.getElementById('fDiasMaximo').value) || 180,
         centro: centroId ? { id: parseInt(centroId) } : null

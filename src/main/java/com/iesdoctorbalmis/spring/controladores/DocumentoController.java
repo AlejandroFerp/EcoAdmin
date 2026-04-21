@@ -2,7 +2,9 @@ package com.iesdoctorbalmis.spring.controladores;
 
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,12 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.Documento;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
+import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
 import com.iesdoctorbalmis.spring.servicios.DocumentoService;
+import com.iesdoctorbalmis.spring.servicios.PdfService;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
 
 @RestController
@@ -25,10 +30,13 @@ public class DocumentoController {
 
     private final DocumentoService service;
     private final TrasladoService trasladoService;
+    private final PdfService pdfService;
 
-    public DocumentoController(DocumentoService service, TrasladoService trasladoService) {
+    public DocumentoController(DocumentoService service, TrasladoService trasladoService,
+                               PdfService pdfService) {
         this.service = service;
         this.trasladoService = trasladoService;
+        this.pdfService = pdfService;
     }
 
     @GetMapping
@@ -69,5 +77,30 @@ public class DocumentoController {
             throw new RecursoNoEncontradoException("Documento no encontrado: " + id);
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> generarPdf(@PathVariable Long id,
+                                              @RequestParam(defaultValue = "false") boolean inline) {
+        Documento d = service.findById(id);
+        if (d == null) throw new RecursoNoEncontradoException("Documento no encontrado: " + id);
+        Traslado t = d.getTraslado();
+        if (t == null) return ResponseEntity.badRequest().build();
+
+        byte[] pdf = switch (d.getTipo()) {
+            case NOTIFICACION_PREVIA -> pdfService.generarNotificacionTraslado(t);
+            case FICHA_ACEPTACION, INFORME_FINAL -> pdfService.generarCertificadoRecepcion(t);
+            case DOCUMENTO_IDENTIFICACION, CONTRATO, HOJA_SEGUIMIENTO, ARCHIVO_CRONOLOGICO
+                    -> pdfService.generarCartaDePorte(t);
+        };
+
+        String ref = d.getNumeroReferencia() != null ? d.getNumeroReferencia() : ("doc-" + id);
+        String disposition = (inline ? "inline" : "attachment")
+                + "; filename=\"" + ref + ".pdf\"";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

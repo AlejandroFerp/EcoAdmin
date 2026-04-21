@@ -67,9 +67,7 @@ public class UsuarioController {
         existing.setNombre(u.getNombre());
         existing.setEmail(u.getEmail());
         existing.setRol(u.getRol());
-        if (u.getPassword() != null && !u.getPassword().isBlank()) {
-            existing.setPassword(u.getPassword());
-        }
+        // La password NO se modifica desde este endpoint (evita perder/re-cifrar el hash al editar otros campos).
         try {
             Usuario saved = service.save(existing);
             return ResponseEntity.ok(new UsuarioDTO(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getRol(), saved.getFechaAlta()));

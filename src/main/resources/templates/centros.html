@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('centros', 'EcoAdmin - Centros', 'Centros de tratamiento', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -16,7 +16,7 @@
         </button>
     </div>
     <div th:replace="~{layouts/fragments :: searchBar('Buscar centros...')}"></div>
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
         <table class="table table-zebra table-sm w-full">
             <thead>
                 <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">

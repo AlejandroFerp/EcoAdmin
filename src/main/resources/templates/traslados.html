@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('traslados', 'EcoAdmin - Traslados', 'Gestion de traslados', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -504,9 +504,7 @@ function renderKanban() {
         if (!col) return;
         var items = todos.filter(function(t) { return t.estado === estado; });
         counter.textContent = items.length;
-        col.innerHTML = items.length === 0
-            ? '<div class="text-xs text-slate-300 text-center py-4">Sin traslados</div>'
-            : items.map(function(t) {
+        col.innerHTML = items.map(function(t) {
                 var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
                 var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
                 var res = (t.residuo && t.residuo.descripcion) || '—';
@@ -535,6 +533,7 @@ function renderKanban() {
             animation: 150,
             ghostClass: 'opacity-40',
             dragClass: 'shadow-lg',
+            draggable: '.kanban-card',
             onEnd: function(evt) {
                 var id = evt.item.getAttribute('data-id');
                 var nuevoEstado = evt.to.getAttribute('data-estado');
