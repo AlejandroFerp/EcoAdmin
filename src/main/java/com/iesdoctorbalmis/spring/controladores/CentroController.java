@@ -19,6 +19,8 @@ import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
+import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
+import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.servicios.CentroService;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
@@ -28,10 +30,15 @@ public class CentroController {
 
     private final CentroService service;
     private final UsuarioAutenticadoService authService;
+    private final ResiduoRepository residuoRepo;
+    private final TrasladoRepository trasladoRepo;
 
-    public CentroController(CentroService service, UsuarioAutenticadoService authService) {
+    public CentroController(CentroService service, UsuarioAutenticadoService authService,
+                            ResiduoRepository residuoRepo, TrasladoRepository trasladoRepo) {
         this.service = service;
         this.authService = authService;
+        this.residuoRepo = residuoRepo;
+        this.trasladoRepo = trasladoRepo;
     }
 
     @GetMapping
@@ -76,10 +83,22 @@ public class CentroController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         Centro c = service.findById(id);
         if (c == null) throw new RecursoNoEncontradoException("Centro no encontrado: " + id);
         verificarAccesoCentro(c);
+
+        if (residuoRepo.existsByCentro(c)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(java.util.Map.of("error",
+                    "No se puede eliminar el centro '" + c.getNombre() + "': tiene residuos asociados."));
+        }
+        if (trasladoRepo.existsByCentroProductorOrCentroGestor(c, c)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(java.util.Map.of("error",
+                    "No se puede eliminar el centro '" + c.getNombre() + "': tiene traslados asociados."));
+        }
+
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

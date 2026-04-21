@@ -12,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException;
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
@@ -32,29 +34,27 @@ class TrasladoServiceTest {
     @Autowired private CentroRepository centroRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private UsuarioRepository usuarioRepo;
+    @Autowired private DireccionRepository direccionRepo;
 
     private Traslado traslado;
     private Usuario transportista;
 
     @BeforeEach
     void setUp() {
-        Usuario productor = new Usuario("Productor", "productor@test.com", "pass", Rol.PRODUCTOR);
-        productor = usuarioRepo.save(productor);
+        Usuario productor = usuarioRepo.save(
+            new Usuario("Productor", "productor@test.com", "pass", Rol.PRODUCTOR));
+        transportista = usuarioRepo.save(
+            new Usuario("Transportista", "trans@test.com", "pass", Rol.TRANSPORTISTA));
 
-        transportista = new Usuario("Transportista", "trans@test.com", "pass", Rol.TRANSPORTISTA);
-        transportista = usuarioRepo.save(transportista);
+        Direccion dir1 = direccionRepo.save(new Direccion("Calle 1", "Alicante", "03001", "Alicante", "Espana"));
+        Direccion dir2 = direccionRepo.save(new Direccion("Calle 2", "Valencia", "46001", "Valencia", "Espana"));
 
-        Centro centroProductor = new Centro(productor, "Centro Prod", "PRODUCTOR", "Calle 1", "Alicante");
-        centroProductor = centroRepo.save(centroProductor);
+        Centro centroProductor = centroRepo.save(new Centro(productor, "Centro Prod", "PRODUCTOR", dir1));
+        Centro centroGestor = centroRepo.save(new Centro("Centro Gest", "GESTOR", dir2));
 
-        Centro centroGestor = new Centro("Centro Gest", "GESTOR", "Calle 2", "Valencia");
-        centroGestor = centroRepo.save(centroGestor);
+        Residuo residuo = residuoRepo.save(new Residuo(100.0, "kg", "PENDIENTE", centroProductor));
 
-        Residuo residuo = new Residuo(100.0, "kg", "PENDIENTE", centroProductor);
-        residuo = residuoRepo.save(residuo);
-
-        traslado = new Traslado(centroProductor, centroGestor, residuo, transportista);
-        traslado = trasladoRepo.save(traslado);
+        traslado = trasladoRepo.save(new Traslado(centroProductor, centroGestor, residuo, transportista));
     }
 
     @Test

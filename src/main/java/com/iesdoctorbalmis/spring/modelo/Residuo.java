@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="residuos")
+@Table(name = "residuos")
 public class Residuo {
 
     @Id
@@ -21,17 +21,15 @@ public class Residuo {
     private double cantidad;
     private String unidad;
     private String estado;
-
-    // Código del Catálogo Europeo de Residuos (p.ej. "16 06 01*" para baterías de plomo)
     private String codigoLER;
+    private String descripcion;
 
     @ManyToOne
     @JoinColumn(name = "centro_id")
     private Centro centro;
 
-    public Residuo() {
-    }
-    
+    public Residuo() {}
+
     public Residuo(double cantidad, String unidad, String estado, Centro centro) {
         this.cantidad = cantidad;
         this.unidad = unidad;
@@ -44,42 +42,22 @@ public class Residuo {
         this.unidad = unidad;
         this.estado = estado;
     }
-    public Long getId() {
-        return id;
-    }
-    public Centro getCentro() {
-        return centro;
-    }
-    public void setCentro(Centro centro) {
-        this.centro = centro;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public double getCantidad() {
-        return cantidad;
-    }
-    public void setCantidad(double cantidad) {
-        this.cantidad = cantidad;
-    }
-    public String getUnidad() {
-        return unidad;
-    }
-    public void setUnidad(String unidad) {
-        this.unidad = unidad;
-    }
-    public String getEstado() {
-        return estado;
-    }
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-    public String getCodigoLER() {
-        return codigoLER;
-    }
-    public void setCodigoLER(String codigoLER) {
-        this.codigoLER = codigoLER;
-    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Centro getCentro() { return centro; }
+    public void setCentro(Centro centro) { this.centro = centro; }
+    public double getCantidad() { return cantidad; }
+    public void setCantidad(double cantidad) { this.cantidad = cantidad; }
+    public String getUnidad() { return unidad; }
+    public void setUnidad(String unidad) { this.unidad = unidad; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public String getCodigoLER() { return codigoLER; }
+    public void setCodigoLER(String codigoLER) { this.codigoLER = codigoLER; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
     @Override
     public String toString() {
         return "Residuo [id=" + id + ", cantidad=" + cantidad + ", unidad=" + unidad + ", estado=" + estado + "]";
@@ -87,36 +65,17 @@ public class Residuo {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.id);
-        hash = 89 * hash + (int) (Double.doubleToLongBits(this.cantidad) ^ (Double.doubleToLongBits(this.cantidad) >>> 32));
-        hash = 89 * hash + Objects.hashCode(this.unidad);
-        hash = 89 * hash + Objects.hashCode(this.estado);
-        return hash;
+        return Objects.hash(id, cantidad, unidad, estado);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Residuo other = (Residuo) obj;
-        if (Double.doubleToLongBits(this.cantidad) != Double.doubleToLongBits(other.cantidad)) {
-            return false;
-        }
-        if (!Objects.equals(this.unidad, other.unidad)) {
-            return false;
-        }
-        if (!Objects.equals(this.estado, other.estado)) {
-            return false;
-        }
-        return Objects.equals(this.id, other.id);
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Residuo other = (Residuo) obj;
+        return Double.compare(other.cantidad, cantidad) == 0
+            && Objects.equals(id, other.id)
+            && Objects.equals(unidad, other.unidad)
+            && Objects.equals(estado, other.estado);
     }
-    
 }

@@ -22,11 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
@@ -41,10 +43,12 @@ class TrasladoEndpointTest {
     @Autowired private CentroRepository centroRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private TrasladoRepository trasladoRepo;
+    @Autowired private DireccionRepository direccionRepo;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Usuario gestor;
     private Traslado traslado;
+    private Direccion dirA;
 
     @BeforeEach
     void setUp() {
@@ -56,8 +60,12 @@ class TrasladoEndpointTest {
                 passwordEncoder.encode("pass"), Rol.GESTOR));
         Usuario transportista = usuarioRepo.save(new Usuario("Trans", "trans2@test.com",
                 passwordEncoder.encode("pass"), Rol.TRANSPORTISTA));
-        Centro cp = centroRepo.save(new Centro(gestor, "Productor SL", "PRODUCTOR", "C/ A", "Alicante"));
-        Centro cg = centroRepo.save(new Centro("Gestor SL", "GESTOR", "C/ B", "Valencia"));
+
+        dirA = direccionRepo.save(new Direccion("C/ A", "Alicante", "03001", "Alicante", "Espana"));
+        Direccion dirB = direccionRepo.save(new Direccion("C/ B", "Valencia", "46001", "Valencia", "Espana"));
+
+        Centro cp = centroRepo.save(new Centro(gestor, "Productor SL", "PRODUCTOR", dirA));
+        Centro cg = centroRepo.save(new Centro("Gestor SL", "GESTOR", dirB));
         Residuo r = residuoRepo.save(new Residuo(200.0, "litros", "PENDIENTE", cp));
         traslado = trasladoRepo.save(new Traslado(cp, cg, r, transportista));
     }
@@ -148,7 +156,7 @@ class TrasladoEndpointTest {
     @Test
     @DisplayName("POST /api/centros crea centro y devuelve 201")
     void crearCentro() throws Exception {
-        String json = "{\"nombre\":\"Nuevo Centro\",\"tipo\":\"PRODUCTOR\",\"direccion\":\"Av. Test\",\"ciudad\":\"Elche\"}";
+        String json = "{\"nombre\":\"Nuevo Centro\",\"tipo\":\"PRODUCTOR\",\"direccion\":{\"id\":" + dirA.getId() + "}}";
         mockMvc.perform(post("/api/centros")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)

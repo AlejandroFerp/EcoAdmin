@@ -12,4 +12,6 @@ public interface ResiduoRepository extends JpaRepository<Residuo, Long> {
     List<Residuo> findByCentro(Centro centro);
 
     List<Residuo> findByCentroIn(List<Centro> centros);
+
+    boolean existsByCentro(Centro centro);
 }

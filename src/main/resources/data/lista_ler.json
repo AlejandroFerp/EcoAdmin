@@ -1,0 +1,3814 @@
+[
+    {
+        "texto":" Residuos de la extracción de minerales.",
+        "codigo":"01 01"
+    },
+    {
+        "texto":" Residuos de la extracción de minerales metálicos.",
+        "codigo":"01 01 01"
+    },
+    {
+        "texto":" Residuos de la extracción de minerales no metálicos.",
+        "codigo":"01 01 02"
+    },
+    {
+        "texto":" Residuos de la transformación física y química de minerales metálicos.",
+        "codigo":"01 03"
+    },
+    {
+        "texto":"* Estériles que generan ácido procedentes de la transformación de sulfuros.",
+        "codigo":"01 03 04"
+    },
+    {
+        "texto":"* Otros estériles que contienen sustancias peligrosas.",
+        "codigo":"01 03 05"
+    },
+    {
+        "texto":" Estériles distintos de los mencionados en los códigos 01 03 04 y 01 03 05.",
+        "codigo":"01 03 06"
+    },
+    {
+        "texto":"* Otros residuos que contienen sustancias peligrosas procedentes de la transformación física y química de minerales metálicos.",
+        "codigo":"01 03 07"
+    },
+    {
+        "texto":" Residuos de polvo y arenilla distintos de los mencionados en el código 01 03 07.",
+        "codigo":"01 03 08"
+    },
+    {
+        "texto":" Lodos rojos de la producción de alúmina distintos de los mencionados en el código 01 03 07.",
+        "codigo":"01 03 09"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"01 03 99"
+    },
+    {
+        "texto":" Residuos de la transformación física y química de minerales no metálicos.",
+        "codigo":"01 04"
+    },
+    {
+        "texto":"* Residuos que contienen sustancias peligrosas procedentes de la transformación física y química de minerales no metálicos.",
+        "codigo":"01 04 07"
+    },
+    {
+        "texto":" Residuos de grava y rocas trituradas distintos de los mencionados en el código 01 04 07.",
+        "codigo":"01 04 08"
+    },
+    {
+        "texto":" Residuos de arena y arcillas.",
+        "codigo":"01 04 09"
+    },
+    {
+        "texto":" Residuos de polvo y arenilla distintos de los mencionados en el código 01 04 07.",
+        "codigo":"01 04 10"
+    },
+    {
+        "texto":" Residuos de la transformación de potasa y sal gema distintos de los mencionados en el código 01 04 07.",
+        "codigo":"01 04 11"
+    },
+    {
+        "texto":" Estériles y otros residuos del lavado y limpieza de minerales distintos de los mencionados en el código 01 04 07 y 01 04 11.",
+        "codigo":"01 04 12"
+    },
+    {
+        "texto":" Residuos del corte y serrado de piedra distintos de los mencionados en el código 01 04 07.",
+        "codigo":"01 04 13"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"01 04 99"
+    },
+    {
+        "texto":" Lodos y otros residuos de perforaciones",
+        "codigo":"01 05"
+    },
+    {
+        "texto":".",
+        "codigo":""
+    },
+    {
+        "texto":" Lodos y residuos de perforaciones que contienen agua dulce.",
+        "codigo":"01 05 04"
+    },
+    {
+        "texto":"* Lodos y residuos de perforaciones que contienen hidrocarburos.",
+        "codigo":"01 05 05"
+    },
+    {
+        "texto":"* Lodos y otros residuos de perforaciones que contienen sustancias peligrosas.",
+        "codigo":"01 05 06"
+    },
+    {
+        "texto":" Lodos y residuos de perforaciones que contienen sales de bario distintos de los mencionados en los códigos 01 05 05 y 01 05 06.",
+        "codigo":"01 05 07"
+    },
+    {
+        "texto":" Lodos y residuos de perforaciones que contienen cloruros distintos de los mencionados en los códigos 01 05 05 y 01 05 06.",
+        "codigo":"01 05 08"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"01 05 99"
+    },
+    {
+        "texto":" Residuos de la agricultura, horticultura, acuicultura, silvicultura, caza y pesca.",
+        "codigo":"02 01"
+    },
+    {
+        "texto":" Lodos de lavado y limpieza.",
+        "codigo":"02 01 01"
+    },
+    {
+        "texto":" Residuos de tejidos de animales.",
+        "codigo":"02 01 02"
+    },
+    {
+        "texto":" Residuos de tejidos de vegetales.",
+        "codigo":"02 01 03"
+    },
+    {
+        "texto":" Residuos de plásticos [excepto embalajes].",
+        "codigo":"02 01 04"
+    },
+    {
+        "texto":" Heces de animales, orina y estiércol [incluida paja podrida] y efluentes recogidos selectivamente y tratados fuera del lugar donde se generan.",
+        "codigo":"02 01 06"
+    },
+    {
+        "texto":" Residuos de la silvicultura.",
+        "codigo":"02 01 07"
+    },
+    {
+        "texto":"* Residuos agroquímicos que contienen sustancias peligrosas.",
+        "codigo":"02 01 08"
+    },
+    {
+        "texto":" Residuos agroquímicos distintos de los mencionados en el código 02 01 08.",
+        "codigo":"02 01 09"
+    },
+    {
+        "texto":" Residuos metálicos.",
+        "codigo":"02 01 10"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 01 99"
+    },
+    {
+        "texto":" Residuos de la preparación y elaboración de carne, pescado y otros alimentos de origen animal.",
+        "codigo":"02 02"
+    },
+    {
+        "texto":" Lodos de lavado y limpieza.",
+        "codigo":"02 02 01"
+    },
+    {
+        "texto":" Residuos de tejidos de animales.",
+        "codigo":"02 02 02"
+    },
+    {
+        "texto":" Materiales inadecuados para el consumo o la elaboración.",
+        "codigo":"02 02 03"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 02 04"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 02 99"
+    },
+    {
+        "texto":" Residuos de la preparación y elaboración de frutas, hortalizas, cereales, aceites comestibles, cacao, café, té y tabaco; producción de conservas; producción de levadura y extracto de levadura, preparación y fermentación de melazas.",
+        "codigo":"02 03"
+    },
+    {
+        "texto":" Lodos de lavado, limpieza, pelado, centrifugado y separación.",
+        "codigo":"02 03 01"
+    },
+    {
+        "texto":" Residuos de conservantes.",
+        "codigo":"02 03 02"
+    },
+    {
+        "texto":" Residuos de la extracción con disolventes.",
+        "codigo":"02 03 03"
+    },
+    {
+        "texto":" Materiales inadecuados para el consumo o la elaboración.",
+        "codigo":"02 03 04"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 03 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 03 99"
+    },
+    {
+        "texto":" Residuos de la elaboración de azúcar.",
+        "codigo":"02 04"
+    },
+    {
+        "texto":" Tierra procedente de la limpieza y lavado de la remolacha.",
+        "codigo":"02 04 01"
+    },
+    {
+        "texto":" Carbonato cálcico fuera de especificación.",
+        "codigo":"02 04 02"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 04 03"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 04 99"
+    },
+    {
+        "texto":" Residuos de la industria de productos lácteos.",
+        "codigo":"02 05"
+    },
+    {
+        "texto":" Materiales inadecuados para el consumo o la elaboración.",
+        "codigo":"02 05 01"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 05 02"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 05 99"
+    },
+    {
+        "texto":" Residuos de la industria de panadería y pastelería.",
+        "codigo":"02 06"
+    },
+    {
+        "texto":" Materiales inadecuados para el consumo o la elaboración.",
+        "codigo":"02 06 01"
+    },
+    {
+        "texto":" Residuos de conservantes.",
+        "codigo":"02 06 02"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 06 03"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 06 99"
+    },
+    {
+        "texto":" Residuos de la producción de bebidas alcohólicas y no alcohólicas [excepto café, té y cacao].",
+        "codigo":"02 07"
+    },
+    {
+        "texto":" Residuos de lavado, limpieza y reducción mecánica de materias primas.",
+        "codigo":"02 07 01"
+    },
+    {
+        "texto":" Residuos de la destilación de alcoholes.",
+        "codigo":"02 07 02"
+    },
+    {
+        "texto":" Residuos del tratamiento químico.",
+        "codigo":"02 07 03"
+    },
+    {
+        "texto":" Materiales inadecuados para el consumo o la elaboración.",
+        "codigo":"02 07 04"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"02 07 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"02 07 99"
+    },
+    {
+        "texto":" Residuos de la transformación de la madera y de la producción de tableros y muebles.",
+        "codigo":"03 01"
+    },
+    {
+        "texto":" Residuos de corteza y corcho.",
+        "codigo":"03 01 01"
+    },
+    {
+        "texto":"* Serrín, virutas, recortes, madera, tableros de partículas y chapas que contienen sustancias peligrosas.",
+        "codigo":"03 01 04"
+    },
+    {
+        "texto":" Serrín, virutas, recortes, madera, tableros de partículas y chapas distintos de los mencionados en el código 03 01 04.",
+        "codigo":"03 01 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"03 01 99"
+    },
+    {
+        "texto":" Residuos de los tratamientos de conservación de la madera.",
+        "codigo":"03 02"
+    },
+    {
+        "texto":"* Conservantes de la madera orgánicos no halogenados.",
+        "codigo":"03 02 01"
+    },
+    {
+        "texto":"* Conservantes de la madera organoclorados.",
+        "codigo":"03 02 02"
+    },
+    {
+        "texto":"* Conservantes de la madera organometálicos.",
+        "codigo":"03 02 03"
+    },
+    {
+        "texto":"* Conservantes de la madera inorgánicos.",
+        "codigo":"03 02 04"
+    },
+    {
+        "texto":"* Otros conservantes de la madera que contienen sustancias peligrosas.",
+        "codigo":"03 02 05"
+    },
+    {
+        "texto":" Conservantes de la madera no especificados en otra categoría.",
+        "codigo":"03 02 99"
+    },
+    {
+        "texto":" Residuos de la producción y transformación de pasta de papel, papel y cartón.",
+        "codigo":"03 03"
+    },
+    {
+        "texto":" Residuos de corteza y madera.",
+        "codigo":"03 03 01"
+    },
+    {
+        "texto":" Lodos de lejías verdes [procedentes de la recuperación de lejías de cocción].",
+        "codigo":"03 03 02"
+    },
+    {
+        "texto":" Lodos de destintado procedentes del reciclado de papel.",
+        "codigo":"03 03 05"
+    },
+    {
+        "texto":" Desechos, separados mecánicamente, de pasta elaborada a partir de residuos de papel y cartón.",
+        "codigo":"03 03 07"
+    },
+    {
+        "texto":" Residuos procedentes de la clasificación de papel y cartón destinados al reciclado.",
+        "codigo":"03 03 08"
+    },
+    {
+        "texto":" Residuos de lodos calizos.",
+        "codigo":"03 03 09"
+    },
+    {
+        "texto":" Desechos de fibras y lodos de fibras, de materiales de carga y de estucado, obtenidos por separación mecánica.",
+        "codigo":"03 03 10"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 03 03 10.",
+        "codigo":"03 03 11"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"03 03 99"
+    },
+    {
+        "texto":" Residuos de las industrias del cuero y de la piel.",
+        "codigo":"04 01"
+    },
+    {
+        "texto":" Carnazas y serrajes de encalado.",
+        "codigo":"04 01 01"
+    },
+    {
+        "texto":" Residuos de encalado.",
+        "codigo":"04 01 02"
+    },
+    {
+        "texto":"* Residuos de desengrasado que contienen disolventes sin fase líquida.",
+        "codigo":"04 01 03"
+    },
+    {
+        "texto":" Residuos líquidos de curtición que contienen cromo.",
+        "codigo":"04 01 04"
+    },
+    {
+        "texto":" Residuos líquidos de curtición que no contienen cromo.",
+        "codigo":"04 01 05"
+    },
+    {
+        "texto":" Lodos, en particular los procedentes del tratamiento in situ de efluentes, que contienen cromo.",
+        "codigo":"04 01 06"
+    },
+    {
+        "texto":" Lodos, en particular los procedentes del tratamiento in situ de efluentes, que no contienen cromo.",
+        "codigo":"04 01 07"
+    },
+    {
+        "texto":" Residuos de piel curtida [serrajes, rebajaduras, recortes, polvo de esmerilado] que contienen cromo.",
+        "codigo":"04 01 08"
+    },
+    {
+        "texto":" Residuos de confección y acabado.",
+        "codigo":"04 01 09"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"04 01 99"
+    },
+    {
+        "texto":" Residuos de la industria textil.",
+        "codigo":"04 02"
+    },
+    {
+        "texto":" Residuos de materiales compuestos [tejidos impregnados, elastómeros, plastómeros].",
+        "codigo":"04 02 09"
+    },
+    {
+        "texto":" Materia orgánica de productos naturales [por ejemplo grasa, cera].",
+        "codigo":"04 02 10"
+    },
+    {
+        "texto":"* Residuos del acabado que contienen disolventes orgánicos.",
+        "codigo":"04 02 14"
+    },
+    {
+        "texto":" Residuos del acabado distintos de los especificados en el código 04 02 14.",
+        "codigo":"04 02 15"
+    },
+    {
+        "texto":"* Colorantes y pigmentos que contienen sustancias peligrosas.",
+        "codigo":"04 02 16"
+    },
+    {
+        "texto":" Colorantes y pigmentos distintos de los mencionados en el código 04 02 16.",
+        "codigo":"04 02 17"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"04 02 19"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los mencionados en el código 04 02 19.",
+        "codigo":"04 02 20"
+    },
+    {
+        "texto":" Residuos de fibras textiles no procesadas.",
+        "codigo":"04 02 21"
+    },
+    {
+        "texto":" Residuos de fibras textiles procesadas.",
+        "codigo":"04 02 22"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"04 02 99"
+    },
+    {
+        "texto":" Residuos del refino del petróleo.",
+        "codigo":"05 01"
+    },
+    {
+        "texto":"* Lodos de desalación.",
+        "codigo":"05 01 02"
+    },
+    {
+        "texto":"* Lodos de fondos de tanques.",
+        "codigo":"05 01 03"
+    },
+    {
+        "texto":"* Lodos de alquil ácido.",
+        "codigo":"05 01 04"
+    },
+    {
+        "texto":"* Derrames de hidrocarburos.",
+        "codigo":"05 01 05"
+    },
+    {
+        "texto":"* Lodos oleosos procedentes de operaciones de mantenimiento de plantas o equipos.",
+        "codigo":"05 01 06"
+    },
+    {
+        "texto":"* Alquitranes ácidos.",
+        "codigo":"05 01 07"
+    },
+    {
+        "texto":"* Otros alquitranes.",
+        "codigo":"05 01 08"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"05 01 09"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los mencionados en el código 05 01 09.",
+        "codigo":"05 01 10"
+    },
+    {
+        "texto":"* Residuos procedentes de la limpieza de combustibles con bases.",
+        "codigo":"05 01 11"
+    },
+    {
+        "texto":"* Hidrocarburos que contienen ácidos.",
+        "codigo":"05 01 12"
+    },
+    {
+        "texto":" Lodos procedentes del agua de alimentación de calderas.",
+        "codigo":"05 01 13"
+    },
+    {
+        "texto":" Residuos de columnas de refrigeración.",
+        "codigo":"05 01 14"
+    },
+    {
+        "texto":"* Arcillas de filtración usadas.",
+        "codigo":"05 01 15"
+    },
+    {
+        "texto":" Residuos que contienen azufre procedentes de la desulfuración del petróleo.",
+        "codigo":"05 01 16"
+    },
+    {
+        "texto":" Betunes.",
+        "codigo":"05 01 17"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"05 01 99"
+    },
+    {
+        "texto":" Residuos del tratamiento pirolítico del carbón.",
+        "codigo":"05 06"
+    },
+    {
+        "texto":"* Alquitranes ácidos.",
+        "codigo":"05 06 01"
+    },
+    {
+        "texto":"* Otros alquitranes.",
+        "codigo":"05 06 03"
+    },
+    {
+        "texto":" Residuos de columnas de refrigeración.",
+        "codigo":"05 06 04"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"05 06 99"
+    },
+    {
+        "texto":" Residuos de la purificación y transporte del gas natural.",
+        "codigo":"05 07"
+    },
+    {
+        "texto":"* Residuos que contienen mercurio.",
+        "codigo":"05 07 01"
+    },
+    {
+        "texto":" Residuos que contienen azufre.",
+        "codigo":"05 07 02"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"05 07 99"
+    },
+    {
+        "texto":" Residuos de la fabricación, formulación, distribución y utilización [FFDU] de ácidos.",
+        "codigo":"06 01"
+    },
+    {
+        "texto":"* Ácido sulfúrico y ácido sulfuroso.",
+        "codigo":"06 01 01"
+    },
+    {
+        "texto":"* Ácido clorhídrico.",
+        "codigo":"06 01 02"
+    },
+    {
+        "texto":"* Ácido fluorhídrico.",
+        "codigo":"06 01 03"
+    },
+    {
+        "texto":"* Ácido fosfórico y ácido fosforoso.",
+        "codigo":"06 01 04"
+    },
+    {
+        "texto":"* Ácido nítrico y ácido nitroso.",
+        "codigo":"06 01 05"
+    },
+    {
+        "texto":"* Otros ácidos.",
+        "codigo":"06 01 06"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 01 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de bases.",
+        "codigo":"06 02"
+    },
+    {
+        "texto":"* Hidróxido cálcico.",
+        "codigo":"06 02 01"
+    },
+    {
+        "texto":"* Hidróxido amónico.",
+        "codigo":"06 02 03"
+    },
+    {
+        "texto":"* Hidróxido potásico e hidróxido sódico.",
+        "codigo":"06 02 04"
+    },
+    {
+        "texto":"* Otras bases.",
+        "codigo":"06 02 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 02 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de sales y sus soluciones y de óxidos metálicos.",
+        "codigo":"06 03"
+    },
+    {
+        "texto":"* Sales sólidas y soluciones que contienen cianuros.",
+        "codigo":"06 03 11"
+    },
+    {
+        "texto":"* Sales sólidas y soluciones que contienen metales pesados.",
+        "codigo":"06 03 13"
+    },
+    {
+        "texto":" Sales sólidas y soluciones distintas de las mencionadas en los códigos 06 03 11 y 06 03 13.",
+        "codigo":"06 03 14"
+    },
+    {
+        "texto":"* Oxidos metálicos que contienen metales pesados.",
+        "codigo":"06 03 15"
+    },
+    {
+        "texto":" Oxidos metálicos distintos de los mencionados en el código 06 03 15.",
+        "codigo":"06 03 16"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 03 99"
+    },
+    {
+        "texto":" Residuos que contienen metales distintos de los mencionados en el subcapítulo 06 03.",
+        "codigo":"06 04"
+    },
+    {
+        "texto":"* Residuos que contienen arsénico.",
+        "codigo":"06 04 03"
+    },
+    {
+        "texto":"* Residuos que contienen mercurio.",
+        "codigo":"06 04 04"
+    },
+    {
+        "texto":"* Residuos que contienen otros metales pesados.",
+        "codigo":"06 04 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 04 99"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"06 05"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"06 05 02"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los mencionados en el código 06 05 02.",
+        "codigo":"06 05 03"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos químicos que contienen azufre, de procesos químicos del azufre y de procesos de desulfuración.",
+        "codigo":"06 06"
+    },
+    {
+        "texto":"* Residuos que contienen sulfuros peligrosos.",
+        "codigo":"06 06 02"
+    },
+    {
+        "texto":" Residuos que contienen sulfuros distintos de los mencionados en el código 06 06 02.",
+        "codigo":"06 06 03"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 06 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de halógenos y de procesos químicos de los halógenos.",
+        "codigo":"06 07"
+    },
+    {
+        "texto":"* Residuos de electrólisis que contienen amianto.",
+        "codigo":"06 07 01"
+    },
+    {
+        "texto":"* Carbón activo procedente de la producción de cloro.",
+        "codigo":"06 07 02"
+    },
+    {
+        "texto":"* Lodos de sulfato bárico que contienen mercurio.",
+        "codigo":"06 07 03"
+    },
+    {
+        "texto":"* Soluciones y ácidos, por ejemplo, ácido de contacto.",
+        "codigo":"06 07 04"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 07 99"
+    },
+    {
+        "texto":" Residuos de la FFDU del silicio y sus derivados.",
+        "codigo":"06 08"
+    },
+    {
+        "texto":"* Residuos que contienen clorosilanos peligrosos.",
+        "codigo":"06 08 02"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 08 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos químicos que contienen fósforo y de procesos químicos del fósforo.",
+        "codigo":"06 09"
+    },
+    {
+        "texto":" Escorias de fósforo.",
+        "codigo":"06 09 02"
+    },
+    {
+        "texto":"* Residuos cálcicos de reacción que contienen o están contaminados con sustancias peligrosas.",
+        "codigo":"06 09 03"
+    },
+    {
+        "texto":" Residuos cálcicos de reacción distintos de los mencionados en el código 06 09 03.",
+        "codigo":"06 09 04"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 09 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos químicos que contienen nitrógeno, de procesos químicos del nitrógeno y de la fabricación de fertilizantes.",
+        "codigo":"06 10"
+    },
+    {
+        "texto":"* Residuos que contienen sustancias peligrosas.",
+        "codigo":"06 10 02"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 10 99"
+    },
+    {
+        "texto":" Residuos de la fabricación de pigmentos inorgánicos y o pacificantes.",
+        "codigo":"06 11"
+    },
+    {
+        "texto":" Residuos cálcicos de reacción procedentes de la producción de dióxido de titanio.",
+        "codigo":"06 11 01"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 11 99"
+    },
+    {
+        "texto":" Residuos de procesos químicos inorgánicos no especificados en otra categoría.",
+        "codigo":"06 13"
+    },
+    {
+        "texto":"* Productos fitosanitarios inorgánicos, conservantes de la madera y otros biocidas.",
+        "codigo":"06 13 01"
+    },
+    {
+        "texto":"* Carbón activo usado [excepto el código 06 07 02].",
+        "codigo":"06 13 02"
+    },
+    {
+        "texto":" Negro de carbono.",
+        "codigo":"06 13 03"
+    },
+    {
+        "texto":"* Residuos procedentes de la transformación del amianto.",
+        "codigo":"06 13 04"
+    },
+    {
+        "texto":"* Hollín.",
+        "codigo":"06 13 05"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"06 13 99"
+    },
+    {
+        "texto":" Residuos de la fabricación, formulación, distribución y utilización [FFDU] de productos químicos orgánicos de base.",
+        "codigo":"07 01"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 01 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organo halogenados.",
+        "codigo":"07 01 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 01 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 01 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 01 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 01 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 01 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 01 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 01 11.",
+        "codigo":"07 01 12"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 01 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de plásticos, caucho sintético y fibras artificiales.",
+        "codigo":"07 02"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 02 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 02 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 02 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 02 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 02 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 02 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 02 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 02 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 02 11",
+        "codigo":"07 02 12"
+    },
+    {
+        "texto":" Residuos de plástico.",
+        "codigo":"07 02 13"
+    },
+    {
+        "texto":"* Residuos procedentes de aditivos que contienen sustancias peligrosas.",
+        "codigo":"07 02 14"
+    },
+    {
+        "texto":" Residuos procedentes de aditivos, distintos de los especificados en el código 07 02 14.",
+        "codigo":"07 02 15"
+    },
+    {
+        "texto":"* Residuos que contienen siliconas peligrosas.",
+        "codigo":"07 02 16"
+    },
+    {
+        "texto":" Residuos que contienen siliconas distintas de las mencionadas en el código 07 02 16.",
+        "codigo":"07 02 17"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 02 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de tintes y pigmentos orgánicos [excepto los del subcapítulo 06 11].",
+        "codigo":"07 03"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 03 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 03 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 03 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 03 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 03 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 03 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 03 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 03 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 03 11.",
+        "codigo":"07 03 12"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 03 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos fitosanitarios orgánicos [excepto los de los códigos 02 01 9 y 02 01 09], de conservantes de la madera [excepto los del subcapítulo 03 02] y de otros biocidas.",
+        "codigo":"07 04"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 04 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 04 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 04 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 04 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 04 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 04 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 04 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 04 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 04 11.",
+        "codigo":"07 04 12"
+    },
+    {
+        "texto":"* Residuos sólidos que contienen sustancias peligrosas.",
+        "codigo":"07 04 13"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 04 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos farmacéuticos.",
+        "codigo":"07 05"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 05 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 05 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 05 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 05 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 05 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 05 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 05 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 05 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 05 11.",
+        "codigo":"07 05 12"
+    },
+    {
+        "texto":"* Residuos sólidos que contienen sustancias peligrosas.",
+        "codigo":"07 05 13"
+    },
+    {
+        "texto":" Residuos sólidos distintos de los especificados en el código 07 05 13.",
+        "codigo":"07 05 14"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 05 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de grasas, jabones, detergentes, desinfectantes y cosméticos.",
+        "codigo":"07 06"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 06 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 06 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 06 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 06 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 06 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 06 09"
+    },
+    {
+        "texto":"* Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 06 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 06 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 06 11.",
+        "codigo":"07 06 12"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 06 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de productos químicos resultantes de la química fina y productos químicos no especificados en otra categoría.",
+        "codigo":"07 07"
+    },
+    {
+        "texto":"* Líquidos de limpieza y licores madre acuosos.",
+        "codigo":"07 07 01"
+    },
+    {
+        "texto":"* Disolventes, líquidos de limpieza y licores madre organohalogenados.",
+        "codigo":"07 07 03"
+    },
+    {
+        "texto":"* Otros disolventes, líquidos de limpieza y licores madre orgánicos.",
+        "codigo":"07 07 04"
+    },
+    {
+        "texto":"* Residuos de reacción y de destilación halogenados.",
+        "codigo":"07 07 07"
+    },
+    {
+        "texto":"* Otros residuos de reacción y de destilación.",
+        "codigo":"07 07 08"
+    },
+    {
+        "texto":"* Tortas de filtración y absorbentes usados halogenados.",
+        "codigo":"07 07 09"
+    },
+    {
+        "texto":"*Otras tortas de filtración y absorbentes usados.",
+        "codigo":"07 07 10"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"07 07 11"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 07 07 11.",
+        "codigo":"07 07 12"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"07 07 99"
+    },
+    {
+        "texto":" Residuos de la FFDU y del decapado o eliminación de pintura y barniz.",
+        "codigo":"08 01"
+    },
+    {
+        "texto":"* Residuos de pintura y barniz que contienen disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 01 11"
+    },
+    {
+        "texto":" Residuos de pintura y barniz distintos de los especificados en el código 08 01 11.",
+        "codigo":"08 01 12"
+    },
+    {
+        "texto":"* Lodos de pintura y barniz que contienen disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 01 13"
+    },
+    {
+        "texto":" Lodos de pintura y barniz distintos de los especificados en el código 08 0113.",
+        "codigo":"08 01 14"
+    },
+    {
+        "texto":"* Lodos acuosos que contienen pintura o barniz con disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 01 15"
+    },
+    {
+        "texto":" Lodos acuosos que contienen pintura o barniz distintos de los especificados en el código 08 02 15.",
+        "codigo":"08 01 16"
+    },
+    {
+        "texto":"* Residuos del decapado o eliminación de pintura y barniz que contienen disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 01 17"
+    },
+    {
+        "texto":" Residuos del decapado o eliminación de pintura y barniz distintos de los especificados en el código 08 01 17.",
+        "codigo":"08 01 18"
+    },
+    {
+        "texto":"* Suspensiones acuosas que contienen pintura o barniz con disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 01 19"
+    },
+    {
+        "texto":" Suspensiones acuosas que contienen pintura o barniz distintos de los especificados en el código 08 01 19.",
+        "codigo":"08 01 20"
+    },
+    {
+        "texto":"* Residuos de decapantes o desbarnizadores.",
+        "codigo":"08 01 21"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"08 01 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de otros revestimientos [incluidos materiales cerámicos].",
+        "codigo":"08 02"
+    },
+    {
+        "texto":" Residuos de arenillas de revestimiento.",
+        "codigo":"08 02 01"
+    },
+    {
+        "texto":" Lodos acuosos que contienen materiales cerámicos.",
+        "codigo":"08 02 02"
+    },
+    {
+        "texto":" Suspensiones acuosas que contienen materiales cerámicos.",
+        "codigo":"08 02 03"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"08 02 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de tintas de impresión.",
+        "codigo":"08 03"
+    },
+    {
+        "texto":" Lodos acuosos que contienen tinta.",
+        "codigo":"08 03 07"
+    },
+    {
+        "texto":" Residuos líquidos acuosos que contienen tinta.",
+        "codigo":"08 03 08"
+    },
+    {
+        "texto":"* Residuos de tintas que contienen sustancias peligrosas.",
+        "codigo":"08 03 12"
+    },
+    {
+        "texto":" Residuos de tintas distintos de los especificados en el código 08 03 12.",
+        "codigo":"08 03 13"
+    },
+    {
+        "texto":"* Lodos de tinta que contienen sustancias peligrosas.",
+        "codigo":"08 03 14"
+    },
+    {
+        "texto":" Lodos de tinta distintos de los especificados en el código 08 03 14.",
+        "codigo":"08 03 15"
+    },
+    {
+        "texto":"* Residuos de soluciones corrosivas.",
+        "codigo":"08 03 16"
+    },
+    {
+        "texto":"* Residuos de tóner de impresión que contienen sustancias peligrosas.",
+        "codigo":"08 03 17"
+    },
+    {
+        "texto":" Residuos de tóner de impresión distintos de los especificados en el código 08 03 17.",
+        "codigo":"08 03 18"
+    },
+    {
+        "texto":"* Aceites de dispersión.",
+        "codigo":"08 03 19"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"08 03 99"
+    },
+    {
+        "texto":" Residuos de la FFDU de adhesivos y sellantes [incluyendo productos de impermeabilización].",
+        "codigo":"08 04"
+    },
+    {
+        "texto":"* Residuos de adhesivos y sellantes que contienen disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 04 09"
+    },
+    {
+        "texto":" Residuos de adhesivos y sellantes distintos de los especificados en el código 08 04 09.",
+        "codigo":"08 04 10"
+    },
+    {
+        "texto":"* Lodos de adhesivos y sellantes que contienen disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 04 11"
+    },
+    {
+        "texto":" Lodos de adhesivos y sellantes distintos de los especificados en el código 08 04 11.",
+        "codigo":"08 04 12"
+    },
+    {
+        "texto":"* Lodos acuosos que contienen adhesivos o sellantes con disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 04 13"
+    },
+    {
+        "texto":" Lodos acuosos que contienen adhesivos o sellantes distintos de los especificados en el código 08 04 13.",
+        "codigo":"08 04 14"
+    },
+    {
+        "texto":"* Residuos líquidos acuosos que contienen adhesivos o sellantes con disolventes orgánicos u otras sustancias peligrosas.",
+        "codigo":"08 04 15"
+    },
+    {
+        "texto":" Residuos líquidos acuosos que contienen adhesivos o sellantes, distintos de los especificados en el código 08 04 15.",
+        "codigo":"08 04 16"
+    },
+    {
+        "texto":"* Aceite de resina.",
+        "codigo":"08 04 17"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"08 04 99"
+    },
+    {
+        "texto":" Residuos no especificados en otra parte del capítulo 08.",
+        "codigo":"08 05"
+    },
+    {
+        "texto":"* Isocianatos residuales.",
+        "codigo":"08 05 01"
+    },
+    {
+        "texto":" Residuos de la industria fotográfica.",
+        "codigo":"09 01"
+    },
+    {
+        "texto":"* Soluciones de revelado y soluciones activadoras al agua.",
+        "codigo":"09 01 01"
+    },
+    {
+        "texto":"* Soluciones de revelado de placas de impresión al agua.",
+        "codigo":"09 01 02"
+    },
+    {
+        "texto":"* Soluciones de revelado con disolventes.",
+        "codigo":"09 01 03"
+    },
+    {
+        "texto":"* Soluciones de fijado.",
+        "codigo":"09 01 04"
+    },
+    {
+        "texto":"* Soluciones de blanqueo y soluciones de blanqueo-fijado.",
+        "codigo":"09 01 05"
+    },
+    {
+        "texto":"* Residuos que contienen plata procedentes del tratamiento in situ de residuos fotográficos.",
+        "codigo":"09 01 06"
+    },
+    {
+        "texto":" Películas y papel fotográfico que contienen plata o compuestos de plata.",
+        "codigo":"09 01 07"
+    },
+    {
+        "texto":" Películas y papel fotográfico que no contienen plata ni compuestos de plata.",
+        "codigo":"09 01 08"
+    },
+    {
+        "texto":" Cámaras de un solo uso sin pilas ni acumuladores.",
+        "codigo":"09 01 10"
+    },
+    {
+        "texto":"* Cámaras de un solo uso con pilas o acumuladores incluidos en los códigos 16 06 01, 16 7 02 ó 16 06 03.",
+        "codigo":"09 01 11"
+    },
+    {
+        "texto":" Cámaras de un solo uso con pilas o acumuladores distintas de las especificadas en el código 09 01 11.",
+        "codigo":"09 01 12"
+    },
+    {
+        "texto":"* Residuos líquidos acuosos, procedentes de la recuperación in situ de plata, distintos de los especificados en el código 09 01 06.",
+        "codigo":"09 01 13"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría",
+        "codigo":"09 01 99"
+    },
+    {
+        "texto":" Residuos de centrales eléctricas y otras plantas de combustión [excepto los del capítulo 19].",
+        "codigo":"10 01"
+    },
+    {
+        "texto":" Cenizas de hogar, escorias y polvo de caldera [excepto el polvo de caldera especificado en el código 10 01 04].",
+        "codigo":"10 01 01"
+    },
+    {
+        "texto":" Cenizas volantes de carbón.",
+        "codigo":"10 01 02"
+    },
+    {
+        "texto":" Cenizas volantes de turba y de madera [no tratada].",
+        "codigo":"10 01 03"
+    },
+    {
+        "texto":"* Cenizas volantes y polvo de caldera de hidrocarburos.",
+        "codigo":"10 01 04"
+    },
+    {
+        "texto":" Residuos cálcicos de reacción, en forma sólida, procedentes de la desulfuración de gases de combustión.",
+        "codigo":"10 01 05"
+    },
+    {
+        "texto":" Residuos cálcicos de reacción, en forma de lodos, procedentes de la desulfuración de gases de combustión.",
+        "codigo":"10 01 07"
+    },
+    {
+        "texto":"* Ácido sulfúrico.",
+        "codigo":"10 01 09"
+    },
+    {
+        "texto":"* Cenizas volantes de hidrocarburos emulsionados usados como combustibles.",
+        "codigo":"10 01 13"
+    },
+    {
+        "texto":"* Cenizas de hogar, escorias y polvo de caldera, procedentes de la coincineración, que contienen sustancias peligrosas.",
+        "codigo":"10 01 14"
+    },
+    {
+        "texto":" Cenizas de hogar, escorias y polvo de caldera, procedentes de la coincineración, distintos de los especificados en el código 10 01 14.",
+        "codigo":"10 01 15"
+    },
+    {
+        "texto":"* Cenizas volantes procedentes de la coincineración que contienen sustancias peligrosas.",
+        "codigo":"10 01 16"
+    },
+    {
+        "texto":" Cenizas volantes procedentes de la coincineración distintas de las especificadas en el código 10 01 16.",
+        "codigo":"10 01 17"
+    },
+    {
+        "texto":"* Residuos, procedentes de la depuración de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 01 18"
+    },
+    {
+        "texto":" Residuos, procedentes de la depuración de gases, distintos de los especificados en los códigos 10 01 05, 10 01 07 y 10 01 18.",
+        "codigo":"10 01 19"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"10 01 20"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 10 01 20.",
+        "codigo":"10 01 21"
+    },
+    {
+        "texto":"* Lodos acuosos, procedentes de la limpieza de calderas, que contienen sustancias",
+        "codigo":"10 01 22"
+    },
+    {
+        "texto":" Lodos acuosos, procedentes de la limpieza de calderas, distintos de los especificados en el código 10 01 22.",
+        "codigo":"10 01 23"
+    },
+    {
+        "texto":" Arenas de lechos fluidizados.",
+        "codigo":"10 01 24"
+    },
+    {
+        "texto":" Residuos procedentes del almacenamiento y preparación de combustible de centrales eléctricas de carbón.",
+        "codigo":"10 01 25"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración.",
+        "codigo":"10 01 26"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 01 99"
+    },
+    {
+        "texto":" Residuos de la industria del hierro y del acero.",
+        "codigo":"10 02"
+    },
+    {
+        "texto":" Residuos del tratamiento de escorias.",
+        "codigo":"10 02 01"
+    },
+    {
+        "texto":" Escorias no tratadas.",
+        "codigo":"10 02 02"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento de gases, que contienen sustancias peligrosas. 10 02 08",
+        "codigo":"10 02 07"
+    },
+    {
+        "texto":" Residuos sólidos del tratamiento de gases distintos de los especificados en el código 10 02 07.",
+        "codigo":"10 02 08"
+    },
+    {
+        "texto":" Cascarilla de laminación.",
+        "codigo":"10 02 10"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 02 11"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 02 11.",
+        "codigo":"10 02 12"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 02 13"
+    },
+    {
+        "texto":" Lodos y tortas de filtración, del tratamiento de gases, distintos de los especificados en el código 10 02 13.",
+        "codigo":"10 02 14"
+    },
+    {
+        "texto":" Otros lodos y tortas de filtración.",
+        "codigo":"10 02 15"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 02 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia del aluminio.",
+        "codigo":"10 03"
+    },
+    {
+        "texto":" Fragmentos de ánodos.",
+        "codigo":"10 03 02"
+    },
+    {
+        "texto":"* Escorias de la producción primaria.",
+        "codigo":"10 03 04"
+    },
+    {
+        "texto":" Residuos de alúmina.",
+        "codigo":"10 03 05"
+    },
+    {
+        "texto":"* Escorias salinas de la producción secundaria.",
+        "codigo":"10 03 08"
+    },
+    {
+        "texto":"* Granzas negras de la producción secundaria.",
+        "codigo":"10 03 09"
+    },
+    {
+        "texto":"* Espumas inflamables o que emiten, en contacto con el agua, gases inflamables en cantidades peligrosas.",
+        "codigo":"10 03 15"
+    },
+    {
+        "texto":" Espumas distintas de las especificadas en el código 10 03 15.",
+        "codigo":"10 03 16"
+    },
+    {
+        "texto":"* Residuos que contienen alquitrán procedentes de la fabricación de ánodos.",
+        "codigo":"10 03 17"
+    },
+    {
+        "texto":" Residuos que contienen carbono procedentes de la fabricación  de ánodos distintos a los especificados en el código 10 03 17",
+        "codigo":"10 03 18"
+    },
+    {
+        "texto":"* Partículas, procedentes de los efluentes gaseosos, que contienen sustancias peligrosas.",
+        "codigo":"10 03 19"
+    },
+    {
+        "texto":" Partículas procedentes de los efluentes gaseosos, distintas de las especificadas en el código 10 03 19.",
+        "codigo":"10 03 20"
+    },
+    {
+        "texto":"* Otras partículas y polvo [incluido el polvo de molienda] que contienen sustancias peligrosas.",
+        "codigo":"10 03 21"
+    },
+    {
+        "texto":" Otras partículas y polvo [incluido el polvo de molienda] distintos de los especificados en el",
+        "codigo":"10 03 22"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 03 23"
+    },
+    {
+        "texto":" Residuos sólidos, del tratamiento de gases, distintos de los especificados en el código 10 03 23.",
+        "codigo":"10 03 24"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 03 25"
+    },
+    {
+        "texto":" Lodos y tortas de filtración del tratamiento de gases, distintos de los especificados en el código 10 03 25.",
+        "codigo":"10 03 26"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 03 27"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración, distintos de los especificados en el código 10 03 27.",
+        "codigo":"10 03 28"
+    },
+    {
+        "texto":"* Residuos del tratamiento de escorias salinas y granzas negras, que contienen sustancias peligrosas.",
+        "codigo":"10 03 29"
+    },
+    {
+        "texto":" Residuos del tratamiento de escorias salinas y granzas negras distintos de los especificados en el código 10 03 29.",
+        "codigo":"10 03 30"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 03 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia del plomo.",
+        "codigo":"10 04"
+    },
+    {
+        "texto":"* Escorias de la producción primaria y secundaria.",
+        "codigo":"10 04 01"
+    },
+    {
+        "texto":"* Granzas y espumas de la producción primaria y secundaria.",
+        "codigo":"10 04 02"
+    },
+    {
+        "texto":"* Arseniato de calcio.",
+        "codigo":"10 04 03"
+    },
+    {
+        "texto":"* Partículas procedentes de los efluentes gaseosos.",
+        "codigo":"10 04 04"
+    },
+    {
+        "texto":"* Otras partículas y polvos.",
+        "codigo":"10 04 05"
+    },
+    {
+        "texto":"* Residuos sólidos del tratamiento de gases.",
+        "codigo":"10 04 06"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 04 07"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 04 09"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 04 09.",
+        "codigo":"10 04 10"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 04 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia del zinc.",
+        "codigo":"10 05"
+    },
+    {
+        "texto":" Escorias de la producción primaria y secundaria.",
+        "codigo":"10 05 01"
+    },
+    {
+        "texto":"* Partículas procedentes de los efluentes gaseosos.",
+        "codigo":"10 05 03"
+    },
+    {
+        "texto":" Otras partículas y polvos.",
+        "codigo":"10 05 04"
+    },
+    {
+        "texto":"* Residuos sólidos del tratamiento de gases.",
+        "codigo":"10 05 05"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 05 06"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 05 08"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 05 08.",
+        "codigo":"10 05 09"
+    },
+    {
+        "texto":"* Granzas y espumas inflamables o que emiten, en contacto con el agua, gases inflamables en cantidades peligrosas.",
+        "codigo":"10 05 10"
+    },
+    {
+        "texto":" Granzas y espumas distintas de las especificadas en el código 10 05 10.",
+        "codigo":"10 05 11"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 05 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia del cobre.",
+        "codigo":"10 06"
+    },
+    {
+        "texto":" Escorias de la producción primaria y secundaria.",
+        "codigo":"10 06 01"
+    },
+    {
+        "texto":" Granzas y espumas de la producción primaria y secundaria.",
+        "codigo":"10 06 02"
+    },
+    {
+        "texto":"* Partículas procedentes de los efluentes gaseosos.",
+        "codigo":"10 06 03"
+    },
+    {
+        "texto":" Otras partículas y polvos.",
+        "codigo":"10 06 04"
+    },
+    {
+        "texto":"* Residuos sólidos del tratamiento de gases.",
+        "codigo":"10 06 06"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 06 07"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 06 09"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 06 09.",
+        "codigo":"10 06 10"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 06 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia de la plata, oro y platino",
+        "codigo":"10 07"
+    },
+    {
+        "texto":".",
+        "codigo":""
+    },
+    {
+        "texto":" Escorias de la producción primaria y secundaria.",
+        "codigo":"10 07 01"
+    },
+    {
+        "texto":" Granzas y espumas de la producción primaria y secundaria.",
+        "codigo":"10 07 02"
+    },
+    {
+        "texto":" Residuos sólidos del tratamiento de gases.",
+        "codigo":"10 07 03"
+    },
+    {
+        "texto":" Otras partículas y polvos.",
+        "codigo":"10 07 04"
+    },
+    {
+        "texto":" Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 07 05"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 07 07"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 07 07.",
+        "codigo":"10 07 08"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 07 99"
+    },
+    {
+        "texto":" Residuos de la termometalurgia de otros metales no férreos.",
+        "codigo":"10 08"
+    },
+    {
+        "texto":" Partículas y polvo.",
+        "codigo":"10 08 04"
+    },
+    {
+        "texto":"* Escorias salinas de la producción primaria y secundaria.",
+        "codigo":"10 08 08"
+    },
+    {
+        "texto":" Otras escorias.",
+        "codigo":"10 08 09"
+    },
+    {
+        "texto":"* Granzas y espumas inflamables o que emiten, en contacto con el agua, gases inflamables en cantidades peligrosas.",
+        "codigo":"10 08 10"
+    },
+    {
+        "texto":" Granzas y espumas distintas de las especificadas en el código 10 08 10.",
+        "codigo":"10 08 11"
+    },
+    {
+        "texto":"* Residuos que contienen alquitrán procedentes de la fabricación de ánodos.",
+        "codigo":"10 08 12"
+    },
+    {
+        "texto":" Residuos que contienen carbono procedentes de la fabricación de ánodos distintos de los especificados en el código 10 08 12.",
+        "codigo":"10 08 13"
+    },
+    {
+        "texto":" Fragmentos de ánodos.",
+        "codigo":"10 08 14"
+    },
+    {
+        "texto":"* Partículas, procedentes de los efluentes gaseosos, que contienen sustancias peligrosas.",
+        "codigo":"10 08 15"
+    },
+    {
+        "texto":" Partículas procedentes de los efluentes gaseosos distintas de las especificadas en el código 10 08 15.",
+        "codigo":"10 08 16"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 08 17"
+    },
+    {
+        "texto":" Lodos y tortas de filtración del tratamiento de gases, distintos de los especificados en el código 10 08 17.",
+        "codigo":"10 08 18"
+    },
+    {
+        "texto":"* Residuos del tratamiento del agua de refrigeración que contienen aceites.",
+        "codigo":"10 08 19"
+    },
+    {
+        "texto":" Residuos del tratamiento del agua de refrigeración distintos de los especificados en el código 10 08 19.",
+        "codigo":"10 08 20"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 08 99"
+    },
+    {
+        "texto":" Residuos de la fundición de piezas férreas.",
+        "codigo":"10 09"
+    },
+    {
+        "texto":" Escorias de horno.",
+        "codigo":"10 09 03"
+    },
+    {
+        "texto":"* Machos y moldes de fundición sin colada que contienen sustancias peligrosas.",
+        "codigo":"10 09 05"
+    },
+    {
+        "texto":" Machos y moldes de fundición sin colada distintos de los especificados en el código 10 09 05.",
+        "codigo":"10 09 06"
+    },
+    {
+        "texto":"* Machos y moldes de fundición con colada que contienen sustancias peligrosas.",
+        "codigo":"10 09 07"
+    },
+    {
+        "texto":" Machos y moldes de fundición con colada distintos de los especificados en el código 10 09 07.",
+        "codigo":"10 09 08"
+    },
+    {
+        "texto":"* Partículas procedentes de los efluentes gaseosos, que contienen sustancias peligrosas.",
+        "codigo":"10 09 09"
+    },
+    {
+        "texto":" Partículas, procedentes de los efluentes gaseosos, distintas de las especificadas en el código 10 09 09.",
+        "codigo":"10 09 10"
+    },
+    {
+        "texto":"* Otras partículas que contienen sustancias peligrosas.",
+        "codigo":"10 09 11"
+    },
+    {
+        "texto":" Otras partículas distintas de las especificadas en el código 10 09 11.",
+        "codigo":"10 09 12"
+    },
+    {
+        "texto":"* Ligantes residuales que contienen sustancias peligrosas.",
+        "codigo":"10 09 13"
+    },
+    {
+        "texto":" Ligantes residuales distintos de los especificados en el código 10 09 13.",
+        "codigo":"10 09 14"
+    },
+    {
+        "texto":"* Residuos de agentes indicadores de fisuración que contienen sustancias peligrosas.",
+        "codigo":"10 09 15"
+    },
+    {
+        "texto":" Residuos de agentes indicadores de fisuración distintos de los especificados en el código10 09 15.",
+        "codigo":"10 09 16"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 09 99"
+    },
+    {
+        "texto":" Residuos de la fundición de piezas no férreas.",
+        "codigo":"10 10"
+    },
+    {
+        "texto":" Escorias de horno.",
+        "codigo":"10 10 03"
+    },
+    {
+        "texto":"* Machos y moldes de fundición sin colada que contienen sustancias peligrosas.",
+        "codigo":"10 10 05"
+    },
+    {
+        "texto":" Machos y moldes de fundición sin colada distintos de los especificados en el código 10 10 05.",
+        "codigo":"10 10 06"
+    },
+    {
+        "texto":"* Machos y moldes de fundición con colada que contienen sustancias peligrosas.",
+        "codigo":"10 10 07"
+    },
+    {
+        "texto":" Machos y moldes de fundición con colada distintos de los especificados en el código 10 10 07.",
+        "codigo":"10 10 08"
+    },
+    {
+        "texto":"* Partículas, procedentes de los efluentes gaseosos que contienen sustancias peligrosas.",
+        "codigo":"10 10 09"
+    },
+    {
+        "texto":" Partículas procedentes de los efluentes gaseosos distintas de las especificadas en el código 10 10 09.",
+        "codigo":"10 10 10"
+    },
+    {
+        "texto":"* Otras partículas que contienen sustancias peligrosas.",
+        "codigo":"10 10 11"
+    },
+    {
+        "texto":" Otras partículas distintas de las especificadas en el código 10 10 11.",
+        "codigo":"10 10 12"
+    },
+    {
+        "texto":"* Ligantes residuales que contienen sustancias peligrosas.",
+        "codigo":"10 10 13"
+    },
+    {
+        "texto":" Ligantes residuales distintos de los especificados en el código 10 10 13.",
+        "codigo":"10 10 14"
+    },
+    {
+        "texto":"* Residuos de agentes indicadores de fisuración que contienen sustancias peligrosas.",
+        "codigo":"10 10 15"
+    },
+    {
+        "texto":" Residuos de agentes indicadores de fisuración distintos de los especificados en el código 10 10 15.",
+        "codigo":"10 10 16"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 10 99"
+    },
+    {
+        "texto":" Residuos de la fabricación del vidrio y sus derivados.",
+        "codigo":"10 11"
+    },
+    {
+        "texto":" Residuos de materiales de fibra de vidrio.",
+        "codigo":"10 11 03"
+    },
+    {
+        "texto":" Partículas y polvo.",
+        "codigo":"10 11 05"
+    },
+    {
+        "texto":"* Residuos, de la preparación de mezclas antes del proceso de cocción que contienen sustancias peligrosas.",
+        "codigo":"10 11 09"
+    },
+    {
+        "texto":" Residuos de la preparación de mezclas antes del proceso de cocción distintos de los especificados en el código 10 11 09.",
+        "codigo":"10 11 10"
+    },
+    {
+        "texto":"* Residuos de pequeñas partículas de vidrio y de polvo de vidrio que contienen metales pesados [por ejemplo, de tubos catódicos].",
+        "codigo":"10 11 11"
+    },
+    {
+        "texto":" Residuos de vidrio distintos de los especificados en el código 10 11 11.",
+        "codigo":"10 11 12"
+    },
+    {
+        "texto":"* Lodos procedentes del pulido y esmerilado del vidrio que contienen sustancias peligrosas.",
+        "codigo":"10 11 13"
+    },
+    {
+        "texto":" Lodos procedentes del pulido y esmerilado del vidrio distintos de los especificados en el código 10 11 13.",
+        "codigo":"10 11 14"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento de gases de combustión, que contienen sustancias peligrosas.",
+        "codigo":"10 11 15"
+    },
+    {
+        "texto":" Residuos sólidos, del tratamiento de gases de combustión distintos de los especificados en el código 10 11 15.",
+        "codigo":"10 11 16"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 11 17"
+    },
+    {
+        "texto":" Lodos y tortas de filtración, del tratamiento de gases, distintos de los especificados en el código 10 11 17.",
+        "codigo":"10 11 18"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento in situ de efluentes, que contienen sustancias peligrosas.",
+        "codigo":"10 11 19"
+    },
+    {
+        "texto":" Residuos sólidos, del tratamiento in situ de efluentes, distintos de los especificados en el código 10 11 19.",
+        "codigo":"10 11 20"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 11 99"
+    },
+    {
+        "texto":" Residuos de la fabricación de productos cerámicos, ladrillos, tejas y materiales de construcción.",
+        "codigo":"10 12"
+    },
+    {
+        "texto":" Residuos de la preparación de mezclas antes del proceso de cocción.",
+        "codigo":"10 12 01"
+    },
+    {
+        "texto":" Partículas y polvo.",
+        "codigo":"10 12 03"
+    },
+    {
+        "texto":" Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 12 05"
+    },
+    {
+        "texto":" Moldes desechados.",
+        "codigo":"10 12 06"
+    },
+    {
+        "texto":" Residuos de cerámica, ladrillos, tejas y materiales de construcción [después del proceso de cocción].",
+        "codigo":"10 12 08"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 12 09"
+    },
+    {
+        "texto":" Residuos sólidos, del tratamiento de gases, distintos de los especificados en el código 10 13 09.",
+        "codigo":"10 12 10"
+    },
+    {
+        "texto":"* Residuos del vidriado que contienen metales pesados.",
+        "codigo":"10 12 11"
+    },
+    {
+        "texto":" Residuos del vidriado distintos de los especificados en el código 10 12 11.",
+        "codigo":"10 12 12"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes.",
+        "codigo":"10 12 13"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 12 99"
+    },
+    {
+        "texto":" Residuos de la fabricación de cemento, cal y yeso y de productos derivados.",
+        "codigo":"10 13"
+    },
+    {
+        "texto":" Residuos de la preparación de mezclas antes del proceso de cocción.",
+        "codigo":"10 13 01"
+    },
+    {
+        "texto":" Residuos de calcinación e hidratación de la cal.",
+        "codigo":"10 13 04"
+    },
+    {
+        "texto":" Partículas y polvo [excepto los códigos 10 13 12 y 10 13 13].",
+        "codigo":"10 13 06"
+    },
+    {
+        "texto":" Lodos y tortas de filtración del tratamiento de gases.",
+        "codigo":"10 13 07"
+    },
+    {
+        "texto":"* Residuos de la fabricación de fibrocemento que contienen amianto.",
+        "codigo":"10 13 09"
+    },
+    {
+        "texto":" Residuos de la fabricación de fibrocemento distintos de los especificados en el código 10 13 09.",
+        "codigo":"10 13 10"
+    },
+    {
+        "texto":" Residuos de materiales compuestos a partir de cemento distintos de los especificados en los códigos 10 13 09 y 10 13 10.",
+        "codigo":"10 13 11"
+    },
+    {
+        "texto":"* Residuos sólidos, del tratamiento de gases, que contienen sustancias peligrosas.",
+        "codigo":"10 13 12"
+    },
+    {
+        "texto":" Residuos sólidos, del tratamiento de gases, distintos de los especificados en el código 10 14 12.",
+        "codigo":"10 13 13"
+    },
+    {
+        "texto":" Residuos de hormigón y lodos de hormigón.",
+        "codigo":"10 13 14"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"10 13 99"
+    },
+    {
+        "texto":" Residuos de crematorios.",
+        "codigo":"10 14"
+    },
+    {
+        "texto":"* Residuos de la depuración de gases que contienen mercurio.",
+        "codigo":"10 14 01"
+    },
+    {
+        "texto":" Residuos del tratamiento químico de superficie y del recubrimiento de metales y otros materiales [por ejemplo, procesos de galvanización, procesos de recubrimiento con zinc, procesos de decapado, grabado, fosfatación, desengrasado alcalino y anodización].",
+        "codigo":"11 01"
+    },
+    {
+        "texto":"* Ácidos de decapado.",
+        "codigo":"11 01 05"
+    },
+    {
+        "texto":"* Ácidos no especificados en otra categoría.",
+        "codigo":"11 01 06"
+    },
+    {
+        "texto":"* Bases de decapado.",
+        "codigo":"11 01 07"
+    },
+    {
+        "texto":"* Lodos de fosfatación.",
+        "codigo":"11 01 08"
+    },
+    {
+        "texto":"* Lodos y tortas de filtración que contienen sustancias peligrosas.",
+        "codigo":"11 01 09"
+    },
+    {
+        "texto":" Lodos y tortas de filtración distintos de los especificados en el código 11 01 09.",
+        "codigo":"11 01 10"
+    },
+    {
+        "texto":"* Líquidos acuosos de enjuague que contienen sustancias peligrosas.",
+        "codigo":"11 01 11"
+    },
+    {
+        "texto":" Líquidos acuosos de enjuague distintos de los especificados en el código 11 01 11.",
+        "codigo":"11 01 12"
+    },
+    {
+        "texto":"* Residuos de desengrasado que contienen sustancias peligrosas.",
+        "codigo":"11 01 13"
+    },
+    {
+        "texto":" Residuos de desengrasado distintos de los especificados en el código 11 01 13.",
+        "codigo":"11 01 14"
+    },
+    {
+        "texto":"* Eluatos y lodos, procedentes de sistemas de membranas o de intercambio iónico, que contienen sustancias peligrosas.",
+        "codigo":"11 01 15"
+    },
+    {
+        "texto":"* Resinas intercambiadoras de iones saturadas o usadas.",
+        "codigo":"11 01 16"
+    },
+    {
+        "texto":"* Otros residuos que contienen sustancias peligrosas.",
+        "codigo":"11 01 98"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"11 01 99"
+    },
+    {
+        "texto":" Residuos de procesos hidrometalúrgicos no férreos.",
+        "codigo":"11 02"
+    },
+    {
+        "texto":"* Lodos de la hidrometalurgia del zinc [incluidas jarosita y goethita].",
+        "codigo":"11 02 02"
+    },
+    {
+        "texto":" Residuos de la producción de ánodos para procesos de electrólisis acuosa.",
+        "codigo":"11 02 03"
+    },
+    {
+        "texto":"* Residuos de procesos de la hidrometalurgia del cobre que contienen sustancias peligrosas.",
+        "codigo":"11 02 05"
+    },
+    {
+        "texto":" Residuos de procesos de la hidrometalurgia del cobre distintos de los especificados en el código 11 02 05.",
+        "codigo":"11 02 06"
+    },
+    {
+        "texto":"* Otros residuos que contienen sustancias peligrosas.",
+        "codigo":"11 02 07"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"11 02 99"
+    },
+    {
+        "texto":" Lodos y sólidos de procesos de temple.",
+        "codigo":"11 03"
+    },
+    {
+        "texto":"* Residuos que contienen cianuro.",
+        "codigo":"11 03 01"
+    },
+    {
+        "texto":"* Otros residuos.",
+        "codigo":"11 03 02"
+    },
+    {
+        "texto":" Residuos de procesos de galvanización en caliente.",
+        "codigo":"11 05"
+    },
+    {
+        "texto":" Matas de galvanización.",
+        "codigo":"11 05 01"
+    },
+    {
+        "texto":" Cenizas de zinc.",
+        "codigo":"11 05 02"
+    },
+    {
+        "texto":"* Residuos sólidos del tratamiento de gases.",
+        "codigo":"11 05 03"
+    },
+    {
+        "texto":"* Fundentes usados.",
+        "codigo":"11 05 04"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"11 05 99"
+    },
+    {
+        "texto":" Residuos del moldeado y tratamiento físico y mecánico de superficie de metales y plásticos.",
+        "codigo":"12 01"
+    },
+    {
+        "texto":" Limaduras y virutas de metales férreos.",
+        "codigo":"12 01 01"
+    },
+    {
+        "texto":" Polvo y partículas de metales férreos.",
+        "codigo":"12 01 02"
+    },
+    {
+        "texto":" Limaduras y virutas de metales no férreos.",
+        "codigo":"12 01 03"
+    },
+    {
+        "texto":" Polvo y partículas de metales no férreos.",
+        "codigo":"12 01 04"
+    },
+    {
+        "texto":" Virutas y rebabas de plástico.",
+        "codigo":"12 01 05"
+    },
+    {
+        "texto":"* Aceites minerales de mecanizado que contienen halógenos [excepto las emulsiones o disoluciones].",
+        "codigo":"12 01 06"
+    },
+    {
+        "texto":"* Aceites minerales de mecanizado sin halógenos [excepto las emulsiones o disoluciones].",
+        "codigo":"12 01 07"
+    },
+    {
+        "texto":"* Emulsiones y disoluciones de mecanizado que contienen halógenos.",
+        "codigo":"12 01 08"
+    },
+    {
+        "texto":"* Emulsiones y disoluciones de mecanizado sin halógenos.",
+        "codigo":"12 01 09"
+    },
+    {
+        "texto":"* Aceites sintéticos de mecanizado.",
+        "codigo":"12 01 10"
+    },
+    {
+        "texto":"* Ceras y grasas usadas.",
+        "codigo":"12 01 12"
+    },
+    {
+        "texto":" Residuos de soldadura.",
+        "codigo":"12 01 13"
+    },
+    {
+        "texto":"* Lodos de mecanizado que contienen sustancias peligrosas.",
+        "codigo":"12 01 14"
+    },
+    {
+        "texto":" Lodos de mecanizado distintos de los especificados en el código 12 01 14.",
+        "codigo":"12 01 15"
+    },
+    {
+        "texto":"* Residuos de granallado o chorreado que contienen sustancias peligrosas.",
+        "codigo":"12 01 16"
+    },
+    {
+        "texto":" Residuos de granallado o chorreado distintos de los especificados en el código 12 01 16.",
+        "codigo":"12 01 17"
+    },
+    {
+        "texto":"* Lodos metálicos [lodos de esmerilado, rectificado y lapeado] que contienen aceites.",
+        "codigo":"12 01 18"
+    },
+    {
+        "texto":"* Aceites de mecanizado fácilmente biodegradables.",
+        "codigo":"12 01 19"
+    },
+    {
+        "texto":"* Muelas y materiales de esmerilado usados que contienen sustancias peligrosas.",
+        "codigo":"12 01 20"
+    },
+    {
+        "texto":" Muelas y materiales de esmerilado usados distintos de los especificados en el código 12 01 20.",
+        "codigo":"12 01 21"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"12 01 99"
+    },
+    {
+        "texto":" Residuos de los procesos de desengrase con agua y vapor [excepto los del capítulo 11].",
+        "codigo":"12 03"
+    },
+    {
+        "texto":"* Líquidos acuosos de limpieza.",
+        "codigo":"12 03 01"
+    },
+    {
+        "texto":"* Residuos de desengrase al vapor.",
+        "codigo":"12 03 02"
+    },
+    {
+        "texto":" Residuos de aceites hidráulicos.",
+        "codigo":"13 01"
+    },
+    {
+        "texto":"* Aceites hidráulicos que contienen PCB [3].",
+        "codigo":"13 01 01"
+    },
+    {
+        "texto":"* Emulsiones cloradas.",
+        "codigo":"13 01 04"
+    },
+    {
+        "texto":"* Emulsiones no cloradas.",
+        "codigo":"13 01 05"
+    },
+    {
+        "texto":"* Aceites hidráulicos minerales clorados.",
+        "codigo":"13 01 09"
+    },
+    {
+        "texto":"* Aceites hidráulicos minerales no clorados.",
+        "codigo":"13 01 10"
+    },
+    {
+        "texto":"* Aceites hidráulicos sintéticos.",
+        "codigo":"13 01 11"
+    },
+    {
+        "texto":"* Aceites hidráulicos fácilmente biodegradables.",
+        "codigo":"13 01 12"
+    },
+    {
+        "texto":"* Otros aceites hidráulicos.",
+        "codigo":"13 01 13"
+    },
+    {
+        "texto":" Residuos de aceites de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02"
+    },
+    {
+        "texto":"* Aceites minerales clorados de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02 04"
+    },
+    {
+        "texto":"* Aceites minerales no clorados de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02 05"
+    },
+    {
+        "texto":"* Aceites sintéticos de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02 06"
+    },
+    {
+        "texto":"* Aceites fácilmente biodegradables de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02 07"
+    },
+    {
+        "texto":"* Otros aceites de motor, de transmisión mecánica y lubricantes.",
+        "codigo":"13 02 08"
+    },
+    {
+        "texto":" Residuos de aceites de aislamiento y transmisión de calor.",
+        "codigo":"13 03"
+    },
+    {
+        "texto":"* Aceites de aislamiento y transmisión de calor que contienen PCB.",
+        "codigo":"13 03 01"
+    },
+    {
+        "texto":"* Aceites minerales clorados de aislamiento y transmisión de calor distintos de los especificados en el código 13 03 01.",
+        "codigo":"13 03 06"
+    },
+    {
+        "texto":"* Aceites minerales no clorados de aislamiento y transmisión de calor.",
+        "codigo":"13 03 07"
+    },
+    {
+        "texto":"* Aceites sintéticos de aislamiento y transmisión de calor.",
+        "codigo":"13 03 08"
+    },
+    {
+        "texto":"* Aceites fácilmente biodegradables de aislamiento y transmisión de calor.",
+        "codigo":"13 03 09"
+    },
+    {
+        "texto":"* Otros aceites de aislamiento y transmisión de calor.",
+        "codigo":"13 03 10"
+    },
+    {
+        "texto":" Aceites de sentinas.",
+        "codigo":"13 04"
+    },
+    {
+        "texto":"* Aceites de sentinas procedentes de la navegación en aguas continentales.",
+        "codigo":"13 04 01"
+    },
+    {
+        "texto":"* Aceites de sentinas recogidos en muelles.",
+        "codigo":"13 04 02"
+    },
+    {
+        "texto":"* Aceites de sentinas procedentes de otros tipos de navegación.",
+        "codigo":"13 04 03"
+    },
+    {
+        "texto":" Restos de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05"
+    },
+    {
+        "texto":"* Sólidos procedentes de desarenadores y de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05 01"
+    },
+    {
+        "texto":"* Lodos de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05 02"
+    },
+    {
+        "texto":"* Lodos de interceptores.",
+        "codigo":"13 05 03"
+    },
+    {
+        "texto":"* Aceites procedentes de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05 06"
+    },
+    {
+        "texto":"* Agua aceitosa procedente de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05 07"
+    },
+    {
+        "texto":"* Mezcla de residuos procedentes de desarenadores y de separadores de agua\/sustancias aceitosas.",
+        "codigo":"13 05 08"
+    },
+    {
+        "texto":" Residuos de combustibles líquidos",
+        "codigo":"13 07"
+    },
+    {
+        "texto":"* Fuel oil y gasóleo.",
+        "codigo":"13 07 01"
+    },
+    {
+        "texto":"* Gasolina.",
+        "codigo":"13 07 02"
+    },
+    {
+        "texto":"* Otros combustibles [incluidas mezclas].",
+        "codigo":"13 07 03"
+    },
+    {
+        "texto":" Residuos de aceites no especificados en otra categoría.",
+        "codigo":"13 08"
+    },
+    {
+        "texto":"* Lodos o emulsiones de desalación.",
+        "codigo":"13 08 01"
+    },
+    {
+        "texto":"* Otras emulsiones.",
+        "codigo":"13 08 02"
+    },
+    {
+        "texto":"* Residuos no especificados en otra categoría.",
+        "codigo":"13 08 99"
+    },
+    {
+        "texto":" Residuos de disolventes, refrigerantes y propelentes de espuma y aerosoles orgánicos.",
+        "codigo":"14 06"
+    },
+    {
+        "texto":"* Clorofluorocarbonos, HCFC, HFC.",
+        "codigo":"14 06 01"
+    },
+    {
+        "texto":"* Otros disolventes y mezclas de disolventes halogenados.",
+        "codigo":"14 06 02"
+    },
+    {
+        "texto":"* Otros disolventes y mezclas de disolventes.",
+        "codigo":"14 06 03"
+    },
+    {
+        "texto":"* Lodos o residuos sólidos que contienen disolventes halogenados.",
+        "codigo":"14 06 04"
+    },
+    {
+        "texto":"* Lodos o residuos sólidos que contienen otros disolventes.",
+        "codigo":"14 06 05"
+    },
+    {
+        "texto":" Envases [incluidos los residuos de envases de la recogida selectiva municipal].",
+        "codigo":"15 01"
+    },
+    {
+        "texto":" Envases de papel y cartón.",
+        "codigo":"15 01 01"
+    },
+    {
+        "texto":" Envases de plástico.",
+        "codigo":"15 01 02"
+    },
+    {
+        "texto":" Envases de madera.",
+        "codigo":"15 01 03"
+    },
+    {
+        "texto":" Envases metálicos.",
+        "codigo":"15 01 04"
+    },
+    {
+        "texto":" Envases compuestos.",
+        "codigo":"15 01 05"
+    },
+    {
+        "texto":" Envases mezclados.",
+        "codigo":"15 01 06"
+    },
+    {
+        "texto":" Envases de vidrio.",
+        "codigo":"15 01 07"
+    },
+    {
+        "texto":" Envases textiles.",
+        "codigo":"15 01 09"
+    },
+    {
+        "texto":"* Envases que contienen restos de sustancias peligrosas o están contaminados por ellas.",
+        "codigo":"15 01 10"
+    },
+    {
+        "texto":"* Envases metálicos, incluidos los recipientes a presión vacíos, que contienen una matriz porosa sólida peligrosa [por ejemplo, amianto].",
+        "codigo":"15 01 11"
+    },
+    {
+        "texto":" Absorbentes, materiales de filtración, trapos de limpieza y ropas protectoras.",
+        "codigo":"15 02"
+    },
+    {
+        "texto":"* Absorbentes, materiales de filtración [incluidos los filtros de aceite no especificados en otra categoría], trapos de limpieza y ropas protectoras contaminados por sustancias peligrosas.",
+        "codigo":"15 02 02"
+    },
+    {
+        "texto":" Absorbentes, materiales de filtración, trapos de limpieza y ropas protectoras distintos de los especificados en el código 15 02 02.",
+        "codigo":"15 02 03"
+    },
+    {
+        "texto":" Vehículos de diferentes medios de transporte [incluidas las máquinas no de carretera] al final de su vida útil y residuos del desguace de vehículos al final de su vida útil y del mantenimiento de vehículos [excepto los de los capítulos 13 y 14 y los subcapítulos 16 06 y 16 08].",
+        "codigo":"16 01"
+    },
+    {
+        "texto":" Neumáticos fuera de uso.",
+        "codigo":"16 01 03"
+    },
+    {
+        "texto":"* Vehículos al final de su vida útil.",
+        "codigo":"16 01 04"
+    },
+    {
+        "texto":" Vehículos al final de su vida útil que no contengan líquidos ni otros componentes peligrosos.",
+        "codigo":"16 01 06"
+    },
+    {
+        "texto":"* Filtros de aceite.",
+        "codigo":"16 01 07"
+    },
+    {
+        "texto":"* Componentes que contienen mercurio.",
+        "codigo":"16 01 08"
+    },
+    {
+        "texto":"* Componentes que contienen PCB.",
+        "codigo":"16 01 09"
+    },
+    {
+        "texto":"* Componentes explosivos [por ejemplo, air bags].",
+        "codigo":"16 01 10"
+    },
+    {
+        "texto":"* Zapatas de freno que contienen amianto.",
+        "codigo":"16 01 11"
+    },
+    {
+        "texto":" Zapatas de freno distintas de las especificadas en el código 16 01 11.",
+        "codigo":"16 01 12"
+    },
+    {
+        "texto":"* Líquidos de frenos.",
+        "codigo":"16 01 13"
+    },
+    {
+        "texto":"* Anticongelantes que contienen sustancias peligrosas.",
+        "codigo":"16 01 14"
+    },
+    {
+        "texto":" Anticongelantes distintos de los especificados en el código 16 01 14.",
+        "codigo":"16 01 15"
+    },
+    {
+        "texto":" Depósitos para gases licuados.",
+        "codigo":"16 01 16"
+    },
+    {
+        "texto":" Metales férreos.",
+        "codigo":"16 01 17"
+    },
+    {
+        "texto":" Metales no férreos.",
+        "codigo":"16 01 18"
+    },
+    {
+        "texto":" Plástico.",
+        "codigo":"16 01 19"
+    },
+    {
+        "texto":" Vidrio.",
+        "codigo":"16 01 20"
+    },
+    {
+        "texto":"* Componentes peligrosos distintos de los especificados en los códigos 16 01 07 a 16 01 11, 17 01 13 y 16 01 14.16 01 22 Componentes no especificados en otra categoría.",
+        "codigo":"16 01 21"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"16 01 99"
+    },
+    {
+        "texto":" Residuos de equipos eléctricos y electrónicos.",
+        "codigo":"16 02"
+    },
+    {
+        "texto":"* Transformadores y condensadores que contienen PCB.",
+        "codigo":"16 02 09"
+    },
+    {
+        "texto":"* Equipos desechados que contienen PCB, o están contaminados por ellos, distintos de los especificados en el código 16 02 09.",
+        "codigo":"16 02 10"
+    },
+    {
+        "texto":"* Equipos desechados que contienen clorofluorocarbonos, HCFC, HFC.",
+        "codigo":"16 02 11"
+    },
+    {
+        "texto":"* Equipos desechados que contienen amianto libre.",
+        "codigo":"16 02 12"
+    },
+    {
+        "texto":"* Equipos desechados que contienen componentes peligrosos [4], distintos de los especificados en los códigos 16 02 09 a 16 02 12.",
+        "codigo":"16 02 13"
+    },
+    {
+        "texto":" Equipos desechados distintos de los especificados en los códigos 16 02 09 a 16 02 13.",
+        "codigo":"16 02 14"
+    },
+    {
+        "texto":"* Componentes peligrosos retirados de equipos desechados.",
+        "codigo":"16 02 15"
+    },
+    {
+        "texto":" Componentes retirados de equipos desechados, distintos de los especificados en el código 17 02 15.",
+        "codigo":"16 02 16"
+    },
+    {
+        "texto":" Lotes de productos fuera de especificación y productos no utilizados.",
+        "codigo":"16 03"
+    },
+    {
+        "texto":"* Residuos inorgánicos que contienen sustancias peligrosas.",
+        "codigo":"16 03 03"
+    },
+    {
+        "texto":" Residuos inorgánicos distintos de los especificados en el código 16 03 03.",
+        "codigo":"16 03 04"
+    },
+    {
+        "texto":"* Residuos orgánicos que contienen sustancias peligrosas.",
+        "codigo":"16 03 05"
+    },
+    {
+        "texto":" Residuos orgánicos distintos de los especificados en el código 16 03 05.",
+        "codigo":"16 03 06"
+    },
+    {
+        "texto":" Residuos de explosivos.",
+        "codigo":"16 04"
+    },
+    {
+        "texto":"* Residuos de municiones.",
+        "codigo":"16 04 01"
+    },
+    {
+        "texto":"* Residuos de fuegos artificiales.",
+        "codigo":"16 04 02"
+    },
+    {
+        "texto":"* Otros residuos explosivos.",
+        "codigo":"16 04 03"
+    },
+    {
+        "texto":" Gases en recipientes a presión y productos químicos desechados.",
+        "codigo":"16 05"
+    },
+    {
+        "texto":"* Gases en recipientes a presión [incluidos los halones] que contienen sustancias peligrosas.",
+        "codigo":"16 05 04"
+    },
+    {
+        "texto":" Gases en recipientes a presión distintos de los especificados en el código 16 05 04.",
+        "codigo":"16 05 05"
+    },
+    {
+        "texto":"* Productos químicos de laboratorio que consisten en, o contienen, sustancias peligrosas, incluidas las mezclas de productos químicos de laboratorio.",
+        "codigo":"16 05 06"
+    },
+    {
+        "texto":"* Productos químicos inorgánicos desechados que consisten en, o contienen, sustancias peligrosas.",
+        "codigo":"16 05 07"
+    },
+    {
+        "texto":"* Productos químicos orgánicos desechados que consisten en, o contienen, sustancias peligrosas.",
+        "codigo":"16 05 08"
+    },
+    {
+        "texto":" Productos químicos desechados distintos de los especificados en los códigos 16 05 06, 16 6 07 ó 16 05 08.",
+        "codigo":"16 05 09"
+    },
+    {
+        "texto":" Pilas y acumuladores.",
+        "codigo":"16 06"
+    },
+    {
+        "texto":"* Baterías de plomo.",
+        "codigo":"16 06 01"
+    },
+    {
+        "texto":"* Acumuladores de Ni-Cd.",
+        "codigo":"16 06 02"
+    },
+    {
+        "texto":"* Pilas que contienen mercurio.",
+        "codigo":"16 06 03"
+    },
+    {
+        "texto":" Pilas alcalinas [excepto las del código 16 06 03].",
+        "codigo":"16 06 04"
+    },
+    {
+        "texto":" Otras pilas y acumuladores.",
+        "codigo":"16 06 05"
+    },
+    {
+        "texto":"* Electrolito de pilas y acumuladores recogido selectivamente.",
+        "codigo":"16 06 06"
+    },
+    {
+        "texto":" Residuos de la limpieza de cisternas de transporte y almacenamiento y de la limpieza de cubas [excepto los de los capítulos 05 y 13].",
+        "codigo":"16 07"
+    },
+    {
+        "texto":"* Residuos que contienen hidrocarburos.",
+        "codigo":"16 07 08"
+    },
+    {
+        "texto":"* Residuos que contienen otras sustancias peligrosas.",
+        "codigo":"16 07 09"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"16 07 99"
+    },
+    {
+        "texto":" Catalizadores usados.",
+        "codigo":"16 08"
+    },
+    {
+        "texto":" Catalizadores usados que contienen oro, plata, renio, rodio, paladio, iridio o platino [excepto los del código 16 08 07].",
+        "codigo":"16 08 01"
+    },
+    {
+        "texto":"* Catalizadores usados que contienen metales de transición [5] peligrosos o compuestos de metales de transición peligrosos.",
+        "codigo":"16 08 02"
+    },
+    {
+        "texto":" Catalizadores usados que contienen metales de transición o compuestos de metales de transición no especificados en otra categoría.",
+        "codigo":"16 08 03"
+    },
+    {
+        "texto":" Catalizadores usados procedentes del craqueo catalítico en lecho fluido [excepto los del código 16 08 07].",
+        "codigo":"16 08 04"
+    },
+    {
+        "texto":"* Catalizadores usados que contienen ácido fosfórico.",
+        "codigo":"16 08 05"
+    },
+    {
+        "texto":"* Líquidos usados utilizados como catalizadores.",
+        "codigo":"16 08 06"
+    },
+    {
+        "texto":"* Catalizadores usados contaminados con sustancias peligrosas.",
+        "codigo":"16 08 07"
+    },
+    {
+        "texto":" Sustancias oxidantes.",
+        "codigo":"16 09"
+    },
+    {
+        "texto":"* Permanganatos, por ejemplo, permanganato potásico.",
+        "codigo":"16 09 01"
+    },
+    {
+        "texto":"* Cromatos, por ejemplo, cromato potásico, dicromato sódico o potásico.",
+        "codigo":"16 09 02"
+    },
+    {
+        "texto":"* Peróxidos, por ejemplo, peróxido de hidrógeno.",
+        "codigo":"16 09 03"
+    },
+    {
+        "texto":"* Sustancias oxidantes no especificadas en otra categoría.",
+        "codigo":"16 09 04"
+    },
+    {
+        "texto":" Residuos líquidos acuosos destinados a plantas de tratamiento externas.",
+        "codigo":"16 10"
+    },
+    {
+        "texto":"* Residuos líquidos acuosos que contienen sustancias peligrosas.",
+        "codigo":"16 10 01"
+    },
+    {
+        "texto":" Residuos líquidos acuosos distintos de los especificados en el código 16 10 01.",
+        "codigo":"16 10 02"
+    },
+    {
+        "texto":"* Concentrados acuosos que contienen sustancias peligrosas.",
+        "codigo":"16 10 03"
+    },
+    {
+        "texto":" Concentrados acuosos distintos de los especificados en el código 16 10 03.",
+        "codigo":"16 10 04"
+    },
+    {
+        "texto":" Residuos de revestimientos de hornos y de refractarios.",
+        "codigo":"16 11"
+    },
+    {
+        "texto":"* Revestimientos y refractarios a partir de carbono, procedentes de procesos metalúrgicos, que contienen sustancias peligrosas.",
+        "codigo":"16 11 01"
+    },
+    {
+        "texto":" Revestimientos y refractarios a partir de carbono, procedentes de procesos metalúrgicos, distintos de los especificados en el código 16 11 01.",
+        "codigo":"16 11 02"
+    },
+    {
+        "texto":"* Otros revestimientos y refractarios, procedentes de procesos metalúrgicos, que contienen sustancias peligrosas.",
+        "codigo":"16 11 03"
+    },
+    {
+        "texto":" Otros revestimientos y refractarios procedentes de procesos metalúrgicos, distintos de los especificados en el código 16 11 03.",
+        "codigo":"16 11 04"
+    },
+    {
+        "texto":"* Revestimientos y refractarios, procedentes de procesos no metalúrgicos, que contienen sustancias peligrosas.",
+        "codigo":"16 11 05"
+    },
+    {
+        "texto":" Revestimientos y refractarios procedentes de procesos no metalúrgicos, distintos de los especificados en el código 16 11 05.",
+        "codigo":"16 11 06"
+    },
+    {
+        "texto":" Hormigón, ladrillos, tejas y materiales cerámicos.",
+        "codigo":"17 01"
+    },
+    {
+        "texto":" Hormigón.",
+        "codigo":"17 01 01"
+    },
+    {
+        "texto":" Ladrillos.",
+        "codigo":"17 01 02"
+    },
+    {
+        "texto":" Tejas y materiales cerámicos.",
+        "codigo":"17 01 03"
+    },
+    {
+        "texto":"* Mezclas, o fracciones separadas, de hormigón, ladrillos, tejas y materiales cerámicos, que contienen sustancias peligrosas.",
+        "codigo":"17 01 06"
+    },
+    {
+        "texto":" Mezclas de hormigón, ladrillos, tejas y materiales cerámicos distintas de las especificadas en el código 17 01 06.",
+        "codigo":"17 01 07"
+    },
+    {
+        "texto":" Madera, vidrio y plástico.",
+        "codigo":"17 02"
+    },
+    {
+        "texto":" Madera.",
+        "codigo":"17 02 01"
+    },
+    {
+        "texto":" Vidrio.",
+        "codigo":"17 02 02"
+    },
+    {
+        "texto":" Plástico.",
+        "codigo":"17 02 03"
+    },
+    {
+        "texto":"* Vidrio, plástico y madera que contienen sustancias peligrosas o están contaminados por ellas.",
+        "codigo":"17 02 04"
+    },
+    {
+        "texto":" Mezclas bituminosas, alquitrán de hulla y otros productos alquitranados.",
+        "codigo":"17 03"
+    },
+    {
+        "texto":"* Mezclas bituminosas que contienen alquitrán de hulla.",
+        "codigo":"17 03 01"
+    },
+    {
+        "texto":" Mezclas bituminosas distintas de las especificadas en el código 17 03 01.",
+        "codigo":"17 03 02"
+    },
+    {
+        "texto":"* Alquitrán de hulla y productos alquitranados.",
+        "codigo":"17 03 03"
+    },
+    {
+        "texto":" Metales [incluidas sus aleaciones].",
+        "codigo":"17 04"
+    },
+    {
+        "texto":" Cobre, bronce, latón.",
+        "codigo":"17 04 01"
+    },
+    {
+        "texto":" Aluminio.",
+        "codigo":"17 04 02"
+    },
+    {
+        "texto":" Plomo.",
+        "codigo":"17 04 03"
+    },
+    {
+        "texto":" Zinc.",
+        "codigo":"17 04 04"
+    },
+    {
+        "texto":" Hierro y acero.",
+        "codigo":"17 04 05"
+    },
+    {
+        "texto":" Estaño.",
+        "codigo":"17 04 06"
+    },
+    {
+        "texto":" Metales mezclados.",
+        "codigo":"17 04 07"
+    },
+    {
+        "texto":"* Residuos metálicos contaminados con sustancias peligrosas.",
+        "codigo":"17 04 09"
+    },
+    {
+        "texto":"* Cables que contienen hidrocarburos, alquitrán de hulla y otras sustancias peligrosas.",
+        "codigo":"17 04 10"
+    },
+    {
+        "texto":" Cables distintos de los especificados en el código 17 04 10.",
+        "codigo":"17 04 11"
+    },
+    {
+        "texto":" Tierra (incluida la excavada de zonas contaminadas), piedras y lodos de drenaje.",
+        "codigo":"17 05"
+    },
+    {
+        "texto":"* Tierra y piedras que contienen sustancias peligrosas.",
+        "codigo":"17 05 03"
+    },
+    {
+        "texto":" Tierra y piedras distintas de las especificadas en el código 17 05 03.",
+        "codigo":"17 05 04"
+    },
+    {
+        "texto":"* Lodos de drenaje que contienen sustancias peligrosas.",
+        "codigo":"17 05 05"
+    },
+    {
+        "texto":" Lodos de drenaje distintos de los especificados en el código 17 05 05.",
+        "codigo":"17 05 06"
+    },
+    {
+        "texto":"* Balasto de vías férreas que contienen sustancias peligrosas.",
+        "codigo":"17 05 07"
+    },
+    {
+        "texto":" Balasto de vías férreas distinto del especificado en el código 17 05 07.",
+        "codigo":"17 05 08"
+    },
+    {
+        "texto":" Materiales de aislamiento y materiales de construcción que contienen amianto.",
+        "codigo":"17 06"
+    },
+    {
+        "texto":"* Materiales de aislamiento que contienen amianto.",
+        "codigo":"17 06 01"
+    },
+    {
+        "texto":"* Otros materiales de aislamiento que consisten en, o contienen, sustancias peligrosas.",
+        "codigo":"17 06 03"
+    },
+    {
+        "texto":" Materiales de aislamiento distintos de los especificados en los códigos 17 06 01 y 17 06 03.",
+        "codigo":"17 06 04"
+    },
+    {
+        "texto":"* Materiales de construcción que contienen amianto.",
+        "codigo":"17 06 05"
+    },
+    {
+        "texto":" Materiales de construcción a partir de yeso.",
+        "codigo":"17 08"
+    },
+    {
+        "texto":"* Materiales de construcción a partir de yeso contaminados con sustancias peligrosas.",
+        "codigo":"17 08 01"
+    },
+    {
+        "texto":" Materiales de construcción a partir de yeso distintos de los especificados en el código 17 08 01.",
+        "codigo":"17 08 02"
+    },
+    {
+        "texto":" Otros residuos de construcción y demolición.",
+        "codigo":"17 09"
+    },
+    {
+        "texto":"* Residuos de construcción y demolición que contienen mercurio.",
+        "codigo":"17 09 01"
+    },
+    {
+        "texto":"* Residuos de construcción y demolición que contienen PCB [por ejemplo, sellantes que contienen PCB, revestimientos de suelo a partir de resinas que contienen PCB, acristalamientos dobles que contienen PCB, condensadores que contienen PCB].",
+        "codigo":"17 09 02"
+    },
+    {
+        "texto":"* Otros residuos de construcción y demolición [incluidos los residuos mezclados] que contienen sustancias peligrosas.",
+        "codigo":"17 09 03"
+    },
+    {
+        "texto":" Residuos mezclados de construcción y demolición distintos de los especificados en los códigos 17 09 01, 17 09 02 y 17 09 03.",
+        "codigo":"17 09 04"
+    },
+    {
+        "texto":" Residuos de maternidades, del diagnóstico, tratamiento o prevención de enfermedades humanas.",
+        "codigo":"18 01"
+    },
+    {
+        "texto":" Objetos cortantes y punzantes [excepto los del código 18 01 03].",
+        "codigo":"18 01 01"
+    },
+    {
+        "texto":" Restos anatómicos y órganos, incluidos bolsas y bancos de sangre [excepto los del código 19 01 03].",
+        "codigo":"18 01 02"
+    },
+    {
+        "texto":"* Residuos cuya recogida y eliminación es objeto de requisitos especiales para prevenir infecciones.",
+        "codigo":"18 01 03"
+    },
+    {
+        "texto":" Residuos cuya recogida y eliminación no es objeto de requisitos especiales para prevenir infecciones [por ejemplo, vendajes, vaciados de yeso, ropa blanca, ropa desechable, pañales].",
+        "codigo":"18 01 04"
+    },
+    {
+        "texto":"* Productos químicos que consisten en, o contienen, sustancias peligrosas.",
+        "codigo":"18 01 06"
+    },
+    {
+        "texto":" Productos químicos distintos de los especificados en el código 18 01 06.",
+        "codigo":"18 01 07"
+    },
+    {
+        "texto":"* Medicamentos citotóxicos y citostáticos.",
+        "codigo":"18 01 08"
+    },
+    {
+        "texto":" Medicamentos distintos de los especificados en el código 18 01 08.",
+        "codigo":"18 01 09"
+    },
+    {
+        "texto":"* Residuos de amalgamas procedentes de cuidados dentales.",
+        "codigo":"18 01 10"
+    },
+    {
+        "texto":" Residuos de la investigación, diagnóstico, tratamiento o prevención de enfermedades de animales.",
+        "codigo":"18 02"
+    },
+    {
+        "texto":" Objetos cortantes y punzantes [excepto los del código 18 02 02].",
+        "codigo":"18 02 01"
+    },
+    {
+        "texto":"* Residuos cuya recogida y eliminación es objeto de requisitos especiales para prevenir infecciones.",
+        "codigo":"18 02 02"
+    },
+    {
+        "texto":" Residuos cuya recogida y eliminación no es objeto de requisitos especiales para prevenir infecciones.",
+        "codigo":"18 02 03"
+    },
+    {
+        "texto":"* Productos químicos que consisten en, o contienen, sustancias peligrosas.",
+        "codigo":"18 02 05"
+    },
+    {
+        "texto":" Productos químicos distintos de los especificados en el código 18 02 05.",
+        "codigo":"18 02 06"
+    },
+    {
+        "texto":"* Medicamentos citotóxicos y citostáticos.",
+        "codigo":"18 02 07"
+    },
+    {
+        "texto":" Medicamentos distintos de los especificados en el código 18 02 07.",
+        "codigo":"18 02 08"
+    },
+    {
+        "texto":" Residuos de la incineración o pirólisis de residuos.",
+        "codigo":"19 01"
+    },
+    {
+        "texto":" Materiales férreos separados de la ceniza de fondo de horno.",
+        "codigo":"19 01 02"
+    },
+    {
+        "texto":"* Torta de filtración del tratamiento de gases.",
+        "codigo":"19 01 05"
+    },
+    {
+        "texto":"* Residuos líquidos acuosos del tratamiento de gases y otros residuos líquidos acuosos.",
+        "codigo":"19 01 06"
+    },
+    {
+        "texto":"* Residuos sólidos del tratamiento de gases.",
+        "codigo":"19 01 07"
+    },
+    {
+        "texto":"* Carbón activo usado procedente del tratamiento de gases.",
+        "codigo":"19 01 10"
+    },
+    {
+        "texto":"* Cenizas de fondo de horno y escorias que contienen sustancias peligrosas.",
+        "codigo":"19 01 11"
+    },
+    {
+        "texto":" Cenizas de fondo de horno y escorias distintas de las especificadas en el código 19 01 11.",
+        "codigo":"19 01 12"
+    },
+    {
+        "texto":"* Cenizas volantes que contienen sustancias peligrosas.",
+        "codigo":"19 01 13"
+    },
+    {
+        "texto":" Cenizas volantes distintas de las especificadas en el código 19 01 13.",
+        "codigo":"19 01 14"
+    },
+    {
+        "texto":"* Polvo de caldera que contiene sustancias peligrosas.",
+        "codigo":"19 01 15"
+    },
+    {
+        "texto":" Polvo de caldera distinto del especificado en el código 19 01 15.",
+        "codigo":"19 01 16"
+    },
+    {
+        "texto":"* Residuos de pirólisis que contienen sustancias peligrosas.",
+        "codigo":"19 01 17"
+    },
+    {
+        "texto":" Residuos de pirólisis distintos de los especificados en el código 19 01 17.",
+        "codigo":"19 01 18"
+    },
+    {
+        "texto":" Arenas de lechos fluidizados.",
+        "codigo":"19 01 19"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 01 99"
+    },
+    {
+        "texto":" Residuos de tratamientos físico-químicos de residuos [incluidas la escromatación, descianuración y neutralización].",
+        "codigo":"19 02"
+    },
+    {
+        "texto":" Residuos mezclados previamente, compuestos exclusivamente por residuos no peligrosos.",
+        "codigo":"19 02 03"
+    },
+    {
+        "texto":"* Residuos mezclados previamente, compuestos por al menos un residuo peligroso.",
+        "codigo":"19 02 04"
+    },
+    {
+        "texto":"* Lodos de tratamientos físico-químicos que contienen sustancias peligrosas.",
+        "codigo":"19 02 05"
+    },
+    {
+        "texto":" Lodos de tratamientos físico-químicos distintos de los especificados en el código 19 02 05.",
+        "codigo":"19 02 06"
+    },
+    {
+        "texto":"* Aceites y concentrados procedentes del proceso de separación.",
+        "codigo":"19 02 07"
+    },
+    {
+        "texto":"* Residuos combustibles líquidos que contienen sustancias peligrosas.",
+        "codigo":"19 02 08"
+    },
+    {
+        "texto":"* Residuos combustibles sólidos que contienen sustancias peligrosas.",
+        "codigo":"19 02 09"
+    },
+    {
+        "texto":" Residuos combustibles distintos de los especificados en los códigos 19 02 08 y 19 02 09.",
+        "codigo":"19 02 10"
+    },
+    {
+        "texto":"* Otros residuos que contienen sustancias peligrosas.",
+        "codigo":"19 02 11"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 02 99"
+    },
+    {
+        "texto":" Residuos estabilizados\/solidificados [7].",
+        "codigo":"19 03"
+    },
+    {
+        "texto":"* Residuos peligrosos parcialmente estabilizados [8].",
+        "codigo":"19 03 04"
+    },
+    {
+        "texto":" Residuos estabilizados distintos de los especificados en el código 19 03 04.",
+        "codigo":"19 03 05"
+    },
+    {
+        "texto":"* Residuos peligrosos solidificados.",
+        "codigo":"19 03 06"
+    },
+    {
+        "texto":" Residuos solidificados distintos de los especificados en el código 19 03 06.",
+        "codigo":"19 03 07"
+    },
+    {
+        "texto":" Residuos vitrificados y residuos de la vitrificación.",
+        "codigo":"19 04"
+    },
+    {
+        "texto":" Residuos vitrificados.",
+        "codigo":"19 04 01"
+    },
+    {
+        "texto":"* Cenizas volantes y otros residuos del tratamiento de gases.",
+        "codigo":"19 04 02"
+    },
+    {
+        "texto":"* Fase sólida no vitrificada.",
+        "codigo":"19 04 03"
+    },
+    {
+        "texto":" Residuos líquidos acuosos del templado de residuos vitrificados.",
+        "codigo":"19 04 04"
+    },
+    {
+        "texto":" Residuos del tratamiento aeróbico de residuos sólidos.",
+        "codigo":"19 05"
+    },
+    {
+        "texto":" Fracción no compostada de residuos municipales y asimilados.",
+        "codigo":"19 05 01"
+    },
+    {
+        "texto":" Fracción no compostada de residuos de procedencia animal o vegetal.",
+        "codigo":"19 05 02"
+    },
+    {
+        "texto":" Compost fuera de especificación.",
+        "codigo":"19 05 03"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 05 99"
+    },
+    {
+        "texto":" Residuos del tratamiento anaeróbico de residuos.",
+        "codigo":"19 06"
+    },
+    {
+        "texto":" Licores del tratamiento anaeróbico de residuos municipales.",
+        "codigo":"19 06 03"
+    },
+    {
+        "texto":" Lodos de digestión del tratamiento anaeróbico de residuos municipales.",
+        "codigo":"19 06 04"
+    },
+    {
+        "texto":" Licores del tratamiento anaeróbico de residuos animales y vegetales.",
+        "codigo":"19 06 05"
+    },
+    {
+        "texto":" Lodos de digestión del tratamiento anaeróbico de residuos animales y vegetales.",
+        "codigo":"19 06 06"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 06 99"
+    },
+    {
+        "texto":" Lixiviados de vertedero.",
+        "codigo":"19 07"
+    },
+    {
+        "texto":"* Lixiviados de vertedero que contienen sustancias peligrosas.",
+        "codigo":"19 07 02"
+    },
+    {
+        "texto":" Lixiviados de vertedero distintos de los especificados en el código 19 07 02.",
+        "codigo":"19 07 03"
+    },
+    {
+        "texto":" Residuos de plantas de tratamiento de aguas residuales no especificados en otra categoría.",
+        "codigo":"19 08"
+    },
+    {
+        "texto":" Residuos de cribado.",
+        "codigo":"19 08 01"
+    },
+    {
+        "texto":" Residuos de desarenado.",
+        "codigo":"19 08 02"
+    },
+    {
+        "texto":" Lodos del tratamiento de aguas residuales urbanas.",
+        "codigo":"19 08 05"
+    },
+    {
+        "texto":"* Resinas intercambiadoras de iones saturadas o usadas.",
+        "codigo":"19 08 06"
+    },
+    {
+        "texto":"* Soluciones y lodos de la regeneración de intercambiadores de iones.",
+        "codigo":"19 08 07"
+    },
+    {
+        "texto":"* Residuos procedentes de sistemas de membranas que contienen metales pesados.",
+        "codigo":"19 08 08"
+    },
+    {
+        "texto":" Mezclas de grasas y aceites procedentes de la separación de agua\/sustancias aceitosas, que sólo contienen aceites y grasas comestibles.",
+        "codigo":"19 08 09"
+    },
+    {
+        "texto":"* Mezclas de grasas y aceites procedentes de la separación de agua\/sustancias aceitosas distintas de las especificadas en el código 19 08 09.",
+        "codigo":"19 08 10"
+    },
+    {
+        "texto":"* Lodos procedentes del tratamiento biológico de aguas residuales industriales, que contienen sustancias peligrosas.",
+        "codigo":"19 08 11"
+    },
+    {
+        "texto":" Lodos procedentes del tratamiento biológico de aguas residuales industriales, distintos de los especificados en el código 19 08 11.",
+        "codigo":"19 08 12"
+    },
+    {
+        "texto":"* Lodos procedentes de otros tratamientos de aguas residuales industriales, que contienen sustancias peligrosas.",
+        "codigo":"19 08 13"
+    },
+    {
+        "texto":" Lodos procedentes de otros tratamientos de aguas residuales industriales distintos de los especificados en el código 19 08 13.",
+        "codigo":"19 08 14"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 08 99"
+    },
+    {
+        "texto":" Residuos de la preparación de agua para consumo humano o agua para uso industrial.",
+        "codigo":"19 09"
+    },
+    {
+        "texto":" Residuos sólidos de la filtración primaria y cribado.",
+        "codigo":"19 09 01"
+    },
+    {
+        "texto":" Lodos de la clarificación del agua.",
+        "codigo":"19 09 02"
+    },
+    {
+        "texto":" Lodos de descarbonatación.",
+        "codigo":"19 09 03"
+    },
+    {
+        "texto":" Carbón activo usado.",
+        "codigo":"19 09 04"
+    },
+    {
+        "texto":" Resinas intercambiadoras de iones saturadas o usadas.",
+        "codigo":"19 09 05"
+    },
+    {
+        "texto":" Soluciones y lodos de la regeneración de intercambiadores de iones.",
+        "codigo":"19 09 06"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 09 99"
+    },
+    {
+        "texto":" Residuos procedentes del fragmentado de residuos que contienen metales.",
+        "codigo":"19 10"
+    },
+    {
+        "texto":" Residuos de hierro y acero.",
+        "codigo":"19 10 01"
+    },
+    {
+        "texto":" Residuos no férreos.",
+        "codigo":"19 10 02"
+    },
+    {
+        "texto":"* Fracciones ligeras de fragmentación [fluff-light] y polvo que contienen sustancias peligrosas.",
+        "codigo":"19 10 03"
+    },
+    {
+        "texto":" Fracciones ligeras de fragmentación [fluff-light] y polvo distintos de los especificados en el código 19 10 03.",
+        "codigo":"19 10 04"
+    },
+    {
+        "texto":"* Otras fracciones que contienen sustancias peligrosas.",
+        "codigo":"19 10 05"
+    },
+    {
+        "texto":" Otras fracciones distintas de las especificadas en el código 19 10 05.",
+        "codigo":"19 10 06"
+    },
+    {
+        "texto":" Residuos de la regeneración de aceites.",
+        "codigo":"19 11"
+    },
+    {
+        "texto":"* Arcillas de filtración usadas.",
+        "codigo":"19 11 01"
+    },
+    {
+        "texto":"* Alquitranes ácidos.",
+        "codigo":"19 11 02"
+    },
+    {
+        "texto":"* Residuos de líquidos acuosos.",
+        "codigo":"19 11 03"
+    },
+    {
+        "texto":"* Residuos de la limpieza de combustibles con bases.",
+        "codigo":"19 11 04"
+    },
+    {
+        "texto":"* Lodos del tratamiento in situ de efluentes que contienen sustancias peligrosas.",
+        "codigo":"19 11 05"
+    },
+    {
+        "texto":" Lodos del tratamiento in situ de efluentes distintos de los especificados en el código 19 11 05.",
+        "codigo":"19 11 06"
+    },
+    {
+        "texto":"* Residuos de la depuración de efluentes gaseosos.",
+        "codigo":"19 11 07"
+    },
+    {
+        "texto":" Residuos no especificados en otra categoría.",
+        "codigo":"19 11 99"
+    },
+    {
+        "texto":" Residuos del tratamiento mecánico de residuos [por ejemplo, clasificación, trituración, compactación, peletización] no especificados en otra categoría.",
+        "codigo":"19 12"
+    },
+    {
+        "texto":" Papel y cartón.",
+        "codigo":"19 12 01"
+    },
+    {
+        "texto":" Metales férreos.",
+        "codigo":"19 12 02"
+    },
+    {
+        "texto":" Metales no férreos.",
+        "codigo":"19 12 03"
+    },
+    {
+        "texto":" Plástico y caucho.",
+        "codigo":"19 12 04"
+    },
+    {
+        "texto":" Vidrio.",
+        "codigo":"19 12 05"
+    },
+    {
+        "texto":"* Madera que contiene sustancias peligrosas.",
+        "codigo":"19 12 06"
+    },
+    {
+        "texto":" Madera distinta de la especificada en el código 19 12 06.",
+        "codigo":"19 12 07"
+    },
+    {
+        "texto":" Tejidos.",
+        "codigo":"19 12 08"
+    },
+    {
+        "texto":" Minerales [por ejemplo, arena, piedras].",
+        "codigo":"19 12 09"
+    },
+    {
+        "texto":" Residuos combustibles [combustible derivado de residuos].",
+        "codigo":"19 12 10"
+    },
+    {
+        "texto":"* Otros residuos [incluidas mezclas de materiales], procedentes del tratamiento mecánico de residuos, que contienen sustancias peligrosas.",
+        "codigo":"19 12 11"
+    },
+    {
+        "texto":" Otros residuos [incluidas mezclas de materiales] procedentes del tratamiento mecánico de residuos distintos de los especificados en el código 19 12 11.",
+        "codigo":"19 12 12"
+    },
+    {
+        "texto":" Residuos de la recuperación de suelos y de aguas subterráneas.",
+        "codigo":"19 13"
+    },
+    {
+        "texto":"* Residuos sólidos, de la recuperación de suelos, que contienen sustancias peligrosas.",
+        "codigo":"19 13 01"
+    },
+    {
+        "texto":" Residuos sólidos, de la recuperación de suelos, distintos de los especificados en el código 20 13 01.",
+        "codigo":"19 13 02"
+    },
+    {
+        "texto":"* Lodos de la recuperación de suelos, que contienen sustancias peligrosas.",
+        "codigo":"19 13 03"
+    },
+    {
+        "texto":" Lodos de la recuperación de suelos, distintos de los especificados en el código 19 13 03.",
+        "codigo":"19 13 04"
+    },
+    {
+        "texto":"* Lodos de la recuperación de aguas subterráneas, que contienen sustancias peligrosas.",
+        "codigo":"19 13 05"
+    },
+    {
+        "texto":" Lodos de la recuperación de aguas subterráneas, distintos de los especificados en el código 19 13 05.",
+        "codigo":"19 13 06"
+    },
+    {
+        "texto":"* Residuos de líquidos acuosos y concentrados acuosos, procedentes de la recuperación de aguas subterráneas, que contienen sustancias peligrosas.",
+        "codigo":"19 13 07"
+    },
+    {
+        "texto":" Residuos de líquidos acuosos y concentrados acuosos, procedentes de la recuperación de aguas subterráneas, distintos de los especificados en el código 19 13 07.",
+        "codigo":"19 13 08"
+    },
+    {
+        "texto":" Fracciones recogidas selectivamente [excepto las especificadas en el subcapítulo 15 01].",
+        "codigo":"20 01"
+    },
+    {
+        "texto":" Papel y cartón.",
+        "codigo":"20 01 01"
+    },
+    {
+        "texto":" Vidrio.",
+        "codigo":"20 01 02"
+    },
+    {
+        "texto":" Residuos biodegradables de cocinas y restaurantes.",
+        "codigo":"20 01 08"
+    },
+    {
+        "texto":" Ropa.",
+        "codigo":"20 01 10"
+    },
+    {
+        "texto":" Tejidos.",
+        "codigo":"20 01 11"
+    },
+    {
+        "texto":"* Disolventes.",
+        "codigo":"20 01 13"
+    },
+    {
+        "texto":"* Ácidos.",
+        "codigo":"20 01 14"
+    },
+    {
+        "texto":"* Álcalis.",
+        "codigo":"20 01 15"
+    },
+    {
+        "texto":"* Productos fotoquímicos.",
+        "codigo":"20 01 17"
+    },
+    {
+        "texto":"* Pesticidas.",
+        "codigo":"20 01 19"
+    },
+    {
+        "texto":"* Tubos fluorescentes y otros residuos que contienen mercurio.",
+        "codigo":"20 01 21"
+    },
+    {
+        "texto":"* Equipos desechados que contienen clorofluorocarbonos.",
+        "codigo":"20 01 23"
+    },
+    {
+        "texto":" Aceites y grasas comestibles.",
+        "codigo":"20 01 25"
+    },
+    {
+        "texto":"* Aceites y grasas distintos de los especificados en el código 20 01 25.",
+        "codigo":"20 01 26"
+    },
+    {
+        "texto":"* Pinturas, tintas, adhesivos y resinas que contienen sustancias peligrosas.",
+        "codigo":"20 01 27"
+    },
+    {
+        "texto":" Pinturas, tintas, adhesivos y resinas distintos de los especificados en el código 20 01 27.",
+        "codigo":"20 01 28"
+    },
+    {
+        "texto":"* Detergentes que contienen sustancias peligrosas.",
+        "codigo":"20 01 29"
+    },
+    {
+        "texto":" Detergentes distintos de los especificados en el código 20 01 29.",
+        "codigo":"20 01 30"
+    },
+    {
+        "texto":"* Medicamentos citotóxicos y citostáticos.",
+        "codigo":"20 01 31"
+    },
+    {
+        "texto":" Medicamentos distintos de los especificados en el código 20 01 31.",
+        "codigo":"20 01 32"
+    },
+    {
+        "texto":"* Baterías y acumuladores especificados en los códigos 16 06 01, 16 06 02 ó 16 06 03 y baterías y acumuladores sin clasificar que contienen esas baterías.",
+        "codigo":"20 01 33"
+    },
+    {
+        "texto":" Baterías y acumuladores distintos de los especificados en el código 20 0133.",
+        "codigo":"20 01 34"
+    },
+    {
+        "texto":"* Equipos eléctricos y electrónicos desechados, distintos de los especificados en los códigos 21 01 21 y 20 01 23, que contienen",
+        "codigo":"20 01 35"
+    },
+    {
+        "texto":"componentes peligrosos [9].",
+        "codigo":""
+    },
+    {
+        "texto":" Equipos eléctricos y electrónicos desechados distintos de los especificados en los códigos 21 01 21, 20 01 23 y 20 01 35.",
+        "codigo":"20 01 36"
+    },
+    {
+        "texto":"* Madera que contiene sustancias peligrosas.",
+        "codigo":"20 01 37"
+    },
+    {
+        "texto":" Madera distinta de la especificada en el código 20 01 37.",
+        "codigo":"20 01 38"
+    },
+    {
+        "texto":" Plásticos.",
+        "codigo":"20 01 39"
+    },
+    {
+        "texto":" Metales.",
+        "codigo":"20 01 40"
+    },
+    {
+        "texto":" Residuos del deshollinado de chimeneas.",
+        "codigo":"20 01 41"
+    },
+    {
+        "texto":" Otras fracciones no especificadas en otra categoría.",
+        "codigo":"20 01 99"
+    },
+    {
+        "texto":" Residuos de parques y jardines (incluidos los residuos de cementerios).",
+        "codigo":"20 02"
+    },
+    {
+        "texto":" Residuos biodegradables.",
+        "codigo":"20 02 01"
+    },
+    {
+        "texto":" Tierra y piedras.",
+        "codigo":"20 02 02"
+    },
+    {
+        "texto":" Otros residuos no biodegradables",
+        "codigo":"20 02 03"
+    },
+    {
+        "texto":".",
+        "codigo":""
+    },
+    {
+        "texto":" Otros residuos municipales.",
+        "codigo":"20 03"
+    },
+    {
+        "texto":" Mezclas de residuos municipales.",
+        "codigo":"20 03 01"
+    },
+    {
+        "texto":" Residuos de mercados.",
+        "codigo":"20 03 02"
+    },
+    {
+        "texto":" Residuos de la limpieza viaria.",
+        "codigo":"20 03 03"
+    },
+    {
+        "texto":" Lodos de fosas sépticas.",
+        "codigo":"20 03 04"
+    },
+    {
+        "texto":" Residuos de la limpieza de alcantarillas.",
+        "codigo":"20 03 06"
+    },
+    {
+        "texto":" Residuos voluminosos.",
+        "codigo":"20 03 07"
+    },
+    {
+        "texto":" Residuos municipales no especificados en otra categoría.",
+        "codigo":"20 03 99"
+    }
+]

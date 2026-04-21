@@ -20,11 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
@@ -39,6 +41,7 @@ class AccesoControllerTest {
     @Autowired private CentroRepository centroRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private TrasladoRepository trasladoRepo;
+    @Autowired private DireccionRepository direccionRepo;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Usuario admin;
@@ -64,13 +67,17 @@ class AccesoControllerTest {
         transportista = usuarioRepo.save(new Usuario("Trans", "trans@test.com",
                 passwordEncoder.encode("pass"), Rol.TRANSPORTISTA));
 
+        Direccion dir1 = direccionRepo.save(new Direccion("Calle 1", "Alicante", "03001", "Alicante", "Espana"));
+        Direccion dir2 = direccionRepo.save(new Direccion("Calle 2", "Madrid", "28001", "Madrid", "Espana"));
+        Direccion dir3 = direccionRepo.save(new Direccion("Calle 3", "Valencia", "46001", "Valencia", "Espana"));
+
         centroDelProductor = centroRepo.save(
-                new Centro(productor, "Mi Centro", "PRODUCTOR", "Calle 1", "Alicante"));
+                new Centro(productor, "Mi Centro", "PRODUCTOR", dir1));
         centroDeOtro = centroRepo.save(
-                new Centro(otroProductor, "Su Centro", "PRODUCTOR", "Calle 2", "Madrid"));
+                new Centro(otroProductor, "Su Centro", "PRODUCTOR", dir2));
 
         Centro centroGestor = centroRepo.save(
-                new Centro("Gestor S.L.", "GESTOR", "Calle 3", "Valencia"));
+                new Centro("Gestor S.L.", "GESTOR", dir3));
         Residuo residuo = residuoRepo.save(
                 new Residuo(50.0, "kg", "PENDIENTE", centroDelProductor));
 

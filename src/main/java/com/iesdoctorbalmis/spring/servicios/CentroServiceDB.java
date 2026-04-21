@@ -7,14 +7,17 @@ import org.springframework.stereotype.Service;
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 
 @Service
 public class CentroServiceDB implements CentroService {
 
     private final CentroRepository repo;
+    private final DireccionRepository direccionRepo;
 
-    public CentroServiceDB(CentroRepository repo) {
+    public CentroServiceDB(CentroRepository repo, DireccionRepository direccionRepo) {
         this.repo = repo;
+        this.direccionRepo = direccionRepo;
     }
 
     @Override
@@ -34,6 +37,9 @@ public class CentroServiceDB implements CentroService {
 
     @Override
     public Centro save(Centro c) {
+        if (c.getDireccion() != null && c.getDireccion().getId() != null) {
+            c.setDireccion(direccionRepo.findById(c.getDireccion().getId()).orElseThrow());
+        }
         return repo.save(c);
     }
 

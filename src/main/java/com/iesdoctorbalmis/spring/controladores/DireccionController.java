@@ -1,6 +1,7 @@
 package com.iesdoctorbalmis.spring.controladores;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,18 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
+import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Direccion;
+import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.servicios.DireccionService;
 
 @RestController
 @RequestMapping("/api/direcciones")
-@PreAuthorize("hasRole('ADMIN')")
 public class DireccionController {
 
     private final DireccionService service;
+    private final CentroRepository centroRepo;
 
-    public DireccionController(DireccionService service) {
+    public DireccionController(DireccionService service, CentroRepository centroRepo) {
         this.service = service;
+        this.centroRepo = centroRepo;
     }
 
     @GetMapping
@@ -55,8 +59,21 @@ public class DireccionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (service.findById(id) == null) throw new RecursoNoEncontradoException("Direccion no encontrada: " + id);
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+        Direccion d = service.findById(id);
+        if (d == null) throw new RecursoNoEncontradoException("Direccion no encontrada: " + id);
+
+        List<Centro> dependientes = centroRepo.findByDireccion(d);
+        if (!dependientes.isEmpty()) {
+            String nombres = dependientes.stream()
+                .map(Centro::getNombre)
+                .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(java.util.Map.of("error",
+                    "No se puede eliminar: los centros [" + nombres + "] dependen de esta direccion."));
+        }
+
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

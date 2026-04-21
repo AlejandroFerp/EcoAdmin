@@ -19,6 +19,7 @@ import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
+import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.servicios.ResiduoService;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
@@ -28,10 +29,13 @@ public class ResiduoController {
 
     private final ResiduoService service;
     private final UsuarioAutenticadoService authService;
+    private final TrasladoRepository trasladoRepo;
 
-    public ResiduoController(ResiduoService service, UsuarioAutenticadoService authService) {
+    public ResiduoController(ResiduoService service, UsuarioAutenticadoService authService,
+                             TrasladoRepository trasladoRepo) {
         this.service = service;
         this.authService = authService;
+        this.trasladoRepo = trasladoRepo;
     }
 
     @GetMapping
@@ -72,10 +76,17 @@ public class ResiduoController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         Residuo r = service.findById(id);
         if (r == null) throw new RecursoNoEncontradoException("Residuo no encontrado: " + id);
         verificarAccesoResiduo(r);
+
+        if (trasladoRepo.existsByResiduo(r)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(java.util.Map.of("error",
+                    "No se puede eliminar: el residuo '" + r.getCodigoLER() + "' tiene traslados asociados."));
+        }
+
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

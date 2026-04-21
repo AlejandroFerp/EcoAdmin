@@ -39,18 +39,18 @@ public class ZonaPublicaController {
         return "index";
     }
 
-    @GetMapping("/centros")
+    @GetMapping("/public/centros")
     public String centros() { return "centros"; }
 
-    @GetMapping("/residuos")
+    @GetMapping("/public/residuos")
     public String residuos() { return "residuos"; }
 
-    @GetMapping("/usuarios")
+    @GetMapping("/public/usuarios")
     public String usuarios() { return "usuarios"; }
 
-    @GetMapping("/traslados")
+    @GetMapping("/public/traslados")
     public String traslados() { return "traslados"; }
 
-    @GetMapping("/direcciones")
+    @GetMapping("/public/direcciones")
     public String direcciones() { return "direcciones"; }
 }

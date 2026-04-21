@@ -1,6 +1,7 @@
 package com.iesdoctorbalmis.spring.modelo;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -14,128 +15,88 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="centros")
+@Table(name = "centros")
 public class Centro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     private String nombre;
     private String tipo;
-    private String direccion;
-    private String ciudad;
+
+    @ManyToOne
+    @JoinColumn(name = "direccion_id")
+    private Direccion direccion;
+
+    private String nima;
+    private String telefono;
+    private String email;
+    private String nombreContacto;
+    private String detalleEnvio;
+
     @OneToMany(mappedBy = "centro")
     @JsonIgnore
     private List<Residuo> residuos;
-    
-    public Centro() {
-    }
-    public Centro(Usuario usuario, String nombre, String tipo, String direccion, String ciudad) {
+
+    public Centro() {}
+
+    public Centro(Usuario usuario, String nombre, String tipo, Direccion direccion) {
         this.usuario = usuario;
         this.nombre = nombre;
         this.tipo = tipo;
         this.direccion = direccion;
-        this.ciudad = ciudad;
     }
-    public Centro(String nombre, String tipo, String direccion, String ciudad) {
+
+    public Centro(String nombre, String tipo, Direccion direccion) {
         this.nombre = nombre;
         this.tipo = tipo;
         this.direccion = direccion;
-        this.ciudad = ciudad;
     }
-    public Long getId() {
-        return id;
-    }
-    public Usuario getUsuario() {
-        return usuario;
-    }
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public String getNombre() {
-        return nombre;
-    }
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-    public String getTipo() {
-        return tipo;
-    }
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-    public String getDireccion() {
-        return direccion;
-    }
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
-    }
-    public String getCiudad() {
-        return ciudad;
-    }
-    public void setCiudad(String ciudad) {
-        this.ciudad = ciudad;
-    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    public Direccion getDireccion() { return direccion; }
+    public void setDireccion(Direccion direccion) { this.direccion = direccion; }
+    public String getNima() { return nima; }
+    public void setNima(String nima) { this.nima = nima; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getNombreContacto() { return nombreContacto; }
+    public void setNombreContacto(String nombreContacto) { this.nombreContacto = nombreContacto; }
+    public String getDetalleEnvio() { return detalleEnvio; }
+    public void setDetalleEnvio(String detalleEnvio) { this.detalleEnvio = detalleEnvio; }
+    public List<Residuo> getResiduos() { return residuos; }
+
     @Override
     public String toString() {
-        return "Centro [id=" + id + ", nombre=" + nombre + ", tipo=" + tipo + ", direccion=" + direccion + ", ciudad="
-                + ciudad + "]";
+        return "Centro [id=" + id + ", nombre=" + nombre + ", tipo=" + tipo + "]";
     }
+
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((nombre == null) ? 0 : nombre.hashCode());
-        result = prime * result + ((tipo == null) ? 0 : tipo.hashCode());
-        result = prime * result + ((direccion == null) ? 0 : direccion.hashCode());
-        result = prime * result + ((ciudad == null) ? 0 : ciudad.hashCode());
-        return result;
+        return Objects.hash(id, nombre, tipo);
     }
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
         Centro other = (Centro) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (nombre == null) {
-            if (other.nombre != null)
-                return false;
-        } else if (!nombre.equals(other.nombre))
-            return false;
-        if (tipo == null) {
-            if (other.tipo != null)
-                return false;
-        } else if (!tipo.equals(other.tipo))
-            return false;
-        if (direccion == null) {
-            if (other.direccion != null)
-                return false;
-        } else if (!direccion.equals(other.direccion))
-            return false;
-        if (ciudad == null) {
-            if (other.ciudad != null)
-                return false;
-        } else if (!ciudad.equals(other.ciudad))
-            return false;
-        return true;
+        return Objects.equals(id, other.id)
+            && Objects.equals(nombre, other.nombre)
+            && Objects.equals(tipo, other.tipo);
     }
-    
 }
-

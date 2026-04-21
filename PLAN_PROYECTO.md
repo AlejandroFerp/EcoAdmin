@@ -1,169 +1,673 @@
-# EcoAdmin — Plan de Proyecto Intermodular DAM
+﻿# EcoAdmin — Plan de Proyecto Intermodular DAM
 
-## Descripción del proyecto
-Plataforma de gestión de traslados de residuos peligrosos (baterías de litio).
-Garantiza trazabilidad completa desde generación hasta tratamiento final, con generación automática de documentos legales.
+## Descripcion del proyecto
+Plataforma de gestion de traslados de residuos peligrosos (baterias de litio).
+Garantiza trazabilidad completa desde generacion hasta tratamiento final, con generacion automatica de documentos legales.
 
-**Stack confirmado:** Spring Boot 4.0.0 + SQLite + Thymeleaf/Bootstrap 5 (aplicación web, sin cliente desktop)
-
----
-
-## Estado actual del backend (ServidorApiRest)
-
-### Lo que existe y funciona
-- Entidades + CRUD completo: `Centro`, `Residuo`, `Usuario`
-- Capa de servicio con interfaz + implementación para los 3 modelos
-- `UsuarioDTO` (record) para no exponer password en la API
-- `ConfiguracionAuditoria` → `@EnableJpaAuditing` con `AuditorAware`
-- `SeguridadConfig` → Spring Security con `AuthenticationManager`, login en `/public/login`, redirect a `/public/index`
-- `ZonaPublicaController` → rutas `/public/index` y `/public/login`
-- `IndexController` → redirige `/` a `/public/index`
-
-### Problemas pendientes de resolver
-- `@CrossOrigin("*")` en todos los controllers → sustituir por config centralizada con CORS
-- `Usuario.password` sin cifrar → añadir `BCryptPasswordEncoder`
-- No existe tabla `Traslado` ni `Direccion`
-- No existe autenticación basada en BD (UserDetailsService)
-- No hay Swagger/OpenAPI
-- No hay generación de PDF
-- No hay envío de correo
-- No hay QR
-- No hay gráficos en el panel
-- No existe ningún template `login.html`
-- No existe frontend C# WPF
+**Stack:** Spring Boot 4.0.0 + SQLite (dev) / H2 (test) / PostgreSQL (prod) + Thymeleaf + DaisyUI/Tailwind CSS
+**Referencia:** [myshipment (PHP/Laravel)](https://github.com/AlejandroFerp/myshipment) para modelo de datos y acciones
 
 ---
 
-## Fases del proyecto
+## Fases completadas
 
-### FASE 1 — Base sólida de seguridad y BD (CRÍTICA)
-- [x] 1.1 Crear `login.html` en templates
-- [x] 1.2 `UserDetailsService` que cargue usuario desde BD
-- [x] 1.3 `BCryptPasswordEncoder` para cifrar passwords
-- [x] 1.4 Configurar CORS centralizado en `SeguridadConfig` (quitar `@CrossOrigin("*")`)
-- [x] 1.5 Crear tabla `Direccion` (entidad + CRUD)
-- [x] 1.6 Crear tabla `Traslado` (entidad + CRUD)
-- [x] 1.7 Definir roles: `PRODUCTOR`, `GESTOR`, `TRANSPORTISTA`
-- [x] 1.8 Añadir campo `rol` a `Usuario`
+### FASE 1 — Base solida de seguridad y BD [COMPLETADA]
+- [x] login.html, UserDetailsService, BCryptPasswordEncoder
+- [x] CORS centralizado, Direccion, Traslado, roles, campo rol en Usuario
 
-### FASE 2 — Modelo de datos completo (EcoAdmin)
-- [x] 2.1 Entidad `Direccion` (calle, ciudad, CP, provincia, país)
-- [x] 2.2 Entidad `Traslado` (origen, destino, residuo, transportista, estado, fechas)
-- [x] 2.3 Enum `EstadoTraslado`: PENDIENTE, EN_TRANSITO, ENTREGADO, COMPLETADO
-- [x] 2.4 Enum `Rol`: PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN
-- [x] 2.5 Relaciones: `Traslado` → `Centro` (productor y gestor), `Traslado` → `Usuario` (transportista), `Traslado` → `Residuo`
-- [x] 2.6 Añadir campo `codigoLER` a `Residuo`
-- [x] 2.7 Historial de cambios de estado de traslado (entidad `EventoTraslado`)
+### FASE 2 — Modelo de datos completo [COMPLETADA]
+- [x] Entidades: Direccion, Traslado, EstadoTraslado (enum con maquina de estados)
+- [x] Roles: PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN
+- [x] Relaciones: Traslado -> Centro (productor/gestor), Traslado -> Usuario (transportista), Traslado -> Residuo
+- [x] codigoLER en Residuo, EventoTraslado (historial de cambios)
 
-### FASE 3 — API REST + Swagger
-- [x] 3.1 Añadir dependencia SpringDoc OpenAPI (Swagger UI)
-- [x] 3.2 `SwaggerConfig` con info del proyecto
-- [x] 3.3 Controller `TrasladoController` con endpoints CRUD + cambio de estado + historial
-- [x] 3.4 Controller `DireccionController`
-- [x] 3.5 Endpoint de historial por traslado (`GET /api/traslados/{id}/historial`)
-- [x] 3.6 Endpoint de filtro por estado (`GET /api/traslados/por-estado/{estado}`)
-- [ ] 3.7 Anotar controllers con `@Operation` y `@Tag` (Swagger descriptors)
+### FASE 3 — API REST + Swagger [COMPLETADA]
+- [x] SpringDoc OpenAPI, CRUD para todas las entidades
+- [x] Endpoints de historial, filtro por estado, cambio de estado
+- [x] Ownership-based access control por rol
+- [ ] Anotar controllers con @Operation y @Tag
 
-### FASE 4 — Generación de documentos (PDF)
-- [ ] 4.1 Añadir dependencia iText o OpenPDF
-- [ ] 4.2 Servicio `PdfService` con métodos:
-  - `generarCartaDePorte(Traslado)`
-  - `generarContratoTratamiento(Traslado)`
-  - `generarNotificacionTraslado(Traslado)`
-  - `generarCertificadoRecepcion(Traslado)`
-- [ ] 4.3 Endpoint `/api/traslados/{id}/pdf/{tipo}` que devuelve el PDF
+### FASE 9 — Revision de seguridad y calidad [COMPLETADA]
+- [x] 17 issues de seguridad/logica/estructura corregidos
+- [x] @JsonProperty(WRITE_ONLY) para password
+- [x] Rutas /public/ corregidas en ZonaPublicaController
+- [x] Verificacion compatibilidad thymeleaf-extras-springsecurity6 con Security 7
+- [x] 40 tests (AccesoController, TrasladoService, TrasladoEndpoint, EstadoTraslado)
 
-### FASE 5 — Email
-- [ ] 5.1 Añadir dependencia `spring-boot-starter-mail`
-- [ ] 5.2 Servicio `EmailService`
-- [ ] 5.3 Envío al crear traslado, al cambiar estado y al generar certificado
-
-### FASE 6 — Códigos QR
-- [ ] 6.1 Añadir dependencia ZXing
-- [ ] 6.2 Servicio `QrService` que genera QR por traslado
-- [ ] 6.3 Endpoint `/api/traslados/{id}/qr`
-
-### FASE 7 — Panel de control y gráficos (Thymeleaf)
-- [ ] 7.1 Template `dashboard.html` con Bootstrap 5
-- [ ] 7.2 Estadísticas: residuos generados, traslados por estado, alertas
-- [ ] 7.3 Integrar Chart.js para gráficos de barras y circulares
-- [ ] 7.4 Endpoint `/api/estadisticas` que devuelve datos agregados
-
-~~### FASE 8 — Frontend C# WPF~~ ❌ Descartado
+### FASE 10 — Modelo de datos v2 (alineacion con PHP) [COMPLETADA]
+- [x] Centro.direccion: String -> @ManyToOne Direccion (FK real)
+- [x] Centro: campos nuevos nima, telefono, email, nombreContacto, detalleEnvio
+- [x] Direccion: campos nuevos nombre, descripcion, calle2, latitud, longitud
+- [x] Residuo: campo nuevo descripcion
+- [x] ListaLer: nueva entidad (catalogo europeo de residuos, 953 codigos)
+- [x] ListaLerRepository + ListaLerController (/api/lista-ler con busqueda)
+- [x] DataInitializer: seed completo (5 usuarios, 8 direcciones, 6 centros, 7 residuos, 7 traslados con historial)
+- [x] DireccionController: acceso para todos los autenticados (no solo ADMIN)
+- [x] CentroServiceDB: resuelve Direccion FK antes de guardar
+- [x] Tests actualizados: todos 40 pasan
 
 ---
 
-## Estructura de paquetes objetivo (backend)
+## Fases pendientes
+
+### FASE 11 — Sistema de theming (dark mode + componentes) [EN PROGRESO]
+- [ ] 11.1 Tema oscuro azulado: fondo slate-900, paneles slate-800, acento blue-500
+- [ ] 11.2 Toggle dark/light en sidebar con persistencia en localStorage
+- [ ] 11.3 Sistema de clases CSS global (btn-primary, btn-danger, etc.)
+- [ ] 11.4 Iconos consistentes: editar=lapiz, borrar=papelera con tooltip, QR coherente
+- [ ] 11.5 Layout compartido: extraer sidebar/header/footer a Thymeleaf fragments
+
+### FASE 12 — UX de tablas
+- [ ] 12.1 Doble clic para abrir detalle/edicion
+- [ ] 12.2 Seleccion batch + acciones masivas (eliminar, cambiar estado, exportar)
+- [ ] 12.3 Crear entidad desde dropdown (opcion "+ Crear nuevo" en selects)
+
+### FASE 13 — Vistas separadas (crear vs detalle)
+- [ ] 13.1 Modal ligero para crear (campos obligatorios)
+- [ ] 13.2 Vista de detalle expandida con tabs (datos, documentos, historial, fotos)
+- [ ] 13.3 Timeline visual del historial de estados en traslados
+- [ ] 13.4 Seccion de fotos/adjuntos en centros y traslados
+
+### FASE 14 — Direcciones y mapa
+- [ ] 14.1 Vista de mapa con Leaflet.js (marcadores de centros)
+- [ ] 14.2 Selector de direccion con mapa (clic para establecer lat/lon)
+- [ ] 14.3 Geocodificacion inversa con Nominatim/OpenStreetMap
+
+### FASE 15 — Generacion de PDFs
+- [ ] 15.1 PdfService con OpenPDF: carta de porte, certificado recepcion, notificacion previa
+- [ ] 15.2 Endpoint GET /api/traslados/{id}/pdf/{tipo}
+- [ ] 15.3 Informe resumen desde dashboard (estadisticas por periodo)
+- [ ] 15.4 Referencia de formatos: repo PHP myshipment
+
+### FASE 16 — Email y QR (extras)
+- [ ] 16.1 Email en cambios de estado
+- [ ] 16.2 QR mejorado con logo EcoAdmin
+- [ ] 16.3 Anotar controllers con @Operation y @Tag (Swagger)
+
+---
+
+## Orden de ejecucion
+
+| Prioridad | Fase | Justificacion |
+|-----------|------|---------------|
+| 1 | 11 (theming) | Base visual para todo lo demas |
+| 2 | 12 (UX tablas) | Mejora inmediata en experiencia |
+| 3 | 13 (vistas) | Diferencia grande en calidad percibida |
+| 4 | 14 (mapas) | Feature diferencial para presentacion |
+| 5 | 15 (PDFs) | Requisito explicito del proyecto |
+| 6 | 16 (extras) | Cierre y detalles finales |
+
+### Dependencias
+```
+11 --> 12 --> 13
+10 --> 14
+15 (independiente, puede ir en paralelo desde fase 10)
+```
+
+---
+
+## Estructura de paquetes
 
 ```
 com.iesdoctorbalmis.spring
-├── config/
-│   ├── ConfiguracionAuditoria.java   ✅
-│   ├── SeguridadConfig.java          ✅ (CORS centralizado)
-│   ├── SwaggerConfig.java            ✅
-│   └── DataInitializer.java          ✅
-├── controladores/
-│   ├── IndexController.java          ✅
-│   ├── ZonaPublicaController.java    ✅ (con estadísticas al modelo)
-│   ├── UsuarioController.java        ✅
-│   ├── CentroController.java         ✅
-│   ├── ResiduoController.java        ✅
-│   ├── TrasladoController.java       ✅ (CRUD + estado + historial + PDF + QR)
-│   ├── DireccionController.java      ✅
-│   └── EstadisticasController.java   ✅
-├── dto/
-│   ├── UsuarioDTO.java               ✅
-│   ├── TrasladoDTO.java              ⬜
-│   └── EstadisticasDTO.java          ⬜
-├── modelo/
-│   ├── Usuario.java                  ✅ (con fechaAlta, rol)
-│   ├── Centro.java                   ✅
-│   ├── Residuo.java                  ✅ (con codigoLER)
-│   ├── Traslado.java                 ✅
-│   ├── Direccion.java                ✅
-│   ├── EventoTraslado.java           ✅
-│   ├── enums/Rol.java                ✅
-│   └── enums/EstadoTraslado.java     ✅
-├── repository/
-│   ├── CentroRepository.java         ✅
-│   ├── ResiduoRepository.java        ✅
-│   ├── UsuarioRepository.java        ✅
-│   ├── TrasladoRepository.java       ✅
-│   ├── DireccionRepository.java      ✅
-│   └── EventoTrasladoRepository.java ✅
-├── servicios/
-│   ├── CentroService/DB              ✅
-│   ├── ResiduoService/DB             ✅
-│   ├── UsuarioService/DB             ✅
-│   ├── TrasladoService/DB            ✅
-│   ├── DireccionService/DB           ✅
-│   ├── PdfService.java               ✅
-│   ├── EmailService.java             ✅
-│   └── QrService.java                ✅
-└── Application.java                  ✅
++-- config/
+|   +-- ConfiguracionAuditoria    @EnableJpaAuditing
+|   +-- SeguridadConfig           Spring Security 7, CORS, roles
+|   +-- DataInitializer           Seed completo + catalogo LER
++-- controladores/
+|   +-- IndexController           Redirect / -> /public/index
+|   +-- ZonaPublicaController     Vistas Thymeleaf
+|   +-- UsuarioController         API CRUD (solo ADMIN)
+|   +-- CentroController          API CRUD + ownership
+|   +-- ResiduoController         API CRUD + ownership
+|   +-- TrasladoController        API CRUD + estado + historial
+|   +-- DireccionController       API CRUD
+|   +-- EstadisticasController    API agregados
+|   +-- ListaLerController        API catalogo LER (busqueda)
+|   +-- QrController              API generacion QR
++-- dto/
+|   +-- UsuarioDTO                Record sin password
++-- modelo/
+|   +-- Usuario                   id, nombre, email, password, rol, fechaAlta
+|   +-- Centro                    id, usuario, nombre, tipo, direccion(FK), nima, telefono, email, nombreContacto
+|   +-- Residuo                   id, cantidad, unidad, estado, codigoLER, descripcion, centro(FK)
+|   +-- Direccion                 id, nombre, descripcion, calle, calle2, ciudad, codigoPostal, provincia, pais, lat, lon
+|   +-- Traslado                  id, centroProductor, centroGestor, residuo, transportista, estado, fechas, observaciones
+|   +-- EventoTraslado            id, traslado, estadoAnterior, estadoNuevo, fecha, comentario, usuario
+|   +-- ListaLer                  id, codigo, descripcion (953 codigos europeos)
+|   +-- enums/Rol                 PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN
+|   +-- enums/EstadoTraslado      PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO
++-- repository/                   JpaRepository para cada entidad
++-- servicios/                    Interface + DB impl para cada entidad
 ```
 
 ---
 
-## Orden de trabajo recomendado
-
-1. **Fase 1** → sin seguridad correcta todo lo demás es frágil
-2. **Fase 2** → el modelo de datos es la base de todo
-3. **Fase 3** → la API es lo que consume el WPF
-4. **Fase 4** → los PDF son requisito explícito del profesor
-5. **Fase 7** → el dashboard es lo más visual para la presentación
-6. **Fases 5 y 6** → email y QR son extras que suman nota
-~~7. **Fase 8** → descartado~~
+## Notas tecnicas
+- Spring Boot 4.0.0 / Java 21 (Temurin 21.0.10)
+- Spring Security 7.0.0, thymeleaf-extras-springsecurity6 (compatible)
+- SQLite (dev), H2 (test), PostgreSQL (prod)
+- @AutoConfigureMockMvc NO existe en SB4: usar MockMvcBuilders.webAppContextSetup()
+- Frontend: DaisyUI 4 + Tailwind CSS (CDN) + Flowbite + HTMX
+- OpenPDF, ZXing, spring-boot-starter-mail, springdoc-openapi 2.8.6
 
 ---
 
-## Notas técnicas
+## BLOQUE II — Evolucion del producto (nuevas fases)
 
-- Spring Boot 4.0.0 requiere Java 21+
-- SQLite: driver `org.xerial:sqlite-jdbc` + dialecto `hibernate-community-dialects` (SQLiteDialect)
-- Fichero BD: `ecoadmin.db` generado en el directorio de trabajo; `ddl-auto=update`
-- `@CrossOrigin("*")` debe eliminarse; centralizar CORS en `SeguridadConfig`
-- Bootstrap 5 en pom.xml (5.3.3 vía webjars)
-- iText 7 o OpenPDF para PDF (OpenPDF es LGPL, más libre)
-- ZXing para QR
-- SpringDoc 2.x para Swagger (compatible con Spring Boot 3+/4)
+### Contexto: nueva estructura de navegacion
+
+El usuario ha definido una nueva arquitectura de navegacion con 8 secciones de primer nivel.
+La aplicacion crece de ser un gestor de traslados a una plataforma completa de gestion de residuos
+con cumplimiento legal integrado (RD 553/2020, Ley 7/2022).
+
+```
+SIDEBAR
+├── Principal
+│   ├── Dashboard         (existente → mejorar)
+│   ├── Recogidas         (traslados rebrandeados + workflow)
+│   └── Rutas             (NUEVO: planificacion de transporte)
+├── Almacen               (residuos + FIFO + calendario)
+├── Contactos             (centros + personas de contacto)
+├── Negocio               (datos empresa, NIMA, autorizaciones)
+├── Mis Datos             (perfil de usuario autenticado)
+├── Documentos            (DI, NP, Contratos, Archivo Cronologico)
+└── Informes              (reporting legal + estadisticas)
+```
+
+---
+
+### FASE 17 — Nueva navegacion y reorganizacion de modulos
+
+**Objetivo:** Reestructurar el sidebar para reflejar la nueva arquitectura de 8 secciones.
+No se elimina funcionalidad, se reorganiza y renombra.
+
+**Tareas:**
+
+- [ ] 17.1 Sidebar con grupos colapsables: Principal (con subnivel), Almacen, Contactos, Negocio, Mis Datos, Documentos, Informes
+- [ ] 17.2 Rutas de Thymeleaf: `/dashboard`, `/recogidas`, `/rutas`, `/almacen`, `/contactos`, `/negocio`, `/mis-datos`, `/documentos`, `/informes`
+- [ ] 17.3 Renombrar "Traslados" → "Recogidas" en toda la UI (backend mantiene nombre, solo vista cambia)
+- [ ] 17.4 Renombrar "Residuos" → "Almacen" en la navegacion
+- [ ] 17.5 Mover centros + usuarios bajo "Contactos" (centros = instalaciones, usuarios = personas)
+- [ ] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
+- [ ] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
+- [ ] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
+
+**Impacto en backend:** Minimo. Solo anadir endpoints de vista en ZonaPublicaController.
+
+---
+
+### FASE 18 — Calendario y seguimiento FIFO de almacen
+
+**Objetivo:** Registrar el ciclo completo de un residuo en almacen: entrada, permanencia y salida.
+Garantizar trazabilidad temporal y alerta de incumplimientos de plazo.
+
+**Contexto legal:**
+El RD 553/2020 y la Ley 7/2022 obligan a registrar las fechas de almacenamiento.
+El Archivo Cronologico (obligatorio) debe incluir: fecha de almacenamiento y fecha de entrega al gestor.
+Los residuos peligrosos no pueden superar ciertos tiempos de almacenamiento (tipicamente 6 meses para
+productores, 1 ano para gestores). La gestion FIFO (primero en entrar, primero en salir) es la
+practica correcta para evitar que residuos queden sin gestionar.
+
+**Modelo de datos nuevo:**
+
+```java
+// Extension de Residuo (nuevos campos)
+Residuo {
+  // existentes...
+  LocalDateTime fechaEntradaAlmacen;   // cuando llego al almacen
+  LocalDateTime fechaSalidaAlmacen;    // cuando salio (null si sigue)
+  Integer diasMaximoAlmacenamiento;    // umbral de alerta (default: 180)
+}
+
+// Nueva entidad: Recogida programada
+Recogida {
+  Long id;
+  Residuo residuo;
+  Centro centroOrigen;
+  Centro centroDestino;
+  Usuario transportista;
+  LocalDate fechaProgramada;
+  LocalDate fechaRealizada;
+  EstadoRecogida estado;               // PROGRAMADA, EN_CURSO, COMPLETADA, CANCELADA
+  String observaciones;
+}
+```
+
+**Tareas:**
+
+- [ ] 18.1 Anadir `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` a Residuo
+- [ ] 18.2 Crear entidad `Recogida` con su repositorio y servicio
+- [ ] 18.3 Vista de calendario (`/recogidas/calendario`) con FullCalendar.js (licencia MIT)
+       - Recogidas programadas se muestran como eventos
+       - Color por estado: azul=programada, amarillo=en_curso, verde=completada, rojo=cancelada
+       - Click en evento abre detalle/edicion
+- [ ] 18.4 Vista de lista de almacen (`/almacen`) con columna "Dias en almacen"
+       - Badge rojo si supera `diasMaximoAlmacenamiento`
+       - Ordenar por `fechaEntradaAlmacen` ASC (FIFO visual)
+- [ ] 18.5 Timeline en detalle de residuo: entrada → dias en almacen → salida (o alerta)
+- [ ] 18.6 Alertas en Dashboard: "X residuos superan el tiempo maximo de almacenamiento"
+- [ ] 18.7 API endpoints:
+       - `GET /api/recogidas` (lista con filtros: estado, fecha, centro)
+       - `POST /api/recogidas`
+       - `PUT /api/recogidas/{id}`
+       - `DELETE /api/recogidas/{id}`
+       - `GET /api/almacen/alertas-fifo` (residuos fuera de plazo)
+- [ ] 18.8 Tests: RecogidaService, alertas FIFO
+
+**Libreria frontend:** FullCalendar.js v6 (CDN, gratis para uso basico)
+```html
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+```
+
+---
+
+### FASE 19 — Modulo Documentos (cumplimiento legal RD 553/2020)
+
+**Objetivo:** Gestionar todos los documentos legales obligatorios en la gestion de residuos.
+Asegurar que cada traslado/recogida lleva su documentacion asociada y que el archivo
+cronologico se mantiene automaticamente.
+
+**Marco legal:**
+Segun RD 553/2020, Ley 7/2022 y fuentes sectoriales (DCD, AEDED, ATREVA):
+
+| Documento | Cuando es obligatorio | Plazo |
+|-----------|----------------------|-------|
+| Contrato de tratamiento | Siempre; entre productor y gestor autorizado | Previo al primer traslado |
+| Notificacion Previa (NP) | Residuos peligrosos o domesticos mezclados | Min. 10 dias antes del traslado |
+| Documento de Identificacion (DI) | Todos los traslados; uno por tramo logistico | Emitir al envio, cerrar en recepcion |
+| Archivo Cronologico | Obligatorio para todos los productores | Conservar minimo 3 anos |
+| Ficha de Aceptacion (FA) | Emitida por la planta de tratamiento al recibir | Al llegar al destino |
+| Hoja de Seguimiento (HS/HSI) | Segun comunidad autonoma | Al envio |
+| Informe Final de Gestion | Al cierre de contrato o periodo | Anual o por proyecto |
+
+**Modelo de datos nuevo:**
+
+```java
+Documento {
+  Long id;
+  TipoDocumento tipo;           // enum: CONTRATO, NP, DI, ARCHIVO_CRONOLOGICO, FA, HS, INFORME
+  String numeroReferencia;      // ej: "DI-2024-001"
+  Traslado traslado;            // FK nullable (DI, NP, FA van asociados a traslado)
+  Recogida recogida;            // FK nullable
+  Centro centro;                // FK nullable (contratos van por centro)
+  LocalDate fechaEmision;
+  LocalDate fechaVencimiento;   // para NP: fecha del traslado - 10 dias
+  LocalDate fechaCierre;        // para DI: fecha en que el gestor confirma
+  EstadoDocumento estado;       // BORRADOR, EMITIDO, CERRADO, VENCIDO
+  String rutaArchivo;           // path del PDF subido o generado
+  String observaciones;
+  LocalDateTime creadoEn;
+}
+```
+
+**Tareas:**
+
+- [ ] 19.1 Crear entidades `Documento`, `TipoDocumento` (enum), `EstadoDocumento` (enum)
+- [ ] 19.2 DocumentoRepository + DocumentoService
+- [ ] 19.3 Vista `/documentos` con tabla: tipo, referencia, centro/traslado, fechas, estado, acciones
+       - Filtros: por tipo, por estado, por fecha, por centro
+       - Badge de alerta si `fechaVencimiento` < hoy + 10 dias
+- [ ] 19.4 CRUD de documentos (crear/editar/eliminar)
+- [ ] 19.5 Upload de archivos PDF (guardar en `src/main/resources/static/documentos/` o ruta config)
+       - Validar que solo se suben PDFs, max 10MB
+       - Endpoint: `POST /api/documentos/{id}/archivo`
+- [ ] 19.6 Generacion automatica de DI al crear/completar una Recogida
+       - El DI se genera como PDF con: LER, cantidad, origen, destino, transportista, fechas
+       - Usar la `PdfService` existente (Fase 15) o crearla aqui
+- [ ] 19.7 Archivo Cronologico automatico: cada traslado/recogida completada genera entrada
+       - Vista especial `/documentos/archivo-cronologico`: tabla cronologica
+       - Exportable a PDF/CSV para auditorias
+- [ ] 19.8 Alerta NP en Dashboard: "X recogidas programadas sin NP emitida con menos de 10 dias"
+- [ ] 19.9 API endpoints:
+       - `GET /api/documentos` (con filtros)
+       - `POST /api/documentos`
+       - `PUT /api/documentos/{id}`
+       - `DELETE /api/documentos/{id}`
+       - `GET /api/documentos/{id}/archivo` (descargar PDF)
+       - `POST /api/documentos/{id}/archivo` (subir PDF)
+       - `GET /api/documentos/archivo-cronologico` (exportar)
+- [ ] 19.10 Tests: DocumentoService, generacion DI, alertas NP
+
+**Nombre normalizado de archivos (buena practica legal):**
+`AAAA-MM-DD_TIPO_Centro-CodigoLER_Destino.pdf`
+Ejemplo: `2024-03-15_DI_CentroNorte-160107_GestorAutorizado.pdf`
+
+---
+
+### FASE 20 — Modulo Informes
+
+**Objetivo:** Generar informes de gestion para auditorias internas, inspecciones y
+cumplimiento anual. Cubrir el Informe Final de Gestion de Residuos (obligatorio legal).
+
+**Tipos de informe:**
+
+| Informe | Contenido | Formato |
+|---------|-----------|---------|
+| Estadisticas por periodo | Recogidas, cantidades, LER, centros | PDF/CSV |
+| Inventario de almacen | Residuos activos con dias en almacen | PDF |
+| Trazabilidad de residuo | Historia completa de un residuo (LER > almacen > recogida > destino) | PDF |
+| Archivo cronologico | Todas las operaciones en periodo | CSV/PDF |
+| Informe Final de Gestion | Formato legal: LER, cantidades, porcentaje reciclado, agentes | PDF |
+| Checklist de auditoria | Estado de documentacion: DIs cerrados, NPs vigentes, contratos activos | HTML/PDF |
+
+**Tareas:**
+
+- [ ] 20.1 Vista `/informes` con lista de tipos de informe disponibles
+- [ ] 20.2 Formulario de parametros por informe (rango de fechas, centro, LER)
+- [ ] 20.3 Informe de estadisticas por periodo (extiende el dashboard actual)
+       - Residuos gestionados por LER
+       - Cantidad total por unidad
+       - Recogidas completadas vs pendientes
+       - Exportar a PDF y CSV
+- [ ] 20.4 Informe de inventario de almacen (estado actual del almacen)
+       - Tabla: LER, descripcion, cantidad, dias en almacen, alerta FIFO
+- [ ] 20.5 Informe de trazabilidad por residuo
+       - Timeline: entrada almacen → recogidas → destino final
+       - Documentos asociados (DI, NP, FA)
+- [ ] 20.6 Informe Final de Gestion (formato legal segun AEDED)
+       - Tabla resumen cuantitativa: LER, prevision EGR, real, variacion
+       - Porcentaje de valoracion/reciclaje/eliminacion
+       - Agentes participantes (centros, transportistas, gestores)
+       - Reflexion sobre impacto ambiental (campo de texto libre)
+- [ ] 20.7 Checklist de auditoria pre-inspeccion
+       - Para cada traslado/recogida del periodo: tiene DI cerrado?, tiene NP vigente?, contrato activo?
+       - Semaforo verde/amarillo/rojo por item
+- [ ] 20.8 PdfService: plantillas para cada tipo de informe (usar OpenPDF)
+- [ ] 20.9 API:
+       - `GET /api/informes/estadisticas?desde=&hasta=&centroId=` (JSON para frontend)
+       - `GET /api/informes/inventario-almacen` (JSON)
+       - `GET /api/informes/trazabilidad/{residuoId}` (JSON)
+       - `GET /api/informes/final-gestion?periodo=` (genera y devuelve PDF)
+       - `GET /api/informes/checklist-auditoria?periodo=` (JSON/PDF)
+- [ ] 20.10 Tests: generacion de informes, calculos de estadisticas
+
+---
+
+### FASE 21 — Modulo Negocio y perfil de empresa
+
+**Objetivo:** Registrar los datos legales de la empresa: NIMA, autorizaciones, seguros,
+datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
+
+**Tareas:**
+
+- [ ] 21.1 Entidad `Empresa` (singleton: solo un registro por instancia)
+       - nombre, CIF, NIMA (Numero de Identificacion Medioambiental), direccion, telefono, email
+       - autorizacionGestor (texto/referencia), autorizacionTransportista
+       - logoUrl (para PDF)
+- [ ] 21.2 Vista `/negocio` con formulario de edicion (solo ADMIN)
+- [ ] 21.3 Integrar datos de empresa en la generacion de PDFs
+- [ ] 21.4 Vista `/mis-datos` para que cada usuario edite su perfil
+       - Nombre, email, password (con confirmacion)
+       - No puede cambiar su propio rol
+
+---
+
+### Orden de ejecucion (Bloque II)
+
+| Prioridad | Fase | Justificacion |
+|-----------|------|---------------|
+| 1 | 17 (navegacion) | Base visual para todo lo demas. Baja complejidad, alto impacto. |
+| 2 | 18 (calendario + FIFO) | Feature diferencial. Requiere nuevas entidades (Recogida). |
+| 3 | 19 (documentos) | Nucleo legal del producto. Bloquea los informes. |
+| 4 | 20 (informes) | Depende de documentos y FIFO. Cierre del producto. |
+| 5 | 21 (negocio) | Datos de empresa necesarios para PDFs correctos. |
+
+### Dependencias Bloque II
+
+```
+17 (nav) → independiente, puede ir primero
+18 (FIFO + recogidas) → requiere 17 terminado en UI
+19 (documentos) → requiere 18 (Recogida existe antes que Documento)
+20 (informes) → requiere 18 + 19 (datos completos)
+21 (negocio) → requiere 17, paralelo con 18
+```
+
+---
+
+### Resumen de nuevas entidades a crear (Bloque II)
+
+| Entidad | Fase | Descripcion |
+|---------|------|-------------|
+| `Recogida` | 18 | Recogida programada con fechas, estado y transportista |
+| `Documento` | 19 | Documento legal (DI, NP, Contrato, etc.) vinculado a traslado/recogida |
+| `Empresa` | 21 | Datos legales de la empresa (singleton) |
+| Campos en `Residuo` | 18 | `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` |
+
+---
+
+## BLOQUE III — App movil Android (Kotlin)
+
+### Analisis de base de datos compartida
+
+**Requisito:** web y movil acceden a los mismos datos en tiempo real, multiples usuarios concurrentes.
+
+#### Por que SQLite NO sirve para esto
+
+SQLite es un motor embebido que escribe en un archivo local. Solo permite un escritor a la vez
+y no admite conexiones remotas. Es adecuado para desarrollo local de un solo proceso, pero no
+puede ser compartido entre la app web en el servidor y la app movil en un dispositivo Android.
+
+**Conclusion: SQLite queda como base de datos de desarrollo local unico. Nunca en produccion compartida.**
+
+#### Por que PostgreSQL ES la solucion (ya planificada)
+
+PostgreSQL es un servidor de base de datos real con las caracteristicas necesarias:
+
+| Caracteristica | Valor |
+|---------------|-------|
+| Conexiones simultaneas | Hasta miles (configurable con pgBouncer) |
+| Aislamiento de transacciones | ACID completo |
+| Acceso remoto | Si, via TCP/IP |
+| Modelo de usuarios y permisos | Si, nativo |
+| Escalado | Vertical y horizontal (replicas de lectura) |
+
+**Ya esta planificado en este proyecto:** `application-prod.properties` apunta a PostgreSQL.
+No hay que cambiar nada del modelo de datos ni de los repositorios JPA.
+
+#### Arquitectura de acceso compartido
+
+```
+┌──────────────────────────────────────────────────┐
+│                  CLIENTES                         │
+│                                                   │
+│  [Navegador Web]      [App Android (Kotlin)]      │
+│       │                      │                   │
+│       └──────────┬───────────┘                   │
+└──────────────────│───────────────────────────────┘
+                   │  HTTPS + JSON
+                   ▼
+┌──────────────────────────────────────────────────┐
+│          Spring Boot API (unico punto de entrada) │
+│   - Autenticacion (sesion para web, JWT para movil)│
+│   - Control de acceso por rol                     │
+│   - Logica de negocio                             │
+│   - JPA / Hibernate                               │
+└──────────────────────────────────────────────────┘
+                   │  JDBC / JPA
+                   ▼
+┌──────────────────────────────────────────────────┐
+│              PostgreSQL (produccion)              │
+│   - Una sola instancia                            │
+│   - Todas las entidades existentes sin cambios    │
+└──────────────────────────────────────────────────┘
+```
+
+**Regla clave:** ningun cliente (web ni movil) accede directamente a la BD.
+Siempre a traves de la API. La BD no sabe si el cliente es un navegador o una app Android.
+
+---
+
+### FASE M0 — Preparacion del backend para clientes moviles
+
+**Objetivo:** Anadir autenticacion JWT al backend sin romper la autenticacion de sesion que
+usa la web. Los endpoints `/api/**` deben aceptar tanto sesion como token JWT.
+
+**Por que hace falta JWT para movil:**
+La app Android no puede gestionar cookies de sesion (JSESSIONID) de forma fiable.
+El estandar para APIs consumidas por apps moviles es JWT: el cliente envia el token
+en la cabecera `Authorization: Bearer <token>` en cada peticion. Es stateless: el servidor
+no guarda estado de sesion.
+
+**Tareas:**
+
+- [ ] M0.1 Anadir dependencia `spring-boot-starter-oauth2-resource-server` o `jjwt` al pom.xml
+- [ ] M0.2 Crear `JwtService`: genera y valida tokens JWT firmados con clave secreta configurable
+       - Payload: `sub` (email), `rol`, `exp` (expiracion, default 24h)
+       - Clave configurable via variable de entorno `JWT_SECRET`
+- [ ] M0.3 Crear `JwtAuthFilter`: intercepta peticiones `/api/**` y valida el token si presente
+       - Si hay token valido: autentica en SecurityContext (sin sesion)
+       - Si no hay token: sigue la cadena (la sesion puede autenticar)
+       - Si el token es invalido: 401
+- [ ] M0.4 Crear endpoint `POST /api/auth/login`
+       - Body: `{ "email": "...", "password": "..." }`
+       - Response: `{ "token": "...", "rol": "...", "nombre": "...", "expira": "..." }`
+       - Misma logica de autenticacion que el formulario de login actual
+- [ ] M0.5 Actualizar `SeguridadConfig` para registrar `JwtAuthFilter` antes de `UsernamePasswordAuthenticationFilter`
+- [ ] M0.6 Ampliar CORS: permitir cualquier origen en `/api/**` (la app Android no tiene origen HTTP)
+       - O configurar dominio de produccion especifico si se despliega
+- [ ] M0.7 Tests: login JWT, peticion autenticada con token, token expirado, token invalido
+- [ ] M0.8 Documentar en Swagger: `@SecurityScheme` de tipo `http bearer`
+
+**Nota sobre seguridad:**
+- El JWT_SECRET debe tener al menos 256 bits de entropia (32 caracteres aleatorios)
+- No hardcodear el secreto: solo via variable de entorno
+- Tokens de refresco (refresh tokens) son opcionales para esta fase; se puede implementar
+  con un endpoint `POST /api/auth/refresh` en el futuro
+
+---
+
+### FASE M1 — App Android (Kotlin + Jetpack Compose)
+
+**Stack tecnico:**
+
+| Capa | Libreria | Version recomendada |
+|------|----------|---------------------|
+| UI | Jetpack Compose | BOM 2024.x |
+| Navegacion | Navigation Compose | 2.8.x |
+| HTTP | Retrofit2 + OkHttp | 2.11 / 4.12 |
+| JSON | Gson / Moshi | Gson 2.10 |
+| Estado | ViewModel + StateFlow | Lifecycle 2.8.x |
+| Auth storage | EncryptedSharedPreferences | Security Crypto 1.1 |
+| Inyeccion | Hilt | 2.51 |
+| Imagenes | Coil | 2.6 |
+
+**Prerequisito:** FASE M0 completada (endpoint JWT disponible).
+
+**Pantallas planeadas (mapeadas a endpoints existentes):**
+
+| Pantalla | Endpoint API | Roles con acceso |
+|----------|--------------|-----------------|
+| Login | `POST /api/auth/login` | Todos |
+| Dashboard | `GET /api/estadisticas/**` | Todos |
+| Traslados / Recogidas | `GET/POST/PATCH /api/traslados` | PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN |
+| Detalle traslado + historial | `GET /api/traslados/{id}` | Segun ownership |
+| Cambio de estado | `PATCH /api/traslados/{id}/estado` | TRANSPORTISTA, GESTOR |
+| Centros | `GET/POST/PUT /api/centros` | PRODUCTOR, GESTOR, ADMIN |
+| Residuos | `GET/POST/PUT /api/residuos` | PRODUCTOR, GESTOR, ADMIN |
+| Usuarios (admin) | `GET /api/usuarios` | ADMIN |
+| Mi perfil | `GET /api/usuarios/me` (pendiente) | Todos |
+| Escaner QR | `GET /api/qr/{id}` | Todos |
+
+**Estructura de paquetes Android:**
+
+```
+com.iesdoctorbalmis.ecoadmin
++-- data/
+|   +-- api/
+|   |   +-- ApiClient.kt          Retrofit singleton + interceptor JWT
+|   |   +-- TrasladoApi.kt        Interface Retrofit
+|   |   +-- CentroApi.kt
+|   |   +-- ResiduoApi.kt
+|   |   +-- AuthApi.kt
+|   +-- model/                    Data classes espejo de los DTOs del backend
+|   +-- repository/               Repositorios que llaman a la API
++-- ui/
+|   +-- login/                    LoginScreen + LoginViewModel
+|   +-- dashboard/                DashboardScreen + DashboardViewModel
+|   +-- traslados/                TrasladosScreen, DetalleScreen, ViewModels
+|   +-- centros/
+|   +-- residuos/
+|   +-- theme/                    MaterialTheme, colores, tipografia
++-- di/
+|   +-- NetworkModule.kt          Hilt: provee Retrofit, ApiClients
+|   +-- RepositoryModule.kt
++-- MainActivity.kt
++-- NavGraph.kt                   Definicion de rutas de navegacion
+```
+
+**Tareas:**
+
+- [ ] M1.1 Crear proyecto Android en Android Studio (minSdk 26, targetSdk 35)
+       - Activar Jetpack Compose, Hilt en el wizard
+- [ ] M1.2 Configurar Retrofit con interceptor que inyecta `Authorization: Bearer <token>`
+       - Token almacenado en `EncryptedSharedPreferences` (nunca en texto plano)
+- [ ] M1.3 Pantalla de login con validacion de campos
+       - Llamar a `POST /api/auth/login`, guardar token y rol
+       - Redirigir a Dashboard si ya hay token valido en storage
+- [ ] M1.4 Dashboard: cards con totales de traslados por estado (llamar a `/api/estadisticas`)
+- [ ] M1.5 Lista de traslados con pull-to-refresh y filtro por estado
+- [ ] M1.6 Detalle de traslado: datos completos + timeline de historial + boton cambio de estado
+- [ ] M1.7 Lista y creacion de centros
+- [ ] M1.8 Lista y creacion de residuos
+- [ ] M1.9 Escaner QR integrado (CameraX + MLKit para leer QR de un traslado)
+- [ ] M1.10 Manejo de errores: token expirado → redirigir a login, 403 → mensaje de acceso denegado
+- [ ] M1.11 Soporte offline basico: cachear ultima respuesta de listas con Room (opcional, fase posterior)
+
+**Directorio del proyecto Android:**
+`C:/Users/afp5/Git/servidor_api/ecoadmin-android/` (worktree independiente o repo separado)
+
+---
+
+### Orden de ejecucion Bloque III
+
+| Prioridad | Fase | Prerequisito | Duracion estimada |
+|-----------|------|--------------|-------------------|
+| 1 | M0 (JWT backend) | Ninguno | 1-2 dias |
+| 2 | M1.1-M1.3 (proyecto + login) | M0 | 1 dia |
+| 3 | M1.4-M1.6 (traslados) | M1.3 | 2-3 dias |
+| 4 | M1.7-M1.9 (centros, residuos, QR) | M1.3 | 2 dias |
+| 5 | M1.10-M1.11 (pulido + offline) | M1.4-M1.9 | 1-2 dias |
+
+---
+
+### Mapa curricular — Kotlin Android en el IES
+
+El proyecto EcoAdmin Android esta disenado para crecer en paralelo al temario del curso.
+Cada bloque del aula tiene ejercicios directamente aplicables en este proyecto real.
+
+**Nota sobre Room vs Retrofit vs Firestore:**
+El temario cubre tres formas distintas de acceder a datos, con roles muy distintos en este proyecto:
+- **Room** (Tema 5.1): base de datos SQLite LOCAL en el dispositivo. Se usa para cache offline.
+  No es la BD compartida — es solo un buffer del dispositivo.
+- **Retrofit** (Tema 5.2): libreria HTTP para llamar a nuestra API Spring Boot. ESTA es la conexion
+  real a los datos compartidos (PostgreSQL via API).
+- **Firestore** (Tema 5.3): BD en la nube de Google (Firebase). NO se usa en este proyecto
+  porque ya tenemos Spring Boot + PostgreSQL. Se estudia como alternativa al stack propio,
+  util para proyectos sin backend propio. Puedes hacer los ejercicios del tema con un proyecto
+  de prueba separado.
+
+| Semana | Fechas | Bloque / Tema | Aplicacion en EcoAdmin Android |
+|--------|--------|---------------|-------------------------------|
+| 1 | 8-21 sep | B1: Kotlin basico, entorno, sintaxis | Crear data classes del proyecto: `Traslado`, `Centro`, `Residuo`, `Usuario`. Practicar null safety, when, extension functions. |
+| 2 | 22 sep - 5 oct | Colecciones y Lambdas. B2: arquitectura, proyecto plantilla | Crear el proyecto Android con la estructura de paquetes de EcoAdmin. Escribir funciones de transformacion de listas (filtrar traslados por estado, agrupar por centro). |
+| 3 | 6-19 oct | B3: Jetpack Compose, maquetacion, Material Design | Implementar M1.1 y M1.3: pantalla de login con campos validados y pantalla de dashboard con cards de estado. Sin ViewModel todavia (estado local con `remember`). |
+| 4 | 20 oct - 2 nov | ViewModel, Hilt | Refactorizar login y dashboard para usar ViewModel + StateFlow. Configurar Hilt (M1.2 parcial: NetworkModule con Retrofit apuntando a localhost). |
+| 5 | 3-16 nov | Lazy lists y cuadriculas | Implementar M1.5: lista de traslados con `LazyColumn`, pull-to-refresh. Implementar lista de centros y residuos. Datos mockeados localmente (sin API real todavia). |
+| 6 | 1-14 dic | B4: Corrutinas, Intents y contracts | Conectar los repositorios a coroutines (`viewModelScope.launch`, `suspend`). Usar Intent para compartir QR o abrir mapa con coordenadas de una direccion. |
+| 7 | 15 dic - 11 ene | Scaffolds y menus, Navegacion | Implementar M1.1 completo: Scaffold con BottomNavigationBar o NavigationDrawer. NavGraph con rutas login → dashboard → detalle traslado. |
+| 8 | 12-25 ene | Room (acceso a datos local) | Implementar M1.11: cache offline con Room. Guardar en BD local la ultima respuesta de `/api/traslados`. Mostrar datos cacheados cuando no hay red. |
+| 9 | 26 ene - 8 feb | Retrofit | Implementar M0 (JWT en backend) y conectar la app a la API real. M1.2 completo: interceptor JWT. Sustituir datos mockeados por llamadas Retrofit reales a Spring Boot. |
+| 10 | 23 feb - 8 mar | Firestore | Ejercicios del tema con proyecto separado de prueba. EcoAdmin ya tiene su backend; Firestore no aplica. Aprovechar para hacer los ejercicios del aula y comparar los dos modelos (BaaS vs API propia). |
+
+**Hitos del proyecto alineados con evaluaciones:**
+
+| Evaluacion | Fecha | Estado esperado del proyecto |
+|------------|-------|------------------------------|
+| Primera (nov) | 17-30 nov | Pantallas de login, dashboard y lista de traslados con datos mockeados. Compose + ViewModel + Hilt funcionando. |
+| Segunda (feb) | 9-22 feb | App conectada a la API real via Retrofit + JWT. Navegacion completa. Cache Room opcional. |
+| Tercera / FCT | mar-jun | App pulida: manejo de errores, escaner QR, offline cache, CRUD completo de traslados. |
+
+**Consejo:** usa el emulador de Android Studio apuntando a `http://10.0.2.2:8080` para
+conectar con el servidor Spring Boot corriendo en tu maquina local (10.0.2.2 es el alias
+del host en el emulador Android).

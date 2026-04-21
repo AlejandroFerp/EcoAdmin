@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
@@ -23,5 +24,9 @@ public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
 
     List<Traslado> findByCentroProductorUsuario(Usuario usuario);
 
+    boolean existsByCentroProductorOrCentroGestor(Centro productor, Centro gestor);
+
     List<Traslado> findByCentroGestorUsuario(Usuario usuario);
+
+    boolean existsByResiduo(Residuo residuo);
 }
