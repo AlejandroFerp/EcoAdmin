@@ -87,11 +87,18 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Latitud</label>
-                    <input type="number" step="any" id="fLat" class="form-control-eco" placeholder="38.3452">
+                    <input type="number" step="any" id="fLat" class="form-control-eco" placeholder="38.3452" oninput="sincronizarMapaForm()">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Longitud</label>
-                    <input type="number" step="any" id="fLon" class="form-control-eco" placeholder="-0.4815">
+                    <input type="number" step="any" id="fLon" class="form-control-eco" placeholder="-0.4815" oninput="sincronizarMapaForm()">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">
+                        Ubicacion en el mapa
+                        <span class="text-xs text-slate-400 font-normal ml-1">Haz clic para establecer coordenadas</span>
+                    </label>
+                    <div id="mapaForm" style="height:240px" class="rounded-xl overflow-hidden border border-slate-200 w-full"></div>
                 </div>
             </div>
             <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
