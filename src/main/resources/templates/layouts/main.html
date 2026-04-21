@@ -20,6 +20,36 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .nav-group-body { max-height: 500px; overflow: hidden; transition: max-height 0.25s ease; }
         .nav-group-body.nav-collapsed { max-height: 0 !important; }
+        /* Controles de formulario unificados */
+        .form-control-eco {
+            width: 100%;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #1e293b;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-control-eco:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .form-control-eco:disabled { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+        select.form-control-eco {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.25rem;
+            padding-right: 2rem;
+        }
+        textarea.form-control-eco { resize: vertical; min-height: 64px; }
+        /* Modal animation */
+        .modal-eco { transition: opacity 0.18s ease, transform 0.18s ease; }
     </style>
 </head>
 <body class="bg-[#f1f5f9] min-h-screen" data-theme="light">

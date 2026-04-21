@@ -46,12 +46,14 @@ public class DireccionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
     public ResponseEntity<Direccion> crear(@RequestBody Direccion d) {
         Direccion saved = service.save(d);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
     public ResponseEntity<Direccion> editar(@PathVariable Long id, @RequestBody Direccion d) {
         if (service.findById(id) == null) throw new RecursoNoEncontradoException("Direccion no encontrada: " + id);
         d.setId(id);

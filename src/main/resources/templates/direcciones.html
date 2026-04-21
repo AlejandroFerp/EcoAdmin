@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('direcciones', 'EcoAdmin - Direcciones', 'Gestion de direcciones', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -15,13 +15,18 @@
             + Anadir Direccion
         </button>
     </div>
+    <div th:replace="~{layouts/fragments :: searchBar('Buscar direcciones...')}"></div>
+    <!-- Mapa general de direcciones -->
     <div class="mb-4">
-        <div class="relative w-full sm:max-w-xs">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" id="busqueda" placeholder="Buscar direcciones..." oninput="filtrar()"
-                   class="input input-sm w-full pl-9 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <button type="button" onclick="toggleMapaGeneral()" class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            <span id="mapaGeneralLabel">Mostrar mapa</span>
+        </button>
+        <div id="mapaGeneralWrap" class="hidden mt-2">
+            <div id="mapaGeneral" style="height:350px" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm w-full"></div>
         </div>
     </div>
+
     <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-100">
         <table class="table table-zebra table-sm w-full">
             <thead>
@@ -38,14 +43,11 @@
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-4">
-        <span class="text-xs text-slate-500" id="infoReg"></span>
-        <div class="join" id="pgBotones"></div>
-    </div>
+    <div th:replace="~{layouts/fragments :: paginationBar}"></div>
 </main>
 
 <!-- MODAL FORM -->
@@ -55,70 +57,85 @@
         <div class="relative bg-white rounded-2xl shadow-xl">
             <div class="flex items-center justify-between p-5 border-b border-slate-100">
                 <h3 id="modalTitulo" class="text-base font-semibold text-slate-900">Crear Direccion</h3>
-                <button type="button" data-modal-hide="modalForm" class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
-                </button>
+                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
             </div>
             <div class="p-5 grid grid-cols-2 gap-4">
                 <input type="hidden" id="itemId">
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
-                    <input type="text" id="fNombre" class="input input-bordered input-sm w-full" placeholder="Nombre identificativo">
+                    <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre identificativo">
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Calle *</label>
-                    <input type="text" id="fCalle" class="input input-bordered input-sm w-full" placeholder="Calle y numero">
+                    <input type="text" id="fCalle" class="form-control-eco" placeholder="Calle y numero">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Ciudad</label>
-                    <input type="text" id="fCiudad" class="input input-bordered input-sm w-full" placeholder="Ciudad">
+                    <input type="text" id="fCiudad" class="form-control-eco" placeholder="Ciudad">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo Postal</label>
-                    <input type="text" id="fCP" class="input input-bordered input-sm w-full" placeholder="00000">
+                    <input type="text" id="fCP" class="form-control-eco" placeholder="00000">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Provincia</label>
-                    <input type="text" id="fProvincia" class="input input-bordered input-sm w-full" placeholder="Provincia">
+                    <input type="text" id="fProvincia" class="form-control-eco" placeholder="Provincia">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Pais</label>
-                    <input type="text" id="fPais" class="input input-bordered input-sm w-full" value="Espana" placeholder="Espana">
+                    <input type="text" id="fPais" class="form-control-eco" value="Espana" placeholder="Espana">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Latitud</label>
-                    <input type="number" step="any" id="fLat" class="input input-bordered input-sm w-full" placeholder="38.3452">
+                    <input type="number" step="any" id="fLat" class="form-control-eco" placeholder="38.3452" oninput="sincronizarMapaForm()">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Longitud</label>
-                    <input type="number" step="any" id="fLon" class="input input-bordered input-sm w-full" placeholder="-0.4815">
+                    <input type="number" step="any" id="fLon" class="form-control-eco" placeholder="-0.4815" oninput="sincronizarMapaForm()">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">
+                        Ubicacion en el mapa
+                        <span class="text-xs text-slate-400 font-normal ml-1">Haz clic para establecer coordenadas</span>
+                    </label>
+                    <div id="mapaForm" style="height:240px" class="rounded-xl overflow-hidden border border-slate-200 w-full"></div>
                 </div>
             </div>
-            <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
-                <button type="button" data-modal-hide="modalForm" class="btn btn-ghost btn-sm normal-case">Cancelar</button>
-                <button type="button" onclick="guardar()" class="btn btn-sm bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case px-6 shadow">Guardar</button>
-            </div>
+            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
         </div>
     </div>
 </div>
 </th:block>
 
 <th:block th:fragment="pageScripts">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPcM=" crossorigin=""></script>
 <script>
 var todos = [], pagina = 1, filtro = '';
 var POR_PAGINA = 15;
 var mForm;
+var mapaFormInstance = null, mapaFormMarker = null;
+var mapaGeneralInstance = null, mapaGeneralVisible = false;
 
 function initModales() {
     var el = document.getElementById('modalForm');
-    if (el && typeof Modal !== 'undefined') mForm = new Modal(el, { backdrop:'dynamic', closable:true });
+    if (el && typeof Modal !== 'undefined') {
+        mForm = new Modal(el, { backdrop:'dynamic', closable:true });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
 
 async function cargar() {
-    var res = await fetch('/api/direcciones');
-    todos = await res.json();
+    try {
+        var res = await fetch('/api/direcciones');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        todos = await res.json();
+    } catch (err) {
+        document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="9" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la p\u00e1gina.</td></tr>';
+        return;
+    }
     pagina = 1;
     renderTabla();
 }
@@ -172,6 +189,7 @@ function abrirCrear() {
     ['fNombre','fCalle','fCiudad','fCP','fProvincia','fLat','fLon'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fPais').value = 'Espana';
     mForm && mForm.show();
+    setTimeout(function() { initMapaForm(null, null); }, 250);
 }
 
 async function abrirEditar(id) {
@@ -187,6 +205,7 @@ async function abrirEditar(id) {
     document.getElementById('fLat').value = d.latitud || '';
     document.getElementById('fLon').value = d.longitud || '';
     mForm && mForm.show();
+    setTimeout(function() { initMapaForm(d.latitud, d.longitud); }, 250);
 }
 
 async function guardar() {
@@ -250,6 +269,120 @@ async function borrarSeleccionados() {
     limpiarSeleccion();
     await cargar();
     if (errors.length) Swal.fire({ icon: 'warning', title: 'Algunas no se pudieron eliminar', text: errors.join('\n') });
+}
+
+/* ── Leaflet: mapa en modal ── */
+function initMapaForm(lat, lon) {
+    var defaultLat = lat || 38.3452, defaultLon = lon || -0.4815;
+    var el = document.getElementById('mapaForm');
+    if (!el) return;
+    if (mapaFormInstance) {
+        mapaFormInstance.remove();
+        mapaFormInstance = null;
+        mapaFormMarker = null;
+    }
+    mapaFormInstance = L.map('mapaForm').setView([defaultLat, defaultLon], lat ? 14 : 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(mapaFormInstance);
+    if (lat && lon) {
+        mapaFormMarker = L.marker([lat, lon]).addTo(mapaFormInstance);
+    }
+    mapaFormInstance.on('click', function(e) {
+        var ll = e.latlng;
+        document.getElementById('fLat').value = ll.lat.toFixed(6);
+        document.getElementById('fLon').value = ll.lng.toFixed(6);
+        if (mapaFormMarker) {
+            mapaFormMarker.setLatLng(ll);
+        } else {
+            mapaFormMarker = L.marker(ll).addTo(mapaFormInstance);
+        }
+        geocodificarInverso(ll.lat, ll.lng);
+    });
+}
+
+function sincronizarMapaForm() {
+    var lat = parseFloat(document.getElementById('fLat').value);
+    var lon = parseFloat(document.getElementById('fLon').value);
+    if (!isNaN(lat) && !isNaN(lon) && mapaFormInstance) {
+        mapaFormInstance.setView([lat, lon], 14);
+        if (mapaFormMarker) {
+            mapaFormMarker.setLatLng([lat, lon]);
+        } else {
+            mapaFormMarker = L.marker([lat, lon]).addTo(mapaFormInstance);
+        }
+    }
+}
+
+async function geocodificarInverso(lat, lon) {
+    try {
+        var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=es';
+        var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!r.ok) return;
+        var data = await r.json();
+        var addr = data.address || {};
+        if (!document.getElementById('fCiudad').value && (addr.city || addr.town || addr.village || addr.municipality)) {
+            document.getElementById('fCiudad').value = addr.city || addr.town || addr.village || addr.municipality || '';
+        }
+        if (!document.getElementById('fProvincia').value && (addr.province || addr.state)) {
+            document.getElementById('fProvincia').value = addr.province || addr.state || '';
+        }
+        if (!document.getElementById('fCP').value && addr.postcode) {
+            document.getElementById('fCP').value = addr.postcode;
+        }
+        if (!document.getElementById('fCalle').value && addr.road) {
+            var numero = addr.house_number ? ' ' + addr.house_number : '';
+            document.getElementById('fCalle').value = (addr.road + numero).trim();
+        }
+        if (!document.getElementById('fPais').value && addr.country) {
+            document.getElementById('fPais').value = addr.country;
+        }
+    } catch(e) { /* geocode no critico */ }
+}
+
+/* ── Leaflet: mapa general (overview) ── */
+function toggleMapaGeneral() {
+    mapaGeneralVisible = !mapaGeneralVisible;
+    var wrap = document.getElementById('mapaGeneralWrap');
+    var label = document.getElementById('mapaGeneralLabel');
+    if (mapaGeneralVisible) {
+        wrap.classList.remove('hidden');
+        label.textContent = 'Ocultar mapa';
+        setTimeout(function() { renderMapaGeneral(); }, 150);
+    } else {
+        wrap.classList.add('hidden');
+        label.textContent = 'Mostrar mapa';
+        if (mapaGeneralInstance) { mapaGeneralInstance.remove(); mapaGeneralInstance = null; }
+    }
+}
+
+function renderMapaGeneral() {
+    if (mapaGeneralInstance) { mapaGeneralInstance.remove(); mapaGeneralInstance = null; }
+    var el = document.getElementById('mapaGeneral');
+    if (!el) return;
+    var conCoords = todos.filter(function(d) { return d.latitud && d.longitud; });
+    var centerLat = 38.3452, centerLon = -0.4815, zoom = 6;
+    if (conCoords.length > 0) {
+        centerLat = conCoords.reduce(function(s, d) { return s + d.latitud; }, 0) / conCoords.length;
+        centerLon = conCoords.reduce(function(s, d) { return s + d.longitud; }, 0) / conCoords.length;
+        zoom = conCoords.length === 1 ? 13 : 7;
+    }
+    mapaGeneralInstance = L.map('mapaGeneral').setView([centerLat, centerLon], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(mapaGeneralInstance);
+    conCoords.forEach(function(d) {
+        var marker = L.marker([d.latitud, d.longitud]).addTo(mapaGeneralInstance);
+        var popup = '<strong>' + esc(d.nombre || 'Sin nombre') + '</strong>'
+            + '<br><span class="text-sm">' + esc(d.calle || '') + '</span>'
+            + '<br><button onclick="abrirEditar(' + d.id + ')" style="color:#3b82f6;font-size:12px;cursor:pointer">Editar</button>';
+        marker.bindPopup(popup);
+    });
+    if (conCoords.length === 0) {
+        L.popup().setLatLng([centerLat, centerLon]).setContent('Sin direcciones con coordenadas').openOn(mapaGeneralInstance);
+    }
 }
 </script>
 </th:block>

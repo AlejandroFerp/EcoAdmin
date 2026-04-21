@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('centros', 'EcoAdmin - Centros', 'Centros de tratamiento', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -15,13 +15,7 @@
             + Anadir Centro
         </button>
     </div>
-    <div class="mb-4">
-        <div class="relative w-full sm:max-w-xs">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" id="busqueda" placeholder="Buscar centros..." oninput="filtrar()"
-                   class="input input-sm w-full pl-9 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-    </div>
+    <div th:replace="~{layouts/fragments :: searchBar('Buscar centros...')}"></div>
     <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-slate-100">
         <table class="table table-zebra table-sm w-full">
             <thead>
@@ -38,14 +32,11 @@
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-4">
-        <span class="text-xs text-slate-500" id="infoReg"></span>
-        <div class="join" id="pgBotones"></div>
-    </div>
+    <div th:replace="~{layouts/fragments :: paginationBar}"></div>
 </main>
 
 <!-- MODAL FORM -->
@@ -55,20 +46,18 @@
         <div class="relative bg-white rounded-2xl shadow-xl">
             <div class="flex items-center justify-between p-5 border-b border-slate-100">
                 <h3 id="modalTitulo" class="text-base font-semibold text-slate-900">Crear Centro</h3>
-                <button type="button" data-modal-hide="modalForm" class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
-                </button>
+                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="itemId">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
-                        <input type="text" id="fNombre" class="input input-bordered input-sm w-full" placeholder="Nombre del centro">
+                        <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre del centro">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
-                        <select id="fTipo" class="select select-bordered select-sm w-full">
+                        <select id="fTipo" class="form-control-eco">
                             <option value="">Seleccionar...</option>
                             <option value="PRODUCTOR">Productor</option>
                             <option value="GESTOR">Gestor</option>
@@ -76,32 +65,29 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">NIMA</label>
-                        <input type="text" id="fNima" class="input input-bordered input-sm w-full" placeholder="NIMA/2024/001">
+                        <input type="text" id="fNima" class="form-control-eco" placeholder="NIMA/2024/001">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Direccion *</label>
-                        <select id="fDireccion" class="select select-bordered select-sm w-full">
+                        <select id="fDireccion" class="form-control-eco">
                             <option value="">Seleccionar direccion...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Contacto</label>
-                        <input type="text" id="fContacto" class="input input-bordered input-sm w-full" placeholder="Nombre de contacto">
+                        <input type="text" id="fContacto" class="form-control-eco" placeholder="Nombre de contacto">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Telefono</label>
-                        <input type="text" id="fTelefono" class="input input-bordered input-sm w-full" placeholder="966 112 233">
+                        <input type="text" id="fTelefono" class="form-control-eco" placeholder="966 112 233">
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                        <input type="email" id="fEmail" class="input input-bordered input-sm w-full" placeholder="contacto@centro.es">
+                        <input type="email" id="fEmail" class="form-control-eco" placeholder="contacto@centro.es">
                     </div>
                 </div>
             </div>
-            <div class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
-                <button type="button" data-modal-hide="modalForm" class="btn btn-ghost btn-sm normal-case">Cancelar</button>
-                <button type="button" onclick="guardar()" class="btn btn-sm bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case px-6 shadow">Guardar</button>
-            </div>
+            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
         </div>
     </div>
 </div>
@@ -121,10 +107,17 @@ function initModales() {
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
 
 async function cargar() {
-    var centrosRes = await fetch('/api/centros');
-    var dirsRes = await fetch('/api/direcciones');
-    todos = await centrosRes.json();
-    direcciones = await dirsRes.json();
+    try {
+        var centrosRes = await fetch('/api/centros');
+        var dirsRes = await fetch('/api/direcciones');
+        if (!centrosRes.ok) throw new Error('HTTP ' + centrosRes.status);
+        todos = await centrosRes.json();
+        direcciones = await dirsRes.json();
+    } catch (err) {
+        document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="9" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la p\u00e1gina.</td></tr>';
+        return;
+    }
     pagina = 1;
     renderTabla();
     renderDirecciones();
