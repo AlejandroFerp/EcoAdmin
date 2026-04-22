@@ -60,16 +60,9 @@
 </div>
 
 <!-- MODAL FORM -->
-<div id="modalForm" tabindex="-1" aria-hidden="true"
-     class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--md">
-        <div class="modal-card">
-            <div class="modal-head">
-                <h3 id="modalTitulo" class="modal-title">Crear Residuo</h3>
-                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
-            </div>
-            <div class="modal-body grid grid-cols-2 gap-4">
-                <input type="hidden" id="itemId">
+<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'md', 'Crear Residuo', 'guardar', ~{::modalBody})}">
+    <th:block th:fragment="modalBody">
+        <input type="hidden" id="itemId">
                 <div>
                     <label class="label-eco">Cantidad *</label>
                     <input type="number" id="fCantidad" class="form-control-eco" placeholder="0.00" min="0" step="0.01">
@@ -113,10 +106,7 @@
                     <label class="label-eco">Centro</label>
                     <div data-combobox="fCentro" data-placeholder="Buscar centro (o sin asignar)..."></div>
                 </div>
-            </div>
-            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
-        </div>
-    </div>
+    </th:block>
 </div>
 </th:block>
 

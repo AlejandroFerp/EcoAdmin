@@ -1064,3 +1064,29 @@ El temario cubre tres formas distintas de acceder a datos, con roles muy distint
 conectar con el servidor Spring Boot corriendo en tu maquina local (10.0.2.2 es el alias
 del host en el emulador Android).
 
+
+---
+
+### Siguiente Fase: UX y Corrección de Errores (En Cola)
+
+**Objetivos:**
+Resolver problemas de usabilidad y errores detectados en la interfaz tras la refactorización arquitectónica.
+
+**Plan de Implementación:**
+
+1. **Responsividad de Modales:**
+   - **Problema:** Los modales no se adaptan correctamente al tamaño de la pantalla, volviéndose inaccesibles en ciertas resoluciones o dispositivos móviles.
+   - **Solución:** Revisar el componente `crudModal` en `layouts/fragments.html` y las clases CSS asociadas (`modal-shell`). Se deben aplicar restricciones de altura máxima (`max-h-[90vh]`), desbordamiento interno (`overflow-y-auto` en el `modal-body`) y anchos responsivos (`w-full mx-4 sm:max-w-md`) para asegurar que el contenido siempre sea visible y desplazable sin salirse de la pantalla.
+
+2. **Errores en la Gestión de Documentos (`documents.html`):**
+   - **Problema:** Al crear un documento y subir el archivo adjunto, los iconos cambian repentinamente, la vista previa en el modal se rompe y el comportamiento general de la vista es inestable.
+   - **Solución:** 
+     - Investigar el script de carga de archivos y el re-renderizado de la tabla en `documents.html`. 
+     - Es muy probable que la inyección dinámica de HTML tras el guardado no esté respetando el marcado original o los eventos de `onclick` del visor PDF. 
+     - Garantizar que la llamada a `openIframePreviewModal` pase las URLs correctas del archivo recién creado.
+
+3. **Botón "Limpiar" en Informes (`reports.html`):**
+   - **Problema:** El botón de limpiar los filtros no ejecuta ninguna acción.
+   - **Solución:** Localizar el ID del botón en `reports.html` y asegurar que exista una función JS vinculada (ej. `limpiarFiltros()`) que limpie los campos `input` y re-ejecute la función de generación del reporte (`cargarDatos()` o similar) para devolverlo a su estado inicial.
+
+**Estimación:** Medio día de trabajo.

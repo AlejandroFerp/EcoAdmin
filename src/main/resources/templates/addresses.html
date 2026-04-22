@@ -52,16 +52,9 @@
 </main>
 
 <!-- MODAL FORM -->
-<div id="modalForm" tabindex="-1" aria-hidden="true"
-     class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--md">
-        <div class="modal-card">
-            <div class="modal-head">
-                <h3 id="modalTitulo" class="modal-title">Crear Direccion</h3>
-                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
-            </div>
-            <div class="modal-body grid grid-cols-2 gap-4">
-                <input type="hidden" id="itemId">
+<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'md', 'Crear Direccion', 'guardar', ~{::modalBody})}">
+    <th:block th:fragment="modalBody">
+        <input type="hidden" id="itemId">
                 <div class="col-span-2">
                     <label class="label-eco">Nombre</label>
                     <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre identificativo">
@@ -101,10 +94,7 @@
                     </label>
                     <div id="mapaForm" style="height:240px" class="rounded-xl overflow-hidden border border-slate-200 w-full"></div>
                 </div>
-            </div>
-            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
-        </div>
-    </div>
+    </th:block>
 </div>
 </th:block>
 

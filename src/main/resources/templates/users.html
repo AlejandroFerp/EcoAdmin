@@ -38,16 +38,9 @@
 </main>
 
 <!-- MODAL FORM -->
-<div id="modalForm" tabindex="-1" aria-hidden="true"
-     class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--sm">
-        <div class="modal-card">
-            <div class="modal-head">
-                <h3 id="modalTitulo" class="modal-title">Crear Usuario</h3>
-                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
-            </div>
-            <div class="modal-body space-y-4">
-                <input type="hidden" id="itemId">
+<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'sm', 'Crear Usuario', 'guardar', ~{::modalBody})}">
+    <th:block th:fragment="modalBody">
+        <input type="hidden" id="itemId">
                 <div>
                     <label class="label-eco">Nombre *</label>
                     <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre completo">
@@ -69,10 +62,7 @@
                         <option value="ADMIN">ADMIN</option>
                     </select>
                 </div>
-            </div>
-            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
-        </div>
-    </div>
+    </th:block>
 </div>
 </th:block>
 

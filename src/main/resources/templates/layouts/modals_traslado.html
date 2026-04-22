@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ===================================================================
+     MODALES COMPARTIDOS PARA TRASLADOS (Detalle y Visor PDF)
+     Uso: <div th:replace="~{layouts/modals_traslado :: modales}"></div>
+     =================================================================== -->
+<th:block th:fragment="modales">
+
+    <!-- MODAL DETALLE (tabs: Datos | Documentos | Historial) -->
+    <div id="modalDetalle" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+        <div class="modal-shell modal-shell--md">
+            <div class="modal-card">
+                <div class="modal-head">
+                    <h3 id="detalleTitulo" class="modal-title">Traslado #—</h3>
+                    <button th:replace="~{layouts/fragments :: modalCloseBtn('modalDetalle')}"></button>
+                </div>
+                <!-- Tabs -->
+                <div class="modal-tabs">
+                    <button type="button" id="tabDatos" onclick="cambiarTabDetalle('datos')"
+                        class="modal-tab modal-tab--active">Datos</button>
+                    <button type="button" id="tabDocumentos" onclick="cambiarTabDetalle('documentos')"
+                        class="modal-tab">Documentos</button>
+                    <button type="button" id="tabHistorial" onclick="cambiarTabDetalle('historial')"
+                        class="modal-tab">Historial</button>
+                </div>
+                <!-- Tab: Datos -->
+                <div id="panelDatos" class="modal-body">
+                    <dl class="grid grid-cols-2 gap-3 text-sm" id="detalleInfo">
+                        <div class="col-span-2 text-slate-400">Cargando...</div>
+                    </dl>
+                </div>
+                <!-- Tab: Documentos -->
+                <div id="panelDocumentos" class="modal-body hidden">
+                    <div id="detalleIdActual" class="hidden"></div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <button type="button" onclick="verPdfDetalle('carta-porte')" class="doc-item">
+                            <svg class="w-8 h-8 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <div>
+                                <div class="doc-item__title">Carta de Porte</div>
+                                <div class="doc-item__sub">Documento de transporte oficial</div>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <button type="button" onclick="verPdfDetalle('notificacion')" class="doc-item">
+                            <svg class="w-8 h-8 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <div>
+                                <div class="doc-item__title">Notificacion Previa</div>
+                                <div class="doc-item__sub">Aviso previo al traslado</div>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <button type="button" onclick="verPdfDetalle('certificado')" class="doc-item">
+                            <svg class="w-8 h-8 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                            </svg>
+                            <div>
+                                <div class="doc-item__title">Certificado de Recepcion</div>
+                                <div class="doc-item__sub">Confirmacion de entrega</div>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-300 ml-auto" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <!-- Tab: Historial -->
+                <div id="panelHistorial" class="modal-body modal-body--scroll hidden">
+                    <p class="text-slate-400">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PDF -->
+    <div id="modalPdf" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+        <div class="modal-shell modal-shell--xl" style="height:92vh;display:flex;flex-direction:column">
+            <div class="modal-card h-full overflow-hidden flex flex-col">
+                <div class="modal-head shrink-0">
+                    <h3 id="pdfTitulo" class="modal-title">Documento PDF</h3>
+                    <div class="flex items-center gap-2">
+                        <button th:replace="~{layouts/fragments :: modalCloseBtn('modalPdf')}"></button>
+                    </div>
+                </div>
+                <div class="relative flex-1 bg-slate-100">
+                    <div id="pdfLoader"
+                        class="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+                        <span class="loading loading-spinner loading-md mr-2"></span> Cargando PDF...
+                    </div>
+                    <div id="pdfError"
+                        class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-white z-10">
+                        <p id="pdfErrorMsg" class="text-sm text-red-600 max-w-md">No se pudo cargar el PDF.</p>
+                    </div>
+                    <iframe id="pdfFrame" class="hidden w-full h-full bg-white" title="Visor PDF"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+
+</body>
+</html>

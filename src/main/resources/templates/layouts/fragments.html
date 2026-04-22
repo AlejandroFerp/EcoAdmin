@@ -56,5 +56,23 @@
             th:text="${saveLabel}">Guardar</button>
 </div>
 
+<!-- ===================================================================
+     CRUD MODAL WRAPPER
+     Uso: <div th:replace="~{layouts/fragments :: crudModal('modalForm', 'sm', 'Titulo', 'guardar', ~{::modalBody})}"></div>
+     =================================================================== -->
+<div th:fragment="crudModal(id, size, title, saveAction, bodyFragment)" th:id="${id}" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+    <div th:class="'modal-shell modal-shell--' + ${size}">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 class="modal-title" id="modalTitulo" th:text="${title}"></h3>
+                <button th:replace="~{layouts/fragments :: modalCloseBtn(${id})}"></button>
+            </div>
+            <div class="modal-body space-y-4" th:insert="${bodyFragment}">
+            </div>
+            <div th:replace="~{layouts/fragments :: modalFooter(${id}, 'Guardar', ${saveAction})}"></div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
