@@ -131,6 +131,25 @@
         </div>
     </div>
 
+    <!-- ALERTAS NP (Notificacion Previa) - Fase 19.8 -->
+    <div id="panelNp" class="hidden card p-6 mb-7">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">Notificaciones Previas pendientes</h2>
+                    <p id="panelNpSub" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+            <a th:href="@{/documentos}" class="text-xs font-semibold text-[#3b82f6] hover:underline">Ir a documentos</a>
+        </div>
+        <div id="panelNpBody" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+    </div>
+
     <!-- RECENT TRASLADOS TABLE -->
     <div class="card overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -207,16 +226,18 @@ function setPeriodo(periodo) {
 async function cargarDatos() {
     var desde = getDesdeParam(periodoActual);
     var statsUrl = '/api/estadisticas' + (desde ? '?desde=' + desde : '');
-    var stats, traslados, alertas;
+    var stats, traslados, alertas, alertasNp;
     try {
         var results = await Promise.all([
             fetch(statsUrl).then(function(r) { if (!r.ok) throw new Error('stats ' + r.status); return r.json(); }),
             fetch('/api/traslados').then(function(r) { if (!r.ok) throw new Error('traslados ' + r.status); return r.json(); }),
-            fetch('/api/almacen/alertas-fifo').then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
+            fetch('/api/almacen/alertas-fifo').then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; }),
+            fetch('/api/documentos/alertas/notificacion-previa').then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
         ]);
         stats = results[0] || {};
         traslados = Array.isArray(results[1]) ? results[1] : [];
         alertas = Array.isArray(results[2]) ? results[2] : [];
+        alertasNp = Array.isArray(results[3]) ? results[3] : [];
     } catch (err) {
         console.error('Error cargando dashboard:', err);
         var det = document.getElementById('estadoDetalle');
@@ -318,6 +339,43 @@ async function cargarDatos() {
                     + '<td class="px-6 py-2.5"><span class="badge badge-sm badge-error font-bold">' + a.diasEnAlmacen + ' d</span></td>'
                     + '<td class="px-6 py-2.5 text-slate-400 text-xs hidden sm:table-cell">' + a.diasMaximo + ' d</td>'
                     + '</tr>';
+            }).join('');
+        }
+    }
+
+    // Render alertas NP (Notificacion Previa)
+    var panelNp = document.getElementById('panelNp');
+    var bodyNp = document.getElementById('panelNpBody');
+    var subNp = document.getElementById('panelNpSub');
+    if (panelNp && bodyNp) {
+        if (!alertasNp || alertasNp.length === 0) {
+            panelNp.classList.add('hidden');
+        } else {
+            panelNp.classList.remove('hidden');
+            subNp.textContent = alertasNp.length + (alertasNp.length === 1 ? ' recogida programada' : ' recogidas programadas') + ' en menos de 10 dias sin Notificacion Previa emitida.';
+            bodyNp.innerHTML = alertasNp.slice(0, 9).map(function(a) {
+                var fechaProg = a.fechaProgramada
+                    ? (Array.isArray(a.fechaProgramada)
+                        ? new Date(a.fechaProgramada[0], a.fechaProgramada[1]-1, a.fechaProgramada[2]||1, a.fechaProgramada[3]||0, a.fechaProgramada[4]||0)
+                        : new Date(a.fechaProgramada))
+                    : null;
+                var fechaStr = fechaProg ? fechaProg.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric'}) : '\u2014';
+                var urgClass, urgLabel;
+                if (a.diasRestantes <= 3)      { urgClass = 'bg-red-50 text-red-600';        urgLabel = 'Urgente'; }
+                else if (a.diasRestantes <= 7) { urgClass = 'bg-amber-50 text-amber-600';    urgLabel = 'Pronto';  }
+                else                            { urgClass = 'bg-slate-100 text-slate-600';   urgLabel = 'Aviso';   }
+                return '<div class="border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow flex flex-col gap-2">'
+                    + '<div class="flex items-center justify-between">'
+                    +   '<span class="text-xs font-mono text-slate-400">#' + a.trasladoId + '</span>'
+                    +   '<span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ' + urgClass + '">' + urgLabel + '</span>'
+                    + '</div>'
+                    + '<div class="text-sm font-semibold text-slate-800 truncate" title="' + esc(a.productor || '') + '">' + esc(a.productor || '\u2014') + '</div>'
+                    + '<div class="text-xs text-slate-500 font-mono">LER ' + esc(a.residuo || '\u2014') + '</div>'
+                    + '<div class="flex items-center justify-between mt-1 pt-2 border-t border-slate-100">'
+                    +   '<span class="text-xs text-slate-500">' + fechaStr + '</span>'
+                    +   '<span class="text-xs font-bold text-slate-700">' + a.diasRestantes + ' d</span>'
+                    + '</div>'
+                    + '</div>';
             }).join('');
         }
     }

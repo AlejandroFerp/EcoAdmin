@@ -120,13 +120,14 @@ public class TrasladoServiceDB implements TrasladoService {
 
         Traslado guardado = trasladoRepo.save(traslado);
 
-        // Al completar: marcar salida del residuo y generar DI automatico
+        // Al completar: marcar salida del residuo y generar DI + Archivo Cronologico automaticos
         if (nuevoEstado == EstadoTraslado.COMPLETADO) {
             if (traslado.getResiduo() != null) {
                 traslado.getResiduo().setFechaSalidaAlmacen(LocalDateTime.now());
                 residuoRepo.save(traslado.getResiduo());
             }
             generarDocumentoIdentificacionSiNoExiste(guardado);
+            generarArchivoCronologicoSiNoExiste(guardado);
         }
 
         return guardado;
@@ -157,6 +158,32 @@ public class TrasladoServiceDB implements TrasladoService {
             di.setEstado(EstadoDocumento.EMITIDO);
             di.setObservaciones("DI generado al completar traslado #" + traslado.getId());
             documentoRepo.save(di);
+        }
+    }
+
+    /**
+     * Genera el documento de Archivo Cronologico (RD 553/2020) asociado al traslado si aun no existe.
+     * Patron de referencia AC-{anio}-{NNN} con secuencia reiniciada por anio.
+     * Se serializa con el mismo lock que el DI para evitar races en el contador.
+     */
+    private void generarArchivoCronologicoSiNoExiste(Traslado traslado) {
+        if (documentoRepo.existsByTrasladoAndTipo(traslado, TipoDocumento.ARCHIVO_CRONOLOGICO)) {
+            return;
+        }
+        synchronized (DI_REFERENCIA_LOCK) {
+            if (documentoRepo.existsByTrasladoAndTipo(traslado, TipoDocumento.ARCHIVO_CRONOLOGICO)) {
+                return;
+            }
+            String anio = String.valueOf(java.time.LocalDate.now().getYear());
+            String prefijo = "AC-" + anio + "-";
+            long siguiente = documentoRepo.countByTipoAndNumeroReferenciaStartingWith(
+                    TipoDocumento.ARCHIVO_CRONOLOGICO, prefijo) + 1;
+            String referencia = prefijo + String.format("%03d", siguiente);
+
+            Documento ac = new Documento(TipoDocumento.ARCHIVO_CRONOLOGICO, traslado, referencia);
+            ac.setEstado(EstadoDocumento.EMITIDO);
+            ac.setObservaciones("Archivo cronologico generado al completar traslado #" + traslado.getId());
+            documentoRepo.save(ac);
         }
     }
 

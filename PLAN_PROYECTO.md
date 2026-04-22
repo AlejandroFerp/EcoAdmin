@@ -264,7 +264,7 @@ No se elimina funcionalidad, se reorganiza y renombra.
 - [x] 17.5 Mover centros + usuarios bajo "Contactos" (centros = instalaciones, usuarios = personas)
 - [x] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
 - [x] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
-- [ ] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
+- [x] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
 
 #### Mejoras adicionales Fase 17 (implementadas)
 - [x] 17.9 Vista Kanban de traslados (columnas por estado, drag visual)
@@ -329,7 +329,7 @@ Recogida {
 - [x] 18.4 Vista de lista de almacen (`/almacen`) con columna "Dias en almacen"
        - Badge rojo si supera `diasMaximoAlmacenamiento`
        - Ordenar por `fechaEntradaAlmacen` ASC (FIFO visual)
-- [ ] 18.5 Timeline en detalle de residuo: entrada → dias en almacen → salida (o alerta)
+- [x] 18.5 Timeline en detalle de residuo: entrada → dias en almacen → salida (o alerta)
 - [x] 18.6 Alertas en Dashboard: "X residuos superan el tiempo maximo de almacenamiento"
 - [x] 18.7 API endpoints:
        - `GET /api/recogidas` (lista con filtros: estado, fecha, centro)
@@ -387,23 +387,23 @@ Documento {
 
 **Tareas:**
 
-- [ ] 19.1 Crear entidades `Documento`, `TipoDocumento` (enum), `EstadoDocumento` (enum)
-- [ ] 19.2 DocumentoRepository + DocumentoService
-- [ ] 19.3 Vista `/documentos` con tabla: tipo, referencia, centro/traslado, fechas, estado, acciones
+- [x] 19.1 Crear entidades `Documento`, `TipoDocumento` (enum), `EstadoDocumento` (enum)
+- [x] 19.2 DocumentoRepository + DocumentoService
+- [x] 19.3 Vista `/documentos` con tabla: tipo, referencia, centro/traslado, fechas, estado, acciones
        - Filtros: por tipo, por estado, por fecha, por centro
        - Badge de alerta si `fechaVencimiento` < hoy + 10 dias
-- [ ] 19.4 CRUD de documentos (crear/editar/eliminar)
-- [ ] 19.5 Upload de archivos PDF (guardar en `src/main/resources/static/documentos/` o ruta config)
+- [x] 19.4 CRUD de documentos (crear/editar/eliminar)
+- [x] 19.5 Upload de archivos PDF (guardar en `src/main/resources/static/documentos/` o ruta config)
        - Validar que solo se suben PDFs, max 10MB
        - Endpoint: `POST /api/documentos/{id}/archivo`
-- [ ] 19.6 Generacion automatica de DI al crear/completar una Recogida
+- [x] 19.6 Generacion automatica de DI al crear/completar una Recogida
        - El DI se genera como PDF con: LER, cantidad, origen, destino, transportista, fechas
        - Usar la `PdfService` existente (Fase 15) o crearla aqui
-- [ ] 19.7 Archivo Cronologico automatico: cada traslado/recogida completada genera entrada
+- [x] 19.7 Archivo Cronologico automatico: cada traslado/recogida completada genera entrada
        - Vista especial `/documentos/archivo-cronologico`: tabla cronologica
        - Exportable a PDF/CSV para auditorias
-- [ ] 19.8 Alerta NP en Dashboard: "X recogidas programadas sin NP emitida con menos de 10 dias"
-- [ ] 19.9 API endpoints:
+- [x] 19.8 Alerta NP en Dashboard: "X recogidas programadas sin NP emitida con menos de 10 dias"
+- [x] 19.9 API endpoints:
        - `GET /api/documentos` (con filtros)
        - `POST /api/documentos`
        - `PUT /api/documentos/{id}`
@@ -411,7 +411,7 @@ Documento {
        - `GET /api/documentos/{id}/archivo` (descargar PDF)
        - `POST /api/documentos/{id}/archivo` (subir PDF)
        - `GET /api/documentos/archivo-cronologico` (exportar)
-- [ ] 19.10 Tests: DocumentoService, generacion DI, alertas NP
+- [x] 19.10 Tests: DocumentoService, generacion DI, alertas NP
 
 **Nombre normalizado de archivos (buena practica legal):**
 `AAAA-MM-DD_TIPO_Centro-CodigoLER_Destino.pdf`
@@ -475,13 +475,13 @@ datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
 
 **Tareas:**
 
-- [ ] 21.1 Entidad `Empresa` (singleton: solo un registro por instancia)
+- [x] 21.1 Entidad `Empresa` (singleton: solo un registro por instancia)
        - nombre, CIF, NIMA (Numero de Identificacion Medioambiental), direccion, telefono, email
        - autorizacionGestor (texto/referencia), autorizacionTransportista
        - logoUrl (para PDF)
-- [ ] 21.2 Vista `/negocio` con formulario de edicion (solo ADMIN)
+- [x] 21.2 Vista `/negocio` con formulario de edicion (solo ADMIN)
 - [ ] 21.3 Integrar datos de empresa en la generacion de PDFs
-- [ ] 21.4 Vista `/mis-datos` para que cada usuario edite su perfil
+- [x] 21.4 Vista `/mis-datos` para que cada usuario edite su perfil
        - Nombre, email, password (con confirmacion)
        - No puede cambiar su propio rol
 
@@ -617,6 +617,57 @@ no guarda estado de sesion.
 - El JWT_SECRET debe tener al menos 256 bits de entropia (32 caracteres aleatorios)
 - No hardcodear el secreto: solo via variable de entorno
 - Tokens de refresco (refresh tokens) son opcionales para esta fase; se puede implementar
+
+---
+
+## Handoff — 2026-04-22
+
+**Estado actual:** Fases 1–19 completas + Fase 21 (Empresa). Fase 20 (Informes) y Fase 22+ pendientes.
+
+### Ultimas tareas cerradas en esta sesion
+- 17.8 Breadcrumb en header (mapping pageId -> grupo en `layouts/main.html`)
+- 18.5 Timeline residuo (boton "ver" + modal con timeline entrada/almacen/salida en `residuos.html`)
+- 21.* Modulo Empresa verificado (entidad + `/negocio` + `/mis-datos` ya estaban)
+- 19.5 Upload de PDFs para documentos (campo `archivoUrl`, `POST /api/documentos/{id}/upload`, `GET /api/documentos/{id}/archivo`, `UploadsWebConfig` sirve `/uploads/documentos/**`, UI en `documentos.html`)
+- 19.7 Archivo Cronologico automatico (hook en `TrasladoServiceDB.cambiarEstado` cuando pasa a `COMPLETADO`, mismo lock que el DI, referencia `AC-{anio}-{NNN}`)
+- 19.8 Alerta NP en dashboard (`GET /api/documentos/alertas/notificacion-previa` + tarjeta `panelNp` en `index.html`)
+- 19.10 Tests `DocumentoServiceTest` (7 tests, todos OK)
+
+### Como arrancar el entorno en casa
+1. **JDK:** `JAVA_HOME=C:\Users\afp5\.jdk\jdk-25` (Java 25, requerido por Spring Boot 4.0.5).
+2. **Compilar:** desde `ServidorApiRest/`, `.\mvnw.cmd -q -DskipTests compile`.
+3. **Arrancar:** `.\mvnw.cmd spring-boot:run`. Servidor en `http://localhost:8080`.
+4. **Tests:** `.\mvnw.cmd test` o filtrar con `"-Dtest=NombreTest"`.
+5. **Login default:** ver `data.sql` / seeder (admin@balmis.com).
+
+### Convenciones del proyecto a tener en cuenta
+- **NO crear branches** en este repo (memoria `/memories/repo/no-branches-servidorApiRest.md`). Trabajar siempre sobre `main`.
+- **Thymeleaf:** usar `th:onclick="|funcion(${id})|"` (sintaxis literal) para evitar errores de parseo (`/memories/repo/thymeleaf-onclick-fix.md`).
+- **CSS:** los layouts cargan `app.css`, NO `styles.css`. Cualquier override (SweetAlert, etc.) va en `app.css`.
+- **Spring Security:** estaticos publicos van en el array `permitAll` de `SeguridadConfig` (`/logo.png`, `/favicon.ico`, `/images/**`, `/js/**`, `/uploads/documentos/**` lo gestiona la sesion).
+- **Auto-generacion de documentos:** al pasar un Traslado a COMPLETADO se crean DI (`DI-YYYY-NNN`) y Archivo Cronologico (`AC-YYYY-NNN`) idempotentes y serializados con `DI_REFERENCIA_LOCK`.
+- **Uploads:** PDF max 10 MB, validados por mimetype, guardados en `${ecoadmin.uploads.documentos:uploads/documentos}` con nombre `{yyyyMMdd}_{id}_{uuid8}.pdf`.
+
+### Siguiente bloque sugerido — Fase 20 Informes (orden recomendado)
+1. **20.1** Vista `/informes` con lista de tipos disponibles (cards con descripcion + boton "Generar").
+2. **20.2** Formulario de parametros por informe (rango fechas, centro, LER) — modal o pagina dedicada.
+3. **20.8** `PdfService` con plantillas OpenPDF (ya hay `pom.xml` con OpenPDF segun el codigo de `DocumentoController`).
+4. **20.3** Informe estadisticas por periodo (reusar logica de `/api/estadisticas`).
+5. **20.4** Inventario almacen actual (reusar `/api/almacen/...`).
+6. **20.5** Trazabilidad por residuo (timeline por LER).
+7. **20.6** Informe Final de Gestion (formato AEDED — ver `RD 553/2020` art. 8).
+8. **20.7** Checklist auditoria pre-inspeccion.
+9. **20.9** API: `GET /api/informes/{tipo}?desde&hasta&centroId&ler` -> PDF.
+10. **20.10** Tests `InformeServiceTest`.
+
+Otras tareas pendientes notables:
+- **18.8** Tests `RecogidaService` + alertas FIFO (rapido — copiar patron de `DocumentoServiceTest`).
+- **16.5.\*** Consolidacion Tailwind/CSS (10 subtareas — bloque grande de refactor frontend).
+- **M0** Auth JWT para futura app Android.
+
+### Como retomar
+> "Continua con la Fase 20 Informes segun el orden del Handoff en PLAN_PROYECTO.md. Empieza por 20.1 + 20.8 (vista + PdfService base)."
+
   con un endpoint `POST /api/auth/refresh` en el futuro
 
 ---

@@ -54,6 +54,9 @@ public class Documento {
 
     private String observaciones;
 
+    /** Ruta relativa al PDF subido (cuando aplica). Null si no se ha subido nada. */
+    private String archivoUrl;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime creadoEn;
@@ -88,6 +91,8 @@ public class Documento {
     public void setFechaCierre(LocalDate fechaCierre) { this.fechaCierre = fechaCierre; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+    public String getArchivoUrl() { return archivoUrl; }
+    public void setArchivoUrl(String archivoUrl) { this.archivoUrl = archivoUrl; }
     public LocalDateTime getCreadoEn() { return creadoEn; }
     public void setCreadoEn(LocalDateTime creadoEn) { this.creadoEn = creadoEn; }
 }

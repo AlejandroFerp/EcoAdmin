@@ -308,7 +308,7 @@
 
 <!-- MODAL PDF -->
 <div id="modalPdf" tabindex="-1" aria-hidden="true"
-     class="modal-overlay hidden">
+     class="modal-overlay hidden z-[55]">
     <div class="modal-shell modal-shell--xl">
         <div class="modal-card">
             <div class="modal-head">
@@ -982,8 +982,9 @@ async function cargarHistorialDetalle(id) {
 
 function verPdfDetalle(tipo) {
     if (!detalleIdActual) return;
-    mDetalle && mDetalle.hide();
-    setTimeout(function() { verPdf(detalleIdActual, tipo); }, 150);
+    // Abrimos el modal PDF ENCIMA del modal de detalle (preview + boton descargar).
+    // No cerramos el modal de detalle para que al cerrar el preview el usuario vuelva al detalle.
+    verPdf(detalleIdActual, tipo);
 }
 
 function verPdf(id, tipo) {
