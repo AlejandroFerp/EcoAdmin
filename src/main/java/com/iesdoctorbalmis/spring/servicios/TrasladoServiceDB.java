@@ -109,6 +109,7 @@ public class TrasladoServiceDB implements TrasladoService {
         eventoRepo.save(evento);
 
         traslado.setEstado(nuevoEstado);
+        traslado.setFechaUltimoCambioEstado(LocalDateTime.now());
 
         if (nuevoEstado == EstadoTraslado.EN_TRANSITO && traslado.getFechaInicioTransporte() == null) {
             traslado.setFechaInicioTransporte(LocalDateTime.now());

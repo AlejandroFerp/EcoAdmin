@@ -42,6 +42,16 @@ public class Usuario {
     @Column(updatable = false)
     private LocalDateTime fechaAlta;
 
+    // Datos operativos para gestion de residuos (RD 553/2020 / NT)
+    private String telefono;          // contacto operativo
+    private String dni;               // DNI/NIF para firmar documentos
+    private String cargo;             // p.ej. Tecnico ADR, Operario, Gerente
+
+    @Column(columnDefinition = "TEXT")
+    private String fotoUrl;           // URL avatar o data URL base64 (256x256 JPEG)
+
+    private Boolean notificacionesEmail = Boolean.TRUE;
+
     public Usuario() {}
 
     public Usuario(String nombre, String email, String password, Rol rol) {
@@ -62,4 +72,15 @@ public class Usuario {
     public Rol getRol() { return rol; }
     public void setRol(Rol rol) { this.rol = rol; }
     public LocalDateTime getFechaAlta() { return fechaAlta; }
+
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getDni() { return dni; }
+    public void setDni(String dni) { this.dni = dni; }
+    public String getCargo() { return cargo; }
+    public void setCargo(String cargo) { this.cargo = cargo; }
+    public String getFotoUrl() { return fotoUrl; }
+    public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
+    public boolean isNotificacionesEmail() { return notificacionesEmail == null || notificacionesEmail; }
+    public void setNotificacionesEmail(boolean notificacionesEmail) { this.notificacionesEmail = notificacionesEmail; }
 }

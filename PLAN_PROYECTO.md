@@ -187,8 +187,8 @@ No se elimina funcionalidad, se reorganiza y renombra.
 - [x] 17.1 Sidebar con grupos colapsables: Principal (con subnivel), Almacen, Contactos, Negocio, Mis Datos, Documentos, Informes
 - [x] 17.2 Rutas de Thymeleaf: `/rutas`, `/negocio`, `/mis-datos`
 - [x] 17.3 Renombrar "Traslados" → "Recogidas" en toda la UI (backend mantiene nombre, solo vista cambia)
-- [ ] 17.4 Renombrar "Residuos" → "Almacen" en la navegacion
-- [ ] 17.5 Mover centros + usuarios bajo "Contactos" (centros = instalaciones, usuarios = personas)
+- [x] 17.4 Renombrar "Residuos" → "Almacen" en la navegacion
+- [x] 17.5 Mover centros + usuarios bajo "Contactos" (centros = instalaciones, usuarios = personas)
 - [x] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
 - [x] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
 - [ ] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
@@ -236,18 +236,18 @@ Recogida {
 
 **Tareas:**
 
-- [ ] 18.1 Anadir `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` a Residuo
-- [ ] 18.2 Crear entidad `Recogida` con su repositorio y servicio
-- [ ] 18.3 Vista de calendario (`/recogidas/calendario`) con FullCalendar.js (licencia MIT)
+- [x] 18.1 Anadir `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` a Residuo
+- [x] 18.2 Crear entidad `Recogida` con su repositorio y servicio
+- [x] 18.3 Vista de calendario (`/recogidas/calendario`) con FullCalendar.js (licencia MIT)
        - Recogidas programadas se muestran como eventos
        - Color por estado: azul=programada, amarillo=en_curso, verde=completada, rojo=cancelada
        - Click en evento abre detalle/edicion
-- [ ] 18.4 Vista de lista de almacen (`/almacen`) con columna "Dias en almacen"
+- [x] 18.4 Vista de lista de almacen (`/almacen`) con columna "Dias en almacen"
        - Badge rojo si supera `diasMaximoAlmacenamiento`
        - Ordenar por `fechaEntradaAlmacen` ASC (FIFO visual)
 - [ ] 18.5 Timeline en detalle de residuo: entrada → dias en almacen → salida (o alerta)
-- [ ] 18.6 Alertas en Dashboard: "X residuos superan el tiempo maximo de almacenamiento"
-- [ ] 18.7 API endpoints:
+- [x] 18.6 Alertas en Dashboard: "X residuos superan el tiempo maximo de almacenamiento"
+- [x] 18.7 API endpoints:
        - `GET /api/recogidas` (lista con filtros: estado, fecha, centro)
        - `POST /api/recogidas`
        - `PUT /api/recogidas/{id}`

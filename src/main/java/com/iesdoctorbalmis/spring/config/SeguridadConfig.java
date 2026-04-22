@@ -57,8 +57,12 @@ public class SeguridadConfig {
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
+                .requestMatchers("/api/perfil/**").authenticated()
+                .requestMatchers("/api/empresa/**").authenticated()
+                .requestMatchers("/api/almacen/**").authenticated()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                 .requestMatchers("/api/traslados/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
+                .requestMatchers("/api/recogidas/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
                 .requestMatchers("/api/centros/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
                 .requestMatchers("/api/residuos/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
                 .requestMatchers("/api/direcciones/**").authenticated()

@@ -42,6 +42,21 @@ public class ResiduoServiceDB implements ResiduoService {
     public Residuo save(Residuo r) {
         if (r.getCentro() != null && r.getCentro().getId() != null)
             r.setCentro(centroRepo.findById(r.getCentro().getId()).orElseThrow());
+
+        // Defaults para FIFO
+        if (r.getDiasMaximoAlmacenamiento() == null) {
+            r.setDiasMaximoAlmacenamiento(180);
+        }
+        // Auto entrada al almacen cuando un residuo pasa a ALMACENADO
+        String estado = r.getEstado() == null ? "" : r.getEstado().toUpperCase();
+        if ("ALMACENADO".equals(estado) && r.getFechaEntradaAlmacen() == null) {
+            r.setFechaEntradaAlmacen(java.time.LocalDateTime.now());
+        }
+        // Auto salida cuando ya no esta en almacen ni transito (TRATADO, ELIMINADO)
+        if (("TRATADO".equals(estado) || "ELIMINADO".equals(estado))
+                && r.getFechaSalidaAlmacen() == null && r.getFechaEntradaAlmacen() != null) {
+            r.setFechaSalidaAlmacen(java.time.LocalDateTime.now());
+        }
         return repo.save(r);
     }
 

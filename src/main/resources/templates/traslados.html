@@ -29,6 +29,11 @@
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
                     Kanban
                 </button>
+                <button id="btnVistaCal" type="button" onclick="cambiarVista('calendario')"
+                        class="view-toggle__btn">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    Calendario
+                </button>
             </div>
             <button type="button" onclick="abrirCrear()" class="btn-primary shrink-0">
                 + Nuevo Traslado
@@ -36,20 +41,22 @@
         </div>
     </div>
 
+    <!-- Buscador global (aplica a tabla, kanban y calendario) -->
+    <div class="mt-2 mb-3">
+        <div class="search-bar">
+            <svg class="search-bar__icon"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input id="busqueda" type="text" placeholder="Buscar traslado por id, residuo, productor, gestor o estado..."
+                   oninput="filtrarTabla(this.value)"
+                   class="search-bar__input" />
+        </div>
+    </div>
+
     <!-- Vista Lista (tabla) -->
     <div id="listaView" class="mt-2">
-        <div class="mb-4">
-            <div class="search-bar">
-                <svg class="search-bar__icon"
-                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
-                </svg>
-                <input id="busqueda" type="text" placeholder="Buscar traslado..."
-                       oninput="filtrarTabla(this.value)"
-                       class="search-bar__input" />
-            </div>
-        </div>
         <div class="card overflow-x-auto">
             <table class="table table-zebra table-sm w-full">
                 <thead>
@@ -115,6 +122,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Vista Calendario -->
+    <div id="calendarioView" class="mt-2 hidden">
+        <div class="card p-4 md:p-6">
+            <div id="calLeyenda" class="flex flex-wrap items-center gap-2 mb-4 text-xs">
+                <span class="text-slate-400 mr-1">Filtrar por estado:</span>
+                <button type="button" data-cal-filter="PENDIENTE"
+                        class="cal-filter-btn cal-filter-btn--active flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-amber-300 bg-amber-50 text-amber-700 font-medium transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#f59e0b"></span> Pendiente
+                </button>
+                <button type="button" data-cal-filter="EN_TRANSITO"
+                        class="cal-filter-btn cal-filter-btn--active flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-300 bg-blue-50 text-blue-700 font-medium transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#3b82f6"></span> En transito
+                </button>
+                <button type="button" data-cal-filter="ENTREGADO"
+                        class="cal-filter-btn cal-filter-btn--active flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-violet-300 bg-violet-50 text-violet-700 font-medium transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#8b5cf6"></span> Entregado
+                </button>
+                <button type="button" data-cal-filter="COMPLETADO"
+                        class="cal-filter-btn cal-filter-btn--active flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 font-medium transition-all">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:#10b981"></span> Completado
+                </button>
+            </div>
+            <div id="calendarTraslados"></div>
+        </div>
+    </div>
 </main>
 
 <!-- MODAL FORM -->
@@ -158,6 +191,16 @@
                 <div>
                     <label class="label-eco">Observaciones</label>
                     <textarea id="fObservaciones" class="form-control-eco" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="label-eco">Fecha programada inicio</label>
+                        <input type="datetime-local" id="fFechaProgramadaInicio" class="form-control-eco">
+                    </div>
+                    <div>
+                        <label class="label-eco">Fecha programada fin</label>
+                        <input type="datetime-local" id="fFechaProgramadaFin" class="form-control-eco">
+                    </div>
                 </div>
             </div>
             <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
@@ -389,6 +432,8 @@
 
 <th:block th:fragment="pageScripts">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
 var todos = [], pagina = 1, filtro = '';
 var POR_PAGINA = 15;
@@ -433,41 +478,114 @@ async function poblarSelects() {
 }
 
 var vistaActual = 'tabla';
+var calendar = null;
+var filtrosCalendario = { PENDIENTE: true, EN_TRANSITO: true, ENTREGADO: true, COMPLETADO: true };
+var COLOR_ESTADO_CAL = { PENDIENTE:'#f59e0b', EN_TRANSITO:'#3b82f6', ENTREGADO:'#8b5cf6', COMPLETADO:'#10b981' };
 
 function cambiarVista(vista) {
     vistaActual = vista;
     var listaView = document.getElementById('listaView');
     var kanbanView = document.getElementById('kanbanView');
+    var calView = document.getElementById('calendarioView');
     var btnTbla = document.getElementById('btnVistaTbla');
     var btnKbn = document.getElementById('btnVistaKbn');
+    var btnCal = document.getElementById('btnVistaCal');
+    [listaView, kanbanView, calView].forEach(function(v) { v && v.classList.add('hidden'); });
+    [btnTbla, btnKbn, btnCal].forEach(function(b) { b && b.classList.remove('view-toggle__btn--active'); });
     if (vista === 'tabla') {
         listaView.classList.remove('hidden');
-        kanbanView.classList.add('hidden');
         btnTbla.classList.add('view-toggle__btn--active');
-        btnKbn.classList.remove('view-toggle__btn--active');
-    } else {
-        listaView.classList.add('hidden');
+    } else if (vista === 'kanban') {
         kanbanView.classList.remove('hidden');
         btnKbn.classList.add('view-toggle__btn--active');
-        btnTbla.classList.remove('view-toggle__btn--active');
         renderKanban();
+    } else if (vista === 'calendario') {
+        calView.classList.remove('hidden');
+        btnCal.classList.add('view-toggle__btn--active');
+        renderCalendario();
     }
+}
+
+function renderCalendario() {
+    var el = document.getElementById('calendarTraslados');
+    if (!el) return;
+    if (!calendar) {
+        calendar = new FullCalendar.Calendar(el, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            firstDay: 1,
+            headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,listMonth' },
+            buttonText: { today:'Hoy', month:'Mes', week:'Semana', list:'Lista' },
+            height: 'auto',
+            events: eventosCalendario,
+            eventClick: function(info) {
+                var id = parseInt(info.event.id);
+                if (id) abrirEditar(id);
+            }
+        });
+        calendar.render();
+        cablearFiltrosCalendario();
+    } else {
+        calendar.refetchEvents();
+    }
+}
+
+function eventosCalendario() {
+    return todos
+        .filter(function(t) {
+            if (!filtrosCalendario[t.estado]) return false;
+            if (!coincideFiltro(t)) return false;
+            return !!(t.fechaProgramadaInicio || t.fechaUltimoCambioEstado || t.fechaCreacion);
+        })
+        .map(function(t) {
+            var prod = (t.centroProductor && t.centroProductor.nombre) || '';
+            var res = (t.residuo && (t.residuo.codigoLER || ('#' + t.residuo.id))) || '';
+            var color = COLOR_ESTADO_CAL[t.estado] || '#64748b';
+            // Prioridad: planificacion explicita > fecha del ultimo cambio de estado > creacion
+            var inicio = t.fechaProgramadaInicio || t.fechaUltimoCambioEstado || t.fechaCreacion;
+            var fin = t.fechaProgramadaFin || null;
+            return {
+                id: String(t.id),
+                title: '#' + t.id + ' ' + (res || prod || 'Traslado') + ' · ' + (t.estado || ''),
+                start: inicio,
+                end: fin,
+                backgroundColor: color,
+                borderColor: color
+            };
+        });
+}
+
+function cablearFiltrosCalendario() {
+    document.querySelectorAll('[data-cal-filter]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var est = btn.getAttribute('data-cal-filter');
+            filtrosCalendario[est] = !filtrosCalendario[est];
+            btn.classList.toggle('cal-filter-btn--active', filtrosCalendario[est]);
+            btn.classList.toggle('opacity-40', !filtrosCalendario[est]);
+            if (calendar) calendar.refetchEvents();
+        });
+    });
 }
 
 function filtrarTabla(txt) {
     filtro = (txt || '').toLowerCase().trim();
     renderLista();
+    renderKanban();
+    if (calendar) calendar.refetchEvents();
+}
+
+function coincideFiltro(t) {
+    if (!filtro) return true;
+    var prod = (t.centroProductor && t.centroProductor.nombre) || '';
+    var gest = (t.centroGestor && t.centroGestor.nombre) || '';
+    var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '';
+    return (prod + gest + res + (t.estado || '') + String(t.id)).toLowerCase().indexOf(filtro) !== -1;
 }
 
 function renderLista() {
     var tbody = document.getElementById('tablaCuerpo');
     if (!tbody) return;
-    var lista = filtro ? todos.filter(function(t) {
-        var prod = (t.centroProductor && t.centroProductor.nombre) || '';
-        var gest = (t.centroGestor && t.centroGestor.nombre) || '';
-        var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '';
-        return (prod + gest + res + (t.estado || '') + String(t.id)).toLowerCase().indexOf(filtro) !== -1;
-    }) : todos;
+    var lista = todos.filter(coincideFiltro);
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados.</td></tr>';
         return;
@@ -509,12 +627,15 @@ async function cargar() {
     }
     renderLista();
     renderKanban();
+    if (calendar) calendar.refetchEvents();
 }
 
 function abrirCrear() {
     document.getElementById('modalTitulo').textContent = 'Nuevo Traslado';
     document.getElementById('itemId').value = '';
     document.getElementById('fObservaciones').value = '';
+    document.getElementById('fFechaProgramadaInicio').value = '';
+    document.getElementById('fFechaProgramadaFin').value = '';
     ['fProductor','fGestor','fResiduo','fTransportista'].forEach(function(id) { Combobox.clear(id); });
     mForm && mForm.show();
 }
@@ -528,7 +649,15 @@ async function abrirEditar(id) {
     Combobox.setValue('fResiduo',       t.residuo         ? t.residuo.id         : '');
     Combobox.setValue('fTransportista', t.transportista   ? t.transportista.id   : '');
     document.getElementById('fObservaciones').value = t.observaciones || '';
+    document.getElementById('fFechaProgramadaInicio').value = toLocalInput(t.fechaProgramadaInicio);
+    document.getElementById('fFechaProgramadaFin').value = toLocalInput(t.fechaProgramadaFin);
     mForm && mForm.show();
+}
+
+function toLocalInput(iso) {
+    if (!iso) return '';
+    // Devuelve YYYY-MM-DDTHH:mm valido para datetime-local
+    return String(iso).slice(0, 16);
 }
 
 async function guardar() {
@@ -546,6 +675,10 @@ async function guardar() {
         residuo: { id: residuoId },
         observaciones: document.getElementById('fObservaciones').value.trim()
     };
+    var fpi = document.getElementById('fFechaProgramadaInicio').value;
+    var fpf = document.getElementById('fFechaProgramadaFin').value;
+    if (fpi) body.fechaProgramadaInicio = fpi.length === 16 ? fpi + ':00' : fpi;
+    if (fpf) body.fechaProgramadaFin    = fpf.length === 16 ? fpf + ':00' : fpf;
     var transpId = parseInt(document.getElementById('fTransportista').value);
     if (transpId) body.transportista = { id: transpId };
     var res = await fetch(id ? '/api/traslados/' + id : '/api/traslados', {
@@ -848,7 +981,7 @@ function renderKanban() {
         var col = document.getElementById('kCol_' + estado);
         var counter = document.getElementById('kCount_' + estado);
         if (!col) return;
-        var items = todos.filter(function(t) { return t.estado === estado; });
+        var items = todos.filter(function(t) { return t.estado === estado && coincideFiltro(t); });
         counter.textContent = items.length;
         col.innerHTML = items.map(function(t) {
                 var prod = (t.centroProductor && t.centroProductor.nombre) || '—';

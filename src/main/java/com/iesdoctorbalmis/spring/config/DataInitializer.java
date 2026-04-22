@@ -169,6 +169,17 @@ public class DataInitializer implements ApplicationRunner {
         Traslado t6 = trasladoRepo.save(new Traslado(c4, c3, r6, trans));
         Traslado t7 = trasladoRepo.save(new Traslado(c2, c6, r7, null));
 
+        // Fechas programadas (para vista calendario)
+        java.time.LocalDateTime hoy = java.time.LocalDateTime.now()
+                .withHour(8).withMinute(0).withSecond(0).withNano(0);
+        programar(t1, hoy.plusDays(2),  hoy.plusDays(2).withHour(14));
+        programar(t2, hoy.minusDays(1), hoy.minusDays(1).withHour(18));
+        programar(t3, hoy.minusDays(5), hoy.minusDays(5).withHour(17));
+        programar(t4, hoy.minusDays(8), hoy.minusDays(7).withHour(12));
+        programar(t5, hoy.minusDays(3), hoy.minusDays(2).withHour(16));
+        programar(t6, hoy.plusDays(4),  hoy.plusDays(5).withHour(13));
+        programar(t7, hoy.plusDays(7),  hoy.plusDays(7).withHour(15));
+
         // Avanzar algunos traslados por la maquina de estados
         trasladoService.cambiarEstado(t2.getId(), EstadoTraslado.EN_TRANSITO, "Recogida realizada", trans);
         trasladoService.cambiarEstado(t3.getId(), EstadoTraslado.EN_TRANSITO, "Sale de Alicante", trans);
@@ -180,7 +191,13 @@ public class DataInitializer implements ApplicationRunner {
         trasladoService.cambiarEstado(t5.getId(), EstadoTraslado.ENTREGADO, "Recibido", trans);
         trasladoService.cambiarEstado(t5.getId(), EstadoTraslado.COMPLETADO, "Procesado y certificado", trans);
 
-        log.info("Creados 7 residuos, 7 traslados con historial de ejemplo");
+        log.info("Creados 7 residuos, 7 traslados con historial y fechas programadas");
+    }
+
+    private void programar(Traslado t, java.time.LocalDateTime inicio, java.time.LocalDateTime fin) {
+        t.setFechaProgramadaInicio(inicio);
+        t.setFechaProgramadaFin(fin);
+        trasladoRepo.save(t);
     }
 
     private Direccion crearDireccion(String nombre, String calle, String ciudad,

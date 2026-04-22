@@ -37,7 +37,7 @@ public class UsuarioController {
     public List<UsuarioDTO> listar() {
         return service.findAll()
                     .stream()
-                    .map(u -> new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail(), u.getRol(), u.getFechaAlta()))
+                    .map(UsuarioDTO::from)
                     .toList();
     }
 
@@ -45,7 +45,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioDTO> buscar(@PathVariable Long id) {
         Usuario u = service.findById(id);
         if (u == null) throw new RecursoNoEncontradoException("Usuario no encontrado: " + id);
-        return ResponseEntity.ok(new UsuarioDTO(u.getId(), u.getNombre(), u.getEmail(), u.getRol(), u.getFechaAlta()));
+        return ResponseEntity.ok(UsuarioDTO.from(u));
     }
 
     @PostMapping
@@ -57,7 +57,7 @@ public class UsuarioController {
         try {
             Usuario saved = service.save(u);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new UsuarioDTO(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getRol(), saved.getFechaAlta()));
+                    .body(UsuarioDTO.from(saved));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al crear usuario: " + e.getMessage());
         }
@@ -73,7 +73,7 @@ public class UsuarioController {
         // La password NO se modifica desde este endpoint (evita perder/re-cifrar el hash al editar otros campos).
         try {
             Usuario saved = service.save(existing);
-            return ResponseEntity.ok(new UsuarioDTO(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getRol(), saved.getFechaAlta()));
+            return ResponseEntity.ok(UsuarioDTO.from(saved));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al actualizar usuario: " + e.getMessage());
         }

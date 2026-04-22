@@ -60,6 +60,15 @@ public class Traslado {
     private LocalDateTime fechaInicioTransporte;
     private LocalDateTime fechaEntrega;
 
+    /** Inicio planificado del traslado (para calendario). */
+    private LocalDateTime fechaProgramadaInicio;
+
+    /** Fin planificado del traslado (para calendario). */
+    private LocalDateTime fechaProgramadaFin;
+
+    /** Fecha del ultimo cambio de estado (denormalizada, se actualiza en TrasladoService.cambiarEstado). */
+    private LocalDateTime fechaUltimoCambioEstado;
+
     private String observaciones;
 
     @OneToMany(mappedBy = "traslado", cascade = CascadeType.ALL)
@@ -92,6 +101,12 @@ public class Traslado {
     public void setFechaInicioTransporte(LocalDateTime fecha) { this.fechaInicioTransporte = fecha; }
     public LocalDateTime getFechaEntrega() { return fechaEntrega; }
     public void setFechaEntrega(LocalDateTime fechaEntrega) { this.fechaEntrega = fechaEntrega; }
+    public LocalDateTime getFechaProgramadaInicio() { return fechaProgramadaInicio; }
+    public void setFechaProgramadaInicio(LocalDateTime f) { this.fechaProgramadaInicio = f; }
+    public LocalDateTime getFechaProgramadaFin() { return fechaProgramadaFin; }
+    public void setFechaProgramadaFin(LocalDateTime f) { this.fechaProgramadaFin = f; }
+    public LocalDateTime getFechaUltimoCambioEstado() { return fechaUltimoCambioEstado; }
+    public void setFechaUltimoCambioEstado(LocalDateTime f) { this.fechaUltimoCambioEstado = f; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
     public List<EventoTraslado> getHistorial() { return historial; }
