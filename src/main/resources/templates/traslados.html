@@ -40,7 +40,7 @@
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
             Traslados
         </a>
-        <a th:href="@{/public/usuarios}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+        <a th:href="@{/public/usuarios}" sec:authorize="hasRole('ADMIN')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             Usuarios
         </a>
@@ -79,10 +79,16 @@
                 <h2 class="text-xl font-bold text-gray-900">Traslados</h2>
                 <p class="text-sm text-gray-500 mt-0.5">Seguimiento y gestion de traslados</p>
             </div>
-            <button type="button" onclick="abrirCrear()"
-                    class="btn bg-[#1a6b3c] hover:bg-[#155c33] text-white border-none normal-case shrink-0">
-                + Nuevo Traslado
-            </button>
+            <div class="flex gap-2 flex-wrap">
+                <button type="button" onclick="abrirQr()"
+                        class="btn btn-sm bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 normal-case shrink-0">
+                    📷 Leer QR
+                </button>
+                <button type="button" onclick="abrirCrear()"
+                        class="btn bg-[#1a6b3c] hover:bg-[#155c33] text-white border-none normal-case shrink-0">
+                    + Nuevo Traslado
+                </button>
+            </div>
         </div>
         <div class="mb-4">
             <div class="relative w-full sm:max-w-xs">
@@ -207,6 +213,56 @@
     </div>
 </div>
 
+<!-- MODAL QR LECTOR -->
+<div id="modalQr" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/20">
+    <div class="relative p-4 w-full max-w-md">
+        <div class="relative bg-white rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between p-5 border-b border-gray-100">
+                <h3 class="text-base font-semibold">Leer Código QR</h3>
+                <button type="button" data-modal-hide="modalQr" class="text-gray-400 hover:text-gray-700 rounded-lg p-1.5 hover:bg-gray-100"><svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-sm text-gray-500">Sube una imagen con un código QR para decodificarlo.</p>
+                <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center">
+                    <label for="qrArchivo" class="cursor-pointer flex flex-col items-center gap-2">
+                        <svg class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
+                        <span class="text-sm font-medium text-gray-600">Seleccionar imagen con QR</span>
+                        <span class="text-xs text-gray-400">PNG, JPG, GIF soportados</span>
+                        <input id="qrArchivo" type="file" accept="image/*" class="hidden" onchange="leerQr()">
+                    </label>
+                </div>
+                <div id="qrResultado" class="hidden p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-xs font-semibold text-green-700 mb-1">Contenido del QR:</p>
+                    <p id="qrTexto" class="text-sm text-green-800 break-all font-mono"></p>
+                </div>
+                <div id="qrError" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p id="qrMensajeError" class="text-sm text-red-700"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PDF VIEWER -->
+<div id="modalPdf" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/20">
+    <div class="relative p-4 w-full max-w-4xl">
+        <div class="relative bg-white rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 id="pdfTitulo" class="text-base font-semibold">Documento PDF</h3>
+                <div class="flex items-center gap-2">
+                    <a id="pdfDescarga" href="#" class="btn btn-xs bg-[#1a6b3c] hover:bg-[#155c33] text-white border-none normal-case">⬇ Descargar</a>
+                    <button type="button" data-modal-hide="modalPdf" class="text-gray-400 hover:text-gray-700 rounded-lg p-1.5 hover:bg-gray-100"><svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg></button>
+                </div>
+            </div>
+            <div class="p-0">
+                <iframe id="pdfFrame" src="" class="w-full rounded-b-2xl" style="height:70vh;" title="PDF Viewer"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL BORRAR -->
 <div id="modalBorrar" tabindex="-1" aria-hidden="true"
      class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/20">
@@ -232,11 +288,11 @@ function closeSidebar() { document.getElementById('sidebar').classList.add('-tra
 
 let todos = [], borrandoId, pagina = 1, filtro = '';
 const POR_PAGINA = 15;
-let mForm, mEstado, mHistorial, mBorrar;
+let mForm, mEstado, mHistorial, mBorrar, mQr, mPdf;
 
 function initModales() {
-    const ids = ['modalForm','modalEstado','modalHistorial','modalBorrar'];
-    [mForm, mEstado, mHistorial, mBorrar] = ids.map(id => {
+    const ids = ['modalForm','modalEstado','modalHistorial','modalBorrar','modalQr','modalPdf'];
+    [mForm, mEstado, mHistorial, mBorrar, mQr, mPdf] = ids.map(id => {
         const el = document.getElementById(id);
         return (el && typeof Modal !== 'undefined') ? new Modal(el, { backdrop:'dynamic', closable:true }) : null;
     });
@@ -304,6 +360,7 @@ function renderTabla() {
                     <button class="btn btn-ghost btn-xs" onclick="abrirEditar(${t.id})" title="Editar">✏️</button>
                     <button class="btn btn-ghost btn-xs" onclick="abrirEstado(${t.id})" title="Cambiar estado">⚡</button>
                     <button class="btn btn-ghost btn-xs" onclick="verHistorial(${t.id})" title="Historial">📋</button>
+                    <button class="btn btn-ghost btn-xs" onclick="verPdf(${t.id},'carta-porte')" title="Ver PDF">📄</button>
                     <button class="btn btn-ghost btn-xs text-error" onclick="pedirBorrar(${t.id})" title="Eliminar">🗑️</button>
                 </td>
             </tr>`).join('');
@@ -362,16 +419,11 @@ function abrirEstado(id) {
 }
 
 async function cambiarEstado() {
-    const id = document.getElementById('estadoTrasladoId').value;
-    const body = {
-        nuevoEstado: document.getElementById('nuevoEstado').value,
-        comentario:  document.getElementById('comentarioEstado').value.trim(),
-    };
-    const res = await fetch(`/api/traslados/${id}/estado`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    });
+    const id  = document.getElementById('estadoTrasladoId').value;
+    const est = document.getElementById('nuevoEstado').value;
+    const com = document.getElementById('comentarioEstado').value.trim();
+    const url = `/api/traslados/${id}/estado?estado=${encodeURIComponent(est)}${com ? '&comentario=' + encodeURIComponent(com) : ''}`;
+    const res = await fetch(url, { method: 'PATCH' });
     if (res.ok) { mEstado?.hide(); await cargar(); }
     else         { alert('Error al cambiar el estado.'); }
 }
@@ -400,6 +452,46 @@ function pedirBorrar(id) { borrandoId = id; mBorrar?.show(); }
 async function borrar() {
     const res = await fetch(`/api/traslados/${borrandoId}`, { method: 'DELETE' });
     if (res.ok || res.status === 204) { mBorrar?.hide(); await cargar(); }
+}
+
+function abrirQr() {
+    document.getElementById('qrArchivo').value = '';
+    document.getElementById('qrResultado').classList.add('hidden');
+    document.getElementById('qrError').classList.add('hidden');
+    mQr?.show();
+}
+
+async function leerQr() {
+    const input = document.getElementById('qrArchivo');
+    if (!input.files || !input.files[0]) return;
+    const form = new FormData();
+    form.append('archivo', input.files[0]);
+    document.getElementById('qrResultado').classList.add('hidden');
+    document.getElementById('qrError').classList.add('hidden');
+    try {
+        const res  = await fetch('/api/qr/leer', { method: 'POST', body: form });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('qrTexto').textContent = data.contenido;
+            document.getElementById('qrResultado').classList.remove('hidden');
+        } else {
+            document.getElementById('qrMensajeError').textContent = data.error || 'No se pudo leer el QR.';
+            document.getElementById('qrError').classList.remove('hidden');
+        }
+    } catch {
+        document.getElementById('qrMensajeError').textContent = 'Error de conexión al servidor.';
+        document.getElementById('qrError').classList.remove('hidden');
+    }
+}
+
+const pdfLabels = { 'carta-porte':'Carta de Porte', 'notificacion':'Notificación', 'certificado':'Certificado' };
+
+function verPdf(id, tipo) {
+    const label = pdfLabels[tipo] || tipo;
+    document.getElementById('pdfTitulo').textContent = `${label} — Traslado #${id}`;
+    document.getElementById('pdfFrame').src          = `/api/traslados/${id}/pdf/${tipo}?inline=true`;
+    document.getElementById('pdfDescarga').href      = `/api/traslados/${id}/pdf/${tipo}`;
+    mPdf?.show();
 }
 </script>
 </body>

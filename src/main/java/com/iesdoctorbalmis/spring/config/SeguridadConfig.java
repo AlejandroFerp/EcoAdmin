@@ -6,17 +6,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SeguridadConfig {
 
     @Bean
@@ -53,6 +56,15 @@ public class SeguridadConfig {
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
+                // Only admins can manage users
+                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                // Traslados, Centros, Residuos accessible to all authenticated roles
+                .requestMatchers("/api/traslados/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
+                .requestMatchers("/api/centros/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
+                .requestMatchers("/api/residuos/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
+                .requestMatchers("/api/direcciones/**").hasRole("ADMIN")
+                .requestMatchers("/api/estadisticas/**").authenticated()
+                .requestMatchers("/api/qr/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -63,8 +75,10 @@ public class SeguridadConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutUrl("/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/public/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             );
         return http.build();
