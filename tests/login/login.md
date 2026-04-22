@@ -21,7 +21,7 @@
 1. Navegar a `/`
 
 ### Expected Result:
-- URL final contiene `/public/login`
+- URL final contiene `/login`
 - Título de página contiene "EcoAdmin"
 
 ---
@@ -34,13 +34,13 @@
 - Credenciales: `admin@ecoadmin.com` / `admin123`
 
 ### Flow Steps:
-1. Ir a `/public/login`
+1. Ir a `/login`
 2. Rellenar Email con `admin@ecoadmin.com`
 3. Rellenar Contraseña con `admin123`
 4. Hacer clic en "Acceder"
 
 ### Expected Result:
-- Redirige a `/public/index`
+- Redirige a `/dashboard`
 - Título contiene "Dashboard"
 
 ---
@@ -50,7 +50,7 @@
 **Priority:** `high`
 
 ### Flow Steps:
-1. Ir a `/public/login`
+1. Ir a `/login`
 2. Rellenar credenciales inválidas
 3. Enviar formulario
 
@@ -65,10 +65,10 @@
 **Priority:** `high`
 
 ### Flow Steps:
-1. Acceder directamente a `/public/index` sin sesión
+1. Acceder directamente a `/dashboard` sin sesión
 
 ### Expected Result:
-- Redirige a `/public/login`
+- Redirige a `/login`
 
 ---
 
@@ -81,5 +81,5 @@
 2. Hacer clic en el enlace de cierre de sesión (title="Cerrar sesion")
 
 ### Expected Result:
-- Redirige a `/public/login?logout`
+- Redirige a `/login?logout`
 - Mensaje "Sesión cerrada correctamente." visible

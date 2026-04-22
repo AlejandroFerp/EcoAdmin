@@ -69,7 +69,7 @@ src/main/java/com/iesdoctorbalmis/spring/
 │   ├── ResiduoController.java        # CRUD /api/residuos
 │   ├── TrasladoController.java       # CRUD + estado + historial + PDF + QR
 │   ├── UsuarioController.java        # CRUD /api/usuarios
-│   └── ZonaPublicaController.java    # /public/index (dashboard Thymeleaf)
+│   └── ZonaPublicaController.java    # /dashboard y páginas Thymeleaf públicas
 ├── dto/
 │   └── EstadisticasDTO.java          # Record con métricas del sistema
 ├── modelo/
@@ -134,7 +134,7 @@ Cada transición genera automáticamente un `EventoTraslado` con la marca de tie
 
 - Autenticación por formulario (Spring Security). Sesión HTTP estándar.
 - Contraseñas almacenadas con BCrypt.
-- Rutas públicas: `/public/**`, `/webjars/**`, `/css/**`, `/swagger-ui/**`, `/v3/api-docs/**`.
+- Rutas públicas: `/login`, `/webjars/**`, `/css/**`, `/swagger-ui/**`, `/v3/api-docs/**`.
 - CORS configurado centralmente para `localhost:8080` y `localhost:3000`.
 - Roles: `PRODUCTOR`, `GESTOR`, `TRANSPORTISTA`, `ADMIN`.
 

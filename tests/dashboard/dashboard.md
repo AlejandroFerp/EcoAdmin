@@ -17,7 +17,7 @@
 2. Verificar carga del dashboard
 
 ### Expected Result:
-- URL: `/public/index`
+- URL: `/dashboard`
 - Título: "EcoAdmin — Dashboard"
 - Sidebar visible con logo "EcoAdmin"
 - Todos los enlaces de navegación visibles
@@ -33,7 +33,7 @@
 2. Hacer clic en enlace del sidebar (Centros / Residuos / Traslados / Usuarios)
 
 ### Expected Result (por enlace):
-- Centros → `/public/centros`, título "EcoAdmin — Centros"
-- Residuos → `/public/residuos`, título "EcoAdmin — Residuos"
-- Traslados → `/public/traslados`, título "EcoAdmin — Traslados"
-- Usuarios → `/public/usuarios`, título "EcoAdmin — Usuarios"
+- Centros → `/centers`, título "EcoAdmin — Centros"
+- Residuos → `/waste`, título "EcoAdmin — Residuos"
+- Traslados → `/shipments`, título "EcoAdmin — Recogidas"
+- Usuarios → `/users`, título "EcoAdmin — Usuarios"

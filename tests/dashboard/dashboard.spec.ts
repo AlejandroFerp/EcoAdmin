@@ -22,9 +22,9 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navCentros.click();
+      await dashboard.navCenters.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/centros/);
+      await expect(page).toHaveURL(/\/centers/);
       await expect(page).toHaveTitle(/Centros/);
     }
   );
@@ -35,9 +35,9 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navResiduos.click();
+      await dashboard.navWaste.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/residuos/);
+      await expect(page).toHaveURL(/\/waste/);
       await expect(page).toHaveTitle(/Residuos/);
     }
   );
@@ -48,9 +48,9 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navTraslados.click();
+      await dashboard.navShipments.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/traslados/);
+      await expect(page).toHaveURL(/\/shipments/);
       await expect(page).toHaveTitle(/Recogidas/);
     }
   );
@@ -61,9 +61,9 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navUsuarios.click();
+      await dashboard.navUsers.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/usuarios/);
+      await expect(page).toHaveURL(/\/users/);
       await expect(page).toHaveTitle(/Usuarios/);
     }
   );
@@ -74,9 +74,9 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navDirecciones.click();
+      await dashboard.navAddresses.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/direcciones/);
+      await expect(page).toHaveURL(/\/addresses/);
       await expect(page).toHaveTitle(/Direcciones/);
     }
   );
@@ -116,11 +116,11 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navCentros.click();
+      await dashboard.navCenters.click();
       await page.waitForLoadState("domcontentloaded");
       await page.getByRole("link", { name: "Dashboard" }).click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page).toHaveURL(/\/public\/index/);
+      await expect(page).toHaveURL(/\/dashboard/);
     }
   );
 
@@ -130,7 +130,7 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await dashboard.navCentros.click();
+      await dashboard.navCenters.click();
       await page.waitForLoadState("domcontentloaded");
       await expect(page.locator("#busqueda")).toBeVisible();
       await expect(page.locator("#tablaCuerpo")).toBeVisible();
@@ -198,7 +198,7 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await page.goto("/public/rutas");
+      await page.goto("/routes");
       await page.waitForLoadState("domcontentloaded");
       await expect(page).toHaveTitle(/Rutas/);
       await expect(page.getByText("Módulo de Rutas")).toBeVisible();
@@ -211,7 +211,7 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await page.goto("/public/negocio");
+      await page.goto("/business");
       await page.waitForLoadState("domcontentloaded");
       await expect(page).toHaveTitle(/Negocio/);
       await expect(page.getByText("Módulo de Negocio")).toBeVisible();
@@ -224,7 +224,7 @@ test.describe("Dashboard", () => {
     async ({ page }) => {
       const dashboard = new DashboardPage(page);
       await dashboard.loginAndGoto();
-      await page.goto("/public/mis-datos");
+      await page.goto("/profile");
       await page.waitForLoadState("domcontentloaded");
       await expect(page).toHaveTitle(/Mis Datos/);
       await expect(page.getByText("Próximamente")).toBeVisible();

@@ -8,7 +8,7 @@ test.describe("Login", () => {
     { tag: ["@critical", "@e2e", "@auth", "@LOGIN-E2E-001"] },
     async ({ page }) => {
       await page.goto("/");
-      await expect(page).toHaveURL(/\/public\/login/);
+      await expect(page).toHaveURL(/\/login/);
       await expect(page).toHaveTitle(/EcoAdmin/);
     }
   );
@@ -20,7 +20,7 @@ test.describe("Login", () => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login(ADMIN_CREDENTIALS);
-      await expect(page).toHaveURL(/\/public\/index/);
+      await expect(page).toHaveURL(/\/dashboard/);
       await expect(page).toHaveTitle(/Dashboard/);
     }
   );
@@ -41,8 +41,8 @@ test.describe("Login", () => {
     "Redirige al login si se intenta acceder al dashboard sin sesión",
     { tag: ["@high", "@e2e", "@auth", "@LOGIN-E2E-004"] },
     async ({ page }) => {
-      await page.goto("/public/index");
-      await expect(page).toHaveURL(/\/public\/login/);
+      await page.goto("/dashboard");
+      await expect(page).toHaveURL(/\/login/);
     }
   );
 
@@ -53,10 +53,10 @@ test.describe("Login", () => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login(ADMIN_CREDENTIALS);
-      await expect(page).toHaveURL(/\/public\/index/);
+      await expect(page).toHaveURL(/\/dashboard/);
 
       await page.getByTitle("Cerrar sesion").click();
-      await expect(page).toHaveURL(/\/public\/login/);
+      await expect(page).toHaveURL(/\/login/);
       await loginPage.expectLogoutMessageVisible();
     }
   );
@@ -65,7 +65,7 @@ test.describe("Login", () => {
     "Página de login tiene título 'EcoAdmin — Acceso'",
     { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-006"] },
     async ({ page }) => {
-      await page.goto("/public/login");
+      await page.goto("/login");
       await expect(page).toHaveTitle("EcoAdmin — Acceso");
     }
   );
@@ -74,7 +74,7 @@ test.describe("Login", () => {
     "Campo contraseña es de tipo password (enmascarado)",
     { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-007"] },
     async ({ page }) => {
-      await page.goto("/public/login");
+      await page.goto("/login");
       const passwordInput = page.getByLabel("Contraseña");
       await expect(passwordInput).toHaveAttribute("type", "password");
     }
@@ -84,7 +84,7 @@ test.describe("Login", () => {
     "Label 'Email' visible en formulario de login",
     { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-008"] },
     async ({ page }) => {
-      await page.goto("/public/login");
+      await page.goto("/login");
       await expect(page.getByLabel("Email")).toBeVisible();
       await expect(page.getByRole("button", { name: "Acceder" })).toBeVisible();
     }
@@ -94,7 +94,7 @@ test.describe("Login", () => {
     "El campo email tiene atributo required (validación HTML5)",
     { tag: ["@medium", "@e2e", "@auth", "@LOGIN-E2E-009"] },
     async ({ page }) => {
-      await page.goto("/public/login");
+      await page.goto("/login");
       const emailInput = page.getByLabel("Email");
       await expect(emailInput).toHaveAttribute("required", "");
     }
@@ -104,7 +104,7 @@ test.describe("Login", () => {
     "El campo email tiene placeholder con formato de correo",
     { tag: ["@low", "@e2e", "@auth", "@LOGIN-E2E-010"] },
     async ({ page }) => {
-      await page.goto("/public/login");
+      await page.goto("/login");
       const emailInput = page.getByLabel("Email");
       await expect(emailInput).toHaveAttribute("placeholder", /empresa|@/);
     }

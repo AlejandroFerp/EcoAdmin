@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/main :: layout('centers', 'EcoAdmin — Centros', 'Centros de tratamiento', ~{::pageContent}, ~{::pageScripts})}">
+<body>
+
+<th:block th:fragment="pageContent">
+<main class="page-main">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Centros</h2>
+            <p class="page-subtitle">Gestion de centros registrados</p>
+        </div>
+        <div class="page-actions">
+            <button type="button" onclick="abrirCrear()" class="btn-primary shrink-0">
+                + Anadir Centro
+            </button>
+        </div>
+    </div>
+    <div th:replace="~{layouts/fragments :: searchBar('Buscar centros...')}"></div>
+    <!-- Mapa general de centros -->
+    <div class="mb-4">
+        <button type="button" onclick="toggleMapaGeneral()" class="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            <span id="mapaGeneralLabel">Mostrar mapa</span>
+        </button>
+        <div id="mapaGeneralWrap" class="hidden mt-2">
+            <div id="mapaGeneral" style="height:350px" class="rounded-xl overflow-hidden border border-slate-200 shadow-sm w-full"></div>
+        </div>
+    </div>
+    <div class="card overflow-x-auto">
+        <table class="table table-zebra table-sm w-full">
+            <thead>
+                <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
+                    <th class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs" id="selAll" onclick="seleccionarTodos(this)"></th>
+                    <th class="w-12">ID</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th class="hidden md:table-cell">Direccion</th>
+                    <th>Ciudad</th>
+                    <th class="hidden lg:table-cell">NIMA</th>
+                    <th class="hidden lg:table-cell">Contacto</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaCuerpo">
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:replace="~{layouts/fragments :: paginationBar}"></div>
+</main>
+
+<!-- MODAL FORM -->
+<div id="modalForm" tabindex="-1" aria-hidden="true"
+     class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--md">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 id="modalTitulo" class="modal-title">Crear Centro</h3>
+                <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
+            </div>
+            <div class="modal-body space-y-4">
+                <input type="hidden" id="itemId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="label-eco">Nombre *</label>
+                        <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre del centro">
+                    </div>
+                    <div>
+                        <label class="label-eco">Tipo</label>
+                        <select id="fTipo" class="form-control-eco">
+                            <option value="">Seleccionar...</option>
+                            <option value="PRODUCTOR">Productor</option>
+                            <option value="GESTOR">Gestor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-eco">NIMA</label>
+                        <input type="text" id="fNima" class="form-control-eco" placeholder="NIMA/2024/001">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="label-eco">Direccion *</label>
+                        <div data-combobox="fDireccion" data-placeholder="Buscar direccion (calle o ciudad)..."></div>
+                    </div>
+                    <div>
+                        <label class="label-eco">Contacto</label>
+                        <input type="text" id="fContacto" class="form-control-eco" placeholder="Nombre de contacto">
+                    </div>
+                    <div>
+                        <label class="label-eco">Telefono</label>
+                        <input type="text" id="fTelefono" class="form-control-eco" placeholder="966 112 233">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="label-eco">Email</label>
+                        <input type="email" id="fEmail" class="form-control-eco" placeholder="contacto@centro.es">
+                    </div>
+                </div>
+            </div>
+            <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
+        </div>
+    </div>
+</div>
+</th:block>
+
+<th:block th:fragment="pageScripts">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+var todos = [], direcciones = [], pagina = 1, filtro = '';
+var POR_PAGINA = 15;
+var mForm;
+var mapaGeneralInstance = null, mapaGeneralVisible = false;
+
+function initModales() {
+    mForm = {
+        show: function() { document.getElementById('modalForm').classList.remove('hidden'); },
+        hide: function() { document.getElementById('modalForm').classList.add('hidden'); }
+    };
+}
+
+document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
+
+async function cargar() {
+    try {
+        var centrosRes = await fetch('/api/centros');
+        var dirsRes = await fetch('/api/direcciones');
+        if (!centrosRes.ok) throw new Error('HTTP ' + centrosRes.status);
+        todos = await centrosRes.json();
+        direcciones = await dirsRes.json();
+    } catch (err) {
+        document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="9" class="text-center py-12 text-red-400">Error al cargar datos. Recarga la p\u00e1gina.</td></tr>';
+        return;
+    }
+    pagina = 1;
+    renderTabla();
+    renderDirecciones();
+    if (mapaGeneralVisible) renderMapaGeneral();
+}
+
+function renderDirecciones() {
+    Combobox.bind({
+        id: 'fDireccion',
+        placeholder: 'Buscar direccion (calle o ciudad)...',
+        items: direcciones.map(function(d) {
+            return {
+                value: d.id,
+                label: (d.nombre || d.calle || ('#' + d.id)),
+                sub: [d.ciudad, d.codigoPostal].filter(Boolean).join(' · ')
+            };
+        })
+    });
+}
+
+function filtrar() { filtro = document.getElementById('busqueda').value.toLowerCase(); pagina = 1; renderTabla(); }
+
+function renderTabla() {
+    var lista = todos.filter(function(c) {
+        return (c.nombre || '').toLowerCase().includes(filtro) ||
+               (c.tipo || '').toLowerCase().includes(filtro) ||
+               (c.direccion && c.direccion.ciudad || '').toLowerCase().includes(filtro) ||
+               (c.nima || '').toLowerCase().includes(filtro);
+    });
+    var inicio = (pagina - 1) * POR_PAGINA;
+    var slice = lista.slice(inicio, inicio + POR_PAGINA);
+    var total = lista.length;
+    var totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
+
+    document.getElementById('infoReg').textContent = total === 0
+        ? 'Sin registros'
+        : 'Mostrando ' + (inicio + 1) + '\u2013' + Math.min(inicio + POR_PAGINA, total) + ' de ' + total;
+
+    document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
+        ? '<tr><td colspan="8" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
+        : slice.map(function(c) {
+            return '<tr class="hover" ondblclick="abrirEditar(' + c.id + ')">'
+                + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + c.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
+            + '<td class="text-xs text-slate-400">' + c.id + '</td>'
+            + '<td class="font-medium">' + esc(c.nombre || '\u2014') + '</td>'
+            + '<td>' + (window.tipoCentroBadge ? window.tipoCentroBadge(c.tipo) : esc(c.tipo || '\u2014')) + '</td>'
+            + '<td class="text-sm text-slate-500 hidden md:table-cell">' + esc(c.direccion ? c.direccion.calle : '\u2014') + '</td>'
+            + '<td class="text-sm">' + esc(c.direccion ? c.direccion.ciudad : '\u2014') + '</td>'
+            + '<td class="text-xs text-slate-500 hidden lg:table-cell">' + esc(c.nima || '\u2014') + '</td>'
+            + '<td class="text-sm hidden lg:table-cell">' + esc(c.nombreContacto || '\u2014') + '</td>'
+            + '<td class="text-right whitespace-nowrap">'
+            + '  <button class="btn-icon" title="Editar" onclick="abrirEditar(' + c.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
+            + '  <button class="btn-icon btn-icon--danger" title="Eliminar" onclick="pedirBorrar(' + c.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>'
+            + '</td></tr>';
+        }).join('');
+
+    document.getElementById('pgBotones').innerHTML = Array.from({ length: totalPags }, function(_, i) { return i + 1; })
+        .map(function(i) { return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>'; }).join('');
+}
+
+function irPagina(n) { pagina = n; renderTabla(); }
+
+function abrirCrear() {
+    document.getElementById('modalTitulo').textContent = 'Crear Centro';
+    document.getElementById('itemId').value = '';
+    ['fNombre','fNima','fContacto','fTelefono','fEmail'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('fTipo').value = '';
+    Combobox.clear('fDireccion');
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+    }
+    mForm && mForm.show();
+}
+
+async function abrirEditar(id) {
+    var c = await fetch('/api/centros/' + id).then(function(r) { return r.json(); });
+    document.getElementById('modalTitulo').textContent = 'Editar Centro';
+    document.getElementById('itemId').value = c.id;
+    document.getElementById('fNombre').value = c.nombre || '';
+    document.getElementById('fTipo').value = c.tipo || '';
+    Combobox.setValue('fDireccion', c.direccion ? c.direccion.id : '');
+    document.getElementById('fNima').value = c.nima || '';
+    document.getElementById('fContacto').value = c.nombreContacto || '';
+    document.getElementById('fTelefono').value = c.telefono || '';
+    document.getElementById('fEmail').value = c.email || '';
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+    }
+    mForm && mForm.show();
+}
+
+async function guardar() {
+    var id = document.getElementById('itemId').value;
+    var dirId = document.getElementById('fDireccion').value;
+    var body = {
+        nombre: document.getElementById('fNombre').value.trim(),
+        tipo: document.getElementById('fTipo').value,
+        direccion: dirId ? { id: parseInt(dirId) } : null,
+        nima: document.getElementById('fNima').value.trim(),
+        nombreContacto: document.getElementById('fContacto').value.trim(),
+        telefono: document.getElementById('fTelefono').value.trim(),
+        email: document.getElementById('fEmail').value.trim()
+    };
+    if (!body.nombre) { Swal.fire({ icon:'warning', text:'El nombre es obligatorio.' }); return; }
+    var res = await fetch(id ? '/api/centros/' + id : '/api/centros', {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    if (res.ok) { mForm && mForm.hide(); await cargar(); }
+    else { Swal.fire({ icon:'error', title:'Error', text:'No se pudo guardar el centro.' }); }
+}
+
+async function pedirBorrar(id) {
+    var result = await Swal.fire({
+        title: 'Eliminar centro?',
+        text: 'Esta accion no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Eliminar'
+    });
+    if (!result.isConfirmed) return;
+    var res = await fetch('/api/centros/' + id, { method: 'DELETE' });
+    if (res.ok || res.status === 204) { await cargar(); }
+    else {
+        var data = await res.json().catch(function() { return {}; });
+        Swal.fire({ icon:'error', title:'No se puede eliminar', text: data.error || 'Error al eliminar.' });
+    }
+}
+async function borrarSeleccionados() {
+    var ids = getSeleccionados();
+    if (!ids.length) return;
+    var result = await Swal.fire({
+        title: 'Eliminar ' + ids.length + ' centro(s)?',
+        text: 'Solo se eliminan centros sin traslados asociados.',
+        icon: 'warning', showCancelButton: true,
+        confirmButtonColor: '#ef4444', cancelButtonText: 'Cancelar', confirmButtonText: 'Eliminar'
+    });
+    if (!result.isConfirmed) return;
+    var errors = [];
+    for (var id of ids) {
+        var res = await fetch('/api/centros/' + id, { method: 'DELETE' });
+        if (!res.ok && res.status !== 204) {
+            var d = await res.json().catch(function(){ return {}; });
+            errors.push((d.error || 'Error') + ' (ID ' + id + ')');
+        }
+    }
+    limpiarSeleccion();
+    await cargar();
+    if (errors.length) Swal.fire({ icon: 'warning', title: 'Algunos no se pudieron eliminar', text: errors.join('\n') });
+}
+
+/* ── Leaflet: mapa general ── */
+function toggleMapaGeneral() {
+    mapaGeneralVisible = !mapaGeneralVisible;
+    var wrap = document.getElementById('mapaGeneralWrap');
+    var label = document.getElementById('mapaGeneralLabel');
+    if (mapaGeneralVisible) {
+        wrap.classList.remove('hidden');
+        label.textContent = 'Ocultar mapa';
+        setTimeout(function() { renderMapaGeneral(); }, 100);
+    } else {
+        wrap.classList.add('hidden');
+        label.textContent = 'Mostrar mapa';
+    }
+}
+
+function renderMapaGeneral() {
+    var conCoords = todos.filter(function(c) {
+        return c.direccion && c.direccion.latitud && c.direccion.longitud;
+    });
+    if (!mapaGeneralInstance) {
+        var lat0 = conCoords.length ? conCoords[0].direccion.latitud : 40.4168;
+        var lon0 = conCoords.length ? conCoords[0].direccion.longitud : -3.7038;
+        mapaGeneralInstance = L.map('mapaGeneral').setView([lat0, lon0], conCoords.length ? 8 : 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors', maxZoom: 19
+        }).addTo(mapaGeneralInstance);
+    } else {
+        mapaGeneralInstance.eachLayer(function(l) { if (l instanceof L.Marker) mapaGeneralInstance.removeLayer(l); });
+    }
+    var tipoColors = { PRODUCTOR: '#f59e0b', GESTOR: '#3b82f6', TRANSPORTISTA: '#10b981' };
+    conCoords.forEach(function(c) {
+        var color = tipoColors[c.tipo] || '#6b7280';
+        var icon = L.divIcon({
+            className: '',
+            html: '<div style="width:14px;height:14px;border-radius:50%;background:' + color + ';border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>',
+            iconSize: [14, 14], iconAnchor: [7, 7]
+        });
+        var dir = c.direccion;
+        var popup = '<b>' + esc(c.nombre) + '</b><br>' +
+            '<span style="color:' + color + '">' + (c.tipo || '') + '</span><br>' +
+            esc(dir.calle || '') + '<br>' + esc(dir.ciudad || '');
+        L.marker([dir.latitud, dir.longitud], { icon: icon })
+            .bindPopup(popup)
+            .addTo(mapaGeneralInstance);
+    });
+    if (conCoords.length > 1) {
+        var bounds = L.latLngBounds(conCoords.map(function(c) { return [c.direccion.latitud, c.direccion.longitud]; }));
+        mapaGeneralInstance.fitBounds(bounds, { padding: [30, 30] });
+    }
+    mapaGeneralInstance.invalidateSize();
+}
+</script>
+</th:block>
+</body>
+</html>

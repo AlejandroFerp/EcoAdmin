@@ -31,8 +31,8 @@ public class ZonaPublicaController {
         return "login";
     }
 
-    @GetMapping("/index")
-    public String index(Model model) {
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
         model.addAttribute("totalCentros",    centroRepo.count());
         model.addAttribute("totalResiduos",   residuoRepo.count());
         model.addAttribute("trasladosEnCurso",
@@ -40,36 +40,66 @@ public class ZonaPublicaController {
               + trasladoRepo.countByEstado(EstadoTraslado.PENDIENTE));
         model.addAttribute("trasladosCompletados",
                 trasladoRepo.countByEstado(EstadoTraslado.COMPLETADO));
-        return "index";
+        return "dashboard";
     }
 
+    @GetMapping("/centers")
+    public String centers() { return "centers"; }
+
+    @GetMapping("/waste")
+    public String waste() { return "waste"; }
+
+    @GetMapping("/users")
+    public String users() { return "users"; }
+
+    @GetMapping("/shipments")
+    public String shipments() { return "shipments"; }
+
+    @GetMapping("/addresses")
+    public String addresses() { return "addresses"; }
+
+    @GetMapping("/documents")
+    public String documents() { return "documents"; }
+
+    @GetMapping("/routes")
+    public String routes() { return "routes"; }
+
+    @GetMapping("/business")
+    public String business() { return "business"; }
+
+    @GetMapping("/profile")
+    public String profile() { return "profile"; }
+
+    @GetMapping("/reports")
+    public String reports() { return "reports"; }
+
     @GetMapping("/centros")
-    public String centros() { return "centros"; }
+    public String legacyCenters() { return "redirect:/centers"; }
 
     @GetMapping("/residuos")
-    public String residuos() { return "residuos"; }
+    public String legacyWaste() { return "redirect:/waste"; }
 
     @GetMapping("/usuarios")
-    public String usuarios() { return "usuarios"; }
+    public String legacyUsers() { return "redirect:/users"; }
 
     @GetMapping("/traslados")
-    public String traslados() { return "traslados"; }
+    public String legacyShipments() { return "redirect:/shipments"; }
 
     @GetMapping("/direcciones")
-    public String direcciones() { return "direcciones"; }
+    public String legacyAddresses() { return "redirect:/addresses"; }
 
     @GetMapping("/documentos")
-    public String documentos() { return "documentos"; }
+    public String legacyDocuments() { return "redirect:/documents"; }
 
     @GetMapping("/rutas")
-    public String rutas() { return "rutas"; }
+    public String legacyRoutes() { return "redirect:/routes"; }
 
     @GetMapping("/negocio")
-    public String negocio() { return "negocio"; }
+    public String legacyBusiness() { return "redirect:/business"; }
 
     @GetMapping("/mis-datos")
-    public String misDatos() { return "mis-datos"; }
+    public String legacyProfile() { return "redirect:/profile"; }
 
     @GetMapping("/informes")
-    public String informes() { return "informes"; }
+    public String legacyReports() { return "redirect:/reports"; }
 }

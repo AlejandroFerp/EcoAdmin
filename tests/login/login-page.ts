@@ -23,7 +23,7 @@ export class LoginPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await super.goto("/public/login");
+    await super.goto("/login");
   }
 
   async login(credentials: LoginCredentials): Promise<void> {

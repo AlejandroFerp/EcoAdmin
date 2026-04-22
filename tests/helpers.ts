@@ -6,12 +6,12 @@ export const ADMIN_CREDENTIALS = {
 export const BASE_URL = "http://localhost:8080";
 
 export const ROUTES = {
-  login: "/public/login",
-  dashboard: "/public/index",
-  centros: "/public/centros",
-  residuos: "/public/residuos",
-  traslados: "/public/traslados",
-  usuarios: "/public/usuarios",
-  direcciones: "/public/direcciones",
+  login: "/login",
+  dashboard: "/dashboard",
+  centers: "/centers",
+  waste: "/waste",
+  shipments: "/shipments",
+  users: "/users",
+  addresses: "/addresses",
   logout: "/logout",
 } as const;

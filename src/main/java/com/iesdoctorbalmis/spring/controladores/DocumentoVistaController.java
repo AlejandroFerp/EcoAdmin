@@ -17,7 +17,7 @@ import com.iesdoctorbalmis.spring.servicios.DocumentoService;
  * tambien pueden imprimirse o "Guardar como PDF" desde el navegador.
  */
 @Controller
-@RequestMapping("/preview/documentos")
+@RequestMapping({"/preview/documents", "/preview/documentos"})
 public class DocumentoVistaController {
 
     private final DocumentoService service;
@@ -34,6 +34,6 @@ public class DocumentoVistaController {
         model.addAttribute("traslado", d.getTraslado());
         model.addAttribute("centro", d.getCentro());
         model.addAttribute("tipo", d.getTipo() != null ? d.getTipo().name() : "DOCUMENTO");
-        return new ModelAndView("documentos/preview");
+        return new ModelAndView("documents/preview");
     }
 }

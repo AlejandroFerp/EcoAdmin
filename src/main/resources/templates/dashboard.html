@@ -1,0 +1,406 @@
+﻿<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/main :: layout('dashboard', 'EcoAdmin — Dashboard', 'Panel de Control', ~{::pageContent}, ~{::pageScripts})}">
+<body>
+
+<th:block th:fragment="pageContent">
+<main class="page-main">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Panel de Control</h1>
+            <p class="page-subtitle">Resumen del sistema EcoAdmin</p>
+        </div>
+    </div>
+
+    <!-- BARRA DE PERÍODO + EXPORTAR -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit" id="periodoBtns">
+            <button type="button" onclick="setPeriodo('hoy')"    id="pHoy"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">Hoy</button>
+            <button type="button" onclick="setPeriodo('semana')" id="pSemana" class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">7 días</button>
+            <button type="button" onclick="setPeriodo('mes')"    id="pMes"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm">30 días</button>
+            <button type="button" onclick="setPeriodo('todo')"   id="pTodo"  class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">Todo</button>
+        </div>
+        <button type="button" onclick="imprimirInforme()" class="btn-secondary inline-flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Imprimir informe
+        </button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-7">
+        <div class="card p-5 flex flex-row items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-2xl font-bold text-slate-800 leading-none" th:text="${totalCentros}">0</p>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Centros registrados</p>
+            </div>
+            <span class="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full shrink-0">activo</span>
+        </div>
+        <div class="card p-5 flex flex-row items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-2xl font-bold text-slate-800 leading-none" th:text="${totalResiduos}">0</p>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Residuos catalogados</p>
+            </div>
+            <span class="flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded-full shrink-0">peligroso</span>
+        </div>
+        <div class="card p-5 flex flex-row items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-2xl font-bold text-slate-800 leading-none" th:text="${trasladosEnCurso}">0</p>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Traslados en curso</p>
+            </div>
+            <span class="flex items-center gap-1 text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full shrink-0">activo</span>
+        </div>
+        <div class="card p-5 flex flex-row items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-2xl font-bold text-slate-800 leading-none" th:text="${trasladosCompletados}">0</p>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Traslados completados</p>
+            </div>
+            <span class="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full shrink-0">ok</span>
+        </div>
+    </div>
+
+    <!-- CHARTS + SIDEBAR ROW -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-7">
+        <div class="xl:col-span-2 card p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">Traslados por estado</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Distribucion actual del sistema</p>
+                </div>
+            </div>
+            <div class="relative h-64">
+                <canvas id="chartEstados"></canvas>
+            </div>
+        </div>
+        <div class="card p-6 flex flex-col">
+            <div class="mb-5">
+                <h2 class="text-base font-bold text-slate-800">Estado del sistema</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Metricas detalladas</p>
+            </div>
+            <div class="flex-1 space-y-4" id="estadoDetalle">
+                <div class="flex items-center justify-between py-2 border-b border-slate-50">
+                    <span class="text-xs text-slate-500">Cargando...</span>
+                </div>
+            </div>
+            <a th:href="@{/shipments}"
+               class="mt-4 btn-primary w-full justify-center gap-2">
+                Ver todos los traslados
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- ALERTAS FIFO ALMACEN -->
+    <div id="panelFifo" class="hidden card overflow-hidden border-l-4 border-red-400 bg-red-50/40">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-red-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-red-700">Alertas FIFO de almacen</h2>
+                    <p id="panelFifoSub" class="text-xs text-red-500 mt-0.5"></p>
+                </div>
+            </div>
+            <a th:href="@{/waste}" class="text-xs font-semibold text-red-600 hover:underline">Ver almacen</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-[11px] uppercase text-red-500 tracking-wide bg-red-50">
+                        <th class="text-left px-6 py-2.5 font-semibold">LER</th>
+                        <th class="text-left px-6 py-2.5 font-semibold">Descripcion</th>
+                        <th class="text-left px-6 py-2.5 font-semibold hidden md:table-cell">Centro</th>
+                        <th class="text-left px-6 py-2.5 font-semibold">Dias</th>
+                        <th class="text-left px-6 py-2.5 font-semibold hidden sm:table-cell">Maximo</th>
+                    </tr>
+                </thead>
+                <tbody id="panelFifoBody" class="divide-y divide-red-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ALERTAS NP (Notificacion Previa) - Fase 19.8 -->
+    <div id="panelNp" class="hidden card p-6 mb-7">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">Notificaciones Previas pendientes</h2>
+                    <p id="panelNpSub" class="text-xs text-slate-500 mt-0.5"></p>
+                </div>
+            </div>
+            <a th:href="@{/documents}" class="text-xs font-semibold text-[#3b82f6] hover:underline">Ir a documentos</a>
+        </div>
+        <div id="panelNpBody" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+    </div>
+
+    <!-- RECENT TRASLADOS TABLE -->
+    <div class="card overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">Traslados recientes</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Ultimos 5 registros del sistema</p>
+            </div>
+            <a th:href="@{/shipments}" class="text-xs font-semibold text-[#3b82f6] hover:underline">Ver todos</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-[11px] uppercase text-slate-400 tracking-wide bg-slate-50/60">
+                        <th class="text-left px-6 py-3 font-semibold">ID</th>
+                        <th class="text-left px-6 py-3 font-semibold">Productor</th>
+                        <th class="text-left px-6 py-3 font-semibold hidden md:table-cell">Gestor</th>
+                        <th class="text-left px-6 py-3 font-semibold hidden lg:table-cell">Residuo</th>
+                        <th class="text-left px-6 py-3 font-semibold">Estado</th>
+                        <th class="text-left px-6 py-3 font-semibold hidden sm:table-cell">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaRecientes" class="divide-y divide-slate-50">
+                    <tr><td colspan="6" class="text-center py-10 text-slate-400 text-xs">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</th:block>
+
+<th:block th:fragment="pageScripts">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+var ESTADO_CONFIG = {
+    PENDIENTE:   { label: 'Pendiente',   color: '#f59e0b', bg: 'bg-amber-100',   text: 'text-amber-700'   },
+    EN_TRANSITO: { label: 'En transito', color: '#3b82f6', bg: 'bg-blue-100',    text: 'text-blue-700'    },
+    ENTREGADO:   { label: 'Entregado',   color: '#8b5cf6', bg: 'bg-violet-100',  text: 'text-violet-700'  },
+    COMPLETADO:  { label: 'Completado',  color: '#10b981', bg: 'bg-emerald-100', text: 'text-emerald-700' }
+};
+
+function estadoBadgeLocal(estado) {
+    // Usa el helper global (estilo unificado) si esta disponible
+    if (typeof window.estadoBadge === 'function') return window.estadoBadge(estado);
+    var cfg = ESTADO_CONFIG[estado] || { label: estado };
+    return '<span class="estado-pill" data-estado="' + esc(estado || '') + '"><span class="dot"></span>' + esc(cfg.label) + '</span>';
+}
+
+function formatFecha(iso) {
+    if (!iso) return '\u2014';
+    return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+var periodoActual = 'mes';
+var chartInstance = null;
+
+function getDesdeParam(periodo) {
+    var d = new Date();
+    if (periodo === 'hoy')    { return d.toISOString().slice(0, 10); }
+    if (periodo === 'semana') { d.setDate(d.getDate() - 7);  return d.toISOString().slice(0, 10); }
+    if (periodo === 'mes')    { d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10); }
+    return null; // 'todo'
+}
+
+function setPeriodo(periodo) {
+    periodoActual = periodo;
+    document.querySelectorAll('.periodo-btn').forEach(function(btn) {
+        btn.className = 'periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700';
+    });
+    var active = document.getElementById('p' + periodo.charAt(0).toUpperCase() + periodo.slice(1));
+    if (active) active.className = 'periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm';
+    cargarDatos();
+}
+
+async function cargarDatos() {
+    var desde = getDesdeParam(periodoActual);
+    var statsUrl = '/api/estadisticas' + (desde ? '?desde=' + desde : '');
+    var stats, traslados, alertas, alertasNp;
+    try {
+        var results = await Promise.all([
+            fetch(statsUrl).then(function(r) { if (!r.ok) throw new Error('stats ' + r.status); return r.json(); }),
+            fetch('/api/traslados').then(function(r) { if (!r.ok) throw new Error('traslados ' + r.status); return r.json(); }),
+            fetch('/api/almacen/alertas-fifo').then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; }),
+            fetch('/api/documentos/alertas/notificacion-previa').then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
+        ]);
+        stats = results[0] || {};
+        traslados = Array.isArray(results[1]) ? results[1] : [];
+        alertas = Array.isArray(results[2]) ? results[2] : [];
+        alertasNp = Array.isArray(results[3]) ? results[3] : [];
+    } catch (err) {
+        console.error('Error cargando dashboard:', err);
+        var det = document.getElementById('estadoDetalle');
+        if (det) det.innerHTML = '<div class="text-xs text-red-500 py-2">Error al cargar datos. Recarga la pagina.</div>';
+        var tab = document.getElementById('tablaRecientes');
+        if (tab) tab.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-400 text-xs">Error al cargar.</td></tr>';
+        return;
+    }
+
+    // Normalizar campos numericos a 0 si vienen null/undefined
+    var pend = Number(stats.trasladosPendientes)  || 0;
+    var trns = Number(stats.trasladosEnTransito)  || 0;
+    var entr = Number(stats.trasladosEntregados)  || 0;
+    var comp = Number(stats.trasladosCompletados) || 0;
+
+    var canvas = document.getElementById('chartEstados');
+    if (canvas && typeof Chart !== 'undefined') {
+        var ctx = canvas.getContext('2d');
+        if (chartInstance) { chartInstance.destroy(); }
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pendiente', 'En transito', 'Entregado', 'Completado'],
+                datasets: [{
+                    label: 'Traslados',
+                    data: [pend, trns, entr, comp],
+                    backgroundColor: ['#fef3c7','#dbeafe','#ede9fe','#d1fae5'],
+                    borderColor: ['#f59e0b','#3b82f6','#8b5cf6','#10b981'],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#64748b' } },
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0, font: { size: 11 }, color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+
+    var total = pend + trns + entr + comp;
+    var items = [
+        { label: 'Pendiente',   value: pend, color: 'bg-amber-400'   },
+        { label: 'En transito', value: trns, color: 'bg-blue-500'    },
+        { label: 'Entregado',   value: entr, color: 'bg-violet-500'  },
+        { label: 'Completado',  value: comp, color: 'bg-emerald-500' }
+    ];
+    var detalle = document.getElementById('estadoDetalle');
+    if (detalle) {
+        detalle.innerHTML = items.map(function(item) {
+            var pct = total > 0 ? Math.round(item.value * 100 / total) : 0;
+            return '<div>'
+                + '<div class="flex items-center justify-between mb-1.5">'
+                + '<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full ' + item.color + '"></div><span class="text-xs font-medium text-slate-600">' + esc(item.label) + '</span></div>'
+                + '<span class="text-xs font-bold text-slate-800">' + item.value + ' <span class="text-slate-400 font-normal">(' + pct + '%)</span></span>'
+            + '</div>'
+            + '<div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"><div class="h-full ' + item.color + ' rounded-full transition-all" style="width:' + pct + '%"></div></div>'
+            + '</div>';
+    }).join('');
+    }
+
+    var tabla = document.getElementById('tablaRecientes');
+    if (tabla) {
+        var recientes = traslados.slice().sort(function(a, b) { return new Date(b.fechaCreacion) - new Date(a.fechaCreacion); }).slice(0, 5);
+        tabla.innerHTML = recientes.length === 0
+        ? '<tr><td colspan="6" class="text-center py-10 text-slate-400 text-xs">Sin registros</td></tr>'
+        : recientes.map(function(t) {
+            return '<tr class="hover:bg-slate-50/70 transition-colors">'
+                + '<td class="px-6 py-3.5 text-xs text-slate-400 font-mono">#' + t.id + '</td>'
+                + '<td class="px-6 py-3.5 font-medium text-slate-700 text-sm">' + esc(t.centroProductor ? t.centroProductor.nombre : '\u2014') + '</td>'
+                + '<td class="px-6 py-3.5 text-slate-500 text-sm hidden md:table-cell">' + esc(t.centroGestor ? t.centroGestor.nombre : '\u2014') + '</td>'
+                + '<td class="px-6 py-3.5 text-slate-500 text-sm hidden lg:table-cell">' + esc(t.residuo ? (t.residuo.codigoLER || String(t.residuo.id)) : '\u2014') + '</td>'
+                + '<td class="px-6 py-3.5">' + estadoBadgeLocal(t.estado) + '</td>'
+                + '<td class="px-6 py-3.5 text-slate-400 text-xs hidden sm:table-cell">' + formatFecha(t.fechaCreacion) + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    // Render alertas FIFO de almacen
+    var panel = document.getElementById('panelFifo');
+    var body = document.getElementById('panelFifoBody');
+    var sub = document.getElementById('panelFifoSub');
+    if (panel && body) {
+        if (!alertas || alertas.length === 0) {
+            panel.classList.add('hidden');
+        } else {
+            panel.classList.remove('hidden');
+            sub.textContent = alertas.length + (alertas.length === 1 ? ' residuo supera' : ' residuos superan') + ' el tiempo maximo de almacenamiento.';
+            body.innerHTML = alertas.slice(0, 10).map(function(a) {
+                return '<tr class="hover:bg-red-50/50 transition-colors">'
+                    + '<td class="px-6 py-2.5 font-mono text-xs text-slate-700">' + esc(a.codigoLER || '\u2014') + '</td>'
+                    + '<td class="px-6 py-2.5 text-slate-600 text-sm">' + esc(a.descripcion || '\u2014') + '</td>'
+                    + '<td class="px-6 py-2.5 text-slate-500 text-sm hidden md:table-cell">' + esc(a.centro || '\u2014') + '</td>'
+                    + '<td class="px-6 py-2.5"><span class="badge badge-sm badge-error font-bold">' + a.diasEnAlmacen + ' d</span></td>'
+                    + '<td class="px-6 py-2.5 text-slate-400 text-xs hidden sm:table-cell">' + a.diasMaximo + ' d</td>'
+                    + '</tr>';
+            }).join('');
+        }
+    }
+
+    // Render alertas NP (Notificacion Previa)
+    var panelNp = document.getElementById('panelNp');
+    var bodyNp = document.getElementById('panelNpBody');
+    var subNp = document.getElementById('panelNpSub');
+    if (panelNp && bodyNp) {
+        if (!alertasNp || alertasNp.length === 0) {
+            panelNp.classList.add('hidden');
+        } else {
+            panelNp.classList.remove('hidden');
+            subNp.textContent = alertasNp.length + (alertasNp.length === 1 ? ' recogida programada' : ' recogidas programadas') + ' en menos de 10 dias sin Notificacion Previa emitida.';
+            bodyNp.innerHTML = alertasNp.slice(0, 9).map(function(a) {
+                var fechaProg = a.fechaProgramada
+                    ? (Array.isArray(a.fechaProgramada)
+                        ? new Date(a.fechaProgramada[0], a.fechaProgramada[1]-1, a.fechaProgramada[2]||1, a.fechaProgramada[3]||0, a.fechaProgramada[4]||0)
+                        : new Date(a.fechaProgramada))
+                    : null;
+                var fechaStr = fechaProg ? fechaProg.toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric'}) : '\u2014';
+                var urgClass, urgLabel;
+                if (a.diasRestantes <= 3)      { urgClass = 'bg-red-50 text-red-600';        urgLabel = 'Urgente'; }
+                else if (a.diasRestantes <= 7) { urgClass = 'bg-amber-50 text-amber-600';    urgLabel = 'Pronto';  }
+                else                            { urgClass = 'bg-slate-100 text-slate-600';   urgLabel = 'Aviso';   }
+                return '<div class="border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow flex flex-col gap-2">'
+                    + '<div class="flex items-center justify-between">'
+                    +   '<span class="text-xs font-mono text-slate-400">#' + a.trasladoId + '</span>'
+                    +   '<span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ' + urgClass + '">' + urgLabel + '</span>'
+                    + '</div>'
+                    + '<div class="text-sm font-semibold text-slate-800 truncate" title="' + esc(a.productor || '') + '">' + esc(a.productor || '\u2014') + '</div>'
+                    + '<div class="text-xs text-slate-500 font-mono">LER ' + esc(a.residuo || '\u2014') + '</div>'
+                    + '<div class="flex items-center justify-between mt-1 pt-2 border-t border-slate-100">'
+                    +   '<span class="text-xs text-slate-500">' + fechaStr + '</span>'
+                    +   '<span class="text-xs font-bold text-slate-700">' + a.diasRestantes + ' d</span>'
+                    + '</div>'
+                    + '</div>';
+            }).join('');
+        }
+    }
+}
+
+function imprimirInforme() {
+    var periodoLabels = { hoy: 'Hoy', semana: 'Últimos 7 días', mes: 'Últimos 30 días', todo: 'Todo el histórico' };
+    var label = periodoLabels[periodoActual] || 'Todo';
+    var win = window.open('', '_blank', 'width=800,height=600');
+    var rows = document.getElementById('tablaRecientes').innerHTML;
+    var detalle = document.getElementById('estadoDetalle').innerText;
+    win.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe EcoAdmin</title>'
+        + '<style>body{font-family:sans-serif;padding:32px;color:#1e293b}h1{font-size:22px;font-weight:700;margin-bottom:4px}p.sub{color:#64748b;font-size:13px;margin-bottom:24px}h2{font-size:15px;font-weight:600;margin:20px 0 8px}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f8fafc;color:#64748b;text-align:left;padding:8px 12px;font-weight:600;border-bottom:2px solid #e2e8f0}td{padding:8px 12px;border-bottom:1px solid #f1f5f9}@media print{button{display:none}}</style>'
+        + '</head><body>'
+        + '<h1>Informe EcoAdmin</h1><p class="sub">Período: ' + label + ' &nbsp;·&nbsp; Generado: ' + new Date().toLocaleString('es-ES') + '</p>'
+        + '<h2>Traslados recientes</h2>'
+        + '<table><thead><tr><th>ID</th><th>Productor</th><th>Gestor</th><th>Residuo</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>' + rows + '</tbody></table>'
+        + '<p style="margin-top:32px;font-size:11px;color:#94a3b8">EcoAdmin · Sistema de gestión de residuos</p>'
+        + '<script>window.print();<\/script>'
+        + '</body></html>');
+    win.document.close();
+}
+
+document.addEventListener('DOMContentLoaded', cargarDatos);
+</script>
+</th:block>
+</body>
+</html>

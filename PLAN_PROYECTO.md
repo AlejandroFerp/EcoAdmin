@@ -30,7 +30,7 @@ Garantiza trazabilidad completa desde generacion hasta tratamiento final, con ge
 ### FASE 9 — Revision de seguridad y calidad [COMPLETADA]
 - [x] 17 issues de seguridad/logica/estructura corregidos
 - [x] @JsonProperty(WRITE_ONLY) para password
-- [x] Rutas /public/ corregidas en ZonaPublicaController
+- [x] Rutas legacy y navegación pública consolidadas en ZonaPublicaController
 - [x] Verificacion compatibilidad thymeleaf-extras-springsecurity6 con Security 7
 - [x] 40 tests (AccesoController, TrasladoService, TrasladoEndpoint, EstadoTraslado)
 
@@ -148,7 +148,7 @@ com.iesdoctorbalmis.spring
 |   +-- SeguridadConfig           Spring Security 7, CORS, roles
 |   +-- DataInitializer           Seed completo + catalogo LER
 +-- controladores/
-|   +-- IndexController           Redirect / -> /public/index
+|   +-- IndexController           Redirect / -> /dashboard
 |   +-- ZonaPublicaController     Vistas Thymeleaf
 |   +-- UsuarioController         API CRUD (solo ADMIN)
 |   +-- CentroController          API CRUD + ownership
@@ -157,21 +157,38 @@ com.iesdoctorbalmis.spring
 |   +-- DireccionController       API CRUD
 |   +-- EstadisticasController    API agregados
 |   +-- ListaLerController        API catalogo LER (busqueda)
-|   +-- QrController              API generacion QR
+|   +-- QrController              API generacion QR + entrada via escaneo
+|   +-- RutaController            API CRUD rutas + activas filtradas
+|   +-- PerfilTransportistaController  API perfil transportista + calculo tarifa
 +-- dto/
 |   +-- UsuarioDTO                Record sin password
+|   +-- PerfilEdicionDTO          Record edicion perfil
+|   +-- CambioPasswordDTO         Record cambio password
 +-- modelo/
-|   +-- Usuario                   id, nombre, email, password, rol, fechaAlta
-|   +-- Centro                    id, usuario, nombre, tipo, direccion(FK), nima, telefono, email, nombreContacto
-|   +-- Residuo                   id, cantidad, unidad, estado, codigoLER, descripcion, centro(FK)
-|   +-- Direccion                 id, nombre, descripcion, calle, calle2, ciudad, codigoPostal, provincia, pais, lat, lon
-|   +-- Traslado                  id, centroProductor, centroGestor, residuo, transportista, estado, fechas, observaciones
-|   +-- EventoTraslado            id, traslado, estadoAnterior, estadoNuevo, fecha, comentario, usuario
+|   +-- Usuario                   id, codigo, nombre, email, password, rol, fechaAlta
+|   +-- Centro                    id, codigo, usuario, nombre, tipo, direccion(FK), nima, telefono, email, nombreContacto
+|   +-- Residuo                   id, codigo, cantidad, unidad, estado, codigoLER, descripcion, centro(FK), fechas almacen
+|   +-- Direccion                 id, codigo, nombre, descripcion, calle, calle2, ciudad, codigoPostal, provincia, pais, lat, lon
+|   +-- Traslado                  id, codigo, centroProductor, centroGestor, residuo, transportista, ruta(FK), estado, fechas, observaciones
+|   +-- EventoTraslado            id, traslado, estadoAnterior, estadoNuevo, fecha, comentario, usuario, origen(QR_SCAN|MANUAL)
+|   +-- Recogida                  id, codigo, residuo, centroOrigen, centroDestino, transportista, fechas, estado
+|   +-- Documento                 id, codigo, tipo, traslado(FK), recogida(FK), centro(FK), fechas, estado, rutaArchivo
+|   +-- Empresa                   id, codigo, nombre, CIF, NIMA, direccion, telefono, email, autorizaciones, logoUrl
+|   +-- Adjunto                   id, nombre, rutaArchivo, traslado(FK nullable), recogida(FK nullable), usuario(FK nullable)
+|   +-- PerfilTransportista       id, codigo, usuario(OneToOne), matricula, formulaTarifa, unidadTarifa
+|   +-- Ruta                      id, codigo, nombre, transportista(FK), origen(FK Direccion), destino(FK Direccion), distanciaKm, formulaTarifa
+|   +-- SecuenciaCodigo           prefijo(PK), ultimo (para generacion atomica de codigos)
 |   +-- ListaLer                  id, codigo, descripcion (953 codigos europeos)
 |   +-- enums/Rol                 PRODUCTOR, GESTOR, TRANSPORTISTA, ADMIN
- |   +-- enums/EstadoTraslado      Libertad total entre estados (rectificable, con historial)
+|   +-- enums/EstadoTraslado      Libertad total entre estados (rectificable, con historial)
+|   +-- enums/EstadoRecogida      PROGRAMADA, EN_CURSO, COMPLETADA, CANCELADA
+|   +-- enums/TipoDocumento       CONTRATO, NP, DI, ARCHIVO_CRONOLOGICO, FA, HS, INFORME
+|   +-- enums/EstadoDocumento     BORRADOR, EMITIDO, CERRADO, VENCIDO
 +-- repository/                   JpaRepository para cada entidad
-+-- servicios/                    Interface + DB impl para cada entidad
++-- servicios/
+|   +-- CodigoService             Generacion atomica de codigos legibles por entidad
+|   +-- TarifaValidator           Validacion y evaluacion de formulas con exp4j
+|   +-- [servicio por entidad]    Interface + DB impl
 ```
 
 ---
@@ -184,10 +201,19 @@ com.iesdoctorbalmis.spring
 - Frontend: Tailwind CSS (CDN) + FullCalendar 6.1.15 + HTMX
 - OpenPDF, ZXing, spring-boot-starter-mail, springdoc-openapi 2.8.6
 - Jackson 3.x (parte de SB4): serializa LocalDateTime como ISO-8601 por defecto (no como arrays)
+- **exp4j** (`net.objecthunter:exp4j:0.4.8`): evaluador de expresiones matematicas para formulas de tarifa; sin reflection ni eval, seguro contra inyeccion
+- **Leaflet Routing Machine** (CDN, MIT): plugin de Leaflet para dibujar rutas reales siguiendo carreteras
+- **OSRM** (`https://router.project-osrm.org`): servidor de routing gratuito (OpenStreetMap), sin API key; para produccion usar OpenRouteService (2.000 req/dia gratis con API key) o self-hosted OSRM
+- **html5-qrcode** (CDN): libreria JS para escaner QR desde camara del navegador (WebRTC); sin instalacion nativa
+- **Google Maps**: NO usar — requiere tarjeta de credito y cobra por request; OSRM+Leaflet es el equivalente libre
 
 ---
 
-## Observaciones: Bugs recurrentes y precauciones
+## Registro vivo de bugs y soluciones
+
+Esta seccion queda inaugurada como memoria operativa del proyecto para incidencias que cuesten muchas iteraciones diagnosticar o cerrar.
+
+**Regla de uso:** cuando un problema nos haga perder varias iteraciones, aqui se documenta en formato fijo: **Bug**, **Causa raiz**, **Solucion confirmada** y **Precaucion**. La idea es no volver a tropezar con la misma piedra y reducir debugging especulativo.
 
 ### 1. Variable de entorno ADMIN_PASSWORD
 **Bug:** El DataInitializer no crea datos de seed si `ADMIN_PASSWORD` esta vacia. Esto deja la BD completamente vacia y el login falla sin mensaje claro.
@@ -223,6 +249,12 @@ com.iesdoctorbalmis.spring
 **Bug:** Al recrear login.html, el contenido viejo se pego al nuevo resultando en 2 documentos HTML consecutivos en el mismo archivo. El navegador renderizo ambos forms.
 **Solucion:** Verificar longitud del archivo despues de crear/editar. Truncar si tiene contenido sobrante.
 **Precaucion:** Al reescribir un archivo completo, verificar que el resultado tiene exactamente 1 estructura HTML.
+
+### 8. Preview PDF de traslados en modal
+**Bug:** El detalle de traslados fallo repetidamente al intentar mostrar el PDF real en un `iframe`/`object`/`embed`: a veces forzaba descarga, a veces mostraba blanco, y con la primera version de `pdf.js` el zoom rompia el visor con `ArrayBuffer at index 0 is already detached`.
+**Causa raiz:** El endpoint backend estaba sano; el problema real era el visor PDF embebido del navegador/contexto usado durante la depuracion, que abortaba la carga inline. Al pasar a `pdf.js`, el zoom seguia fallando porque se reutilizaba el mismo `ArrayBuffer` entre renders y el worker lo dejaba detached tras el primer parseo.
+**Solucion confirmada:** En `src/main/resources/templates/traslados.html` se sustituyo la dependencia del visor nativo por renderizado del PDF real con `pdf.js` sobre canvas. Para el zoom, se guarda el PDF como `Blob` y se regeneran bytes frescos en cada rerender antes de llamar a `pdf.js`.
+**Precaucion:** Si un PDF inline falla pero el endpoint devuelve `200`, `Content-Type: application/pdf` y bytes validos, NO tocar backend por inercia: validar primero si el visor nativo del navegador es el que falla. Y con `pdf.js`, no reutilizar el mismo `Uint8Array`/`ArrayBuffer` entre renders del worker.
 
 ---
 
@@ -487,6 +519,218 @@ datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
 
 ---
 
+### FASE 22 — Numeracion universal de registros (codigos legibles)
+
+**Objetivo:** Sustituir la exposicion del `id` numerico en la UI por codigos legibles, trazables
+y con formato estandar. El `id` interno sigue siendo la PK de la BD; el `codigo` es un campo
+String unico adicional generado en `@PrePersist`.
+
+**Formato:** `[3 letras][2 digitos ano]-[6 digitos correlativos]`
+```
+TRA26-000001   ← Traslado
+RUT26-000001   ← Ruta
+CEN26-000001   ← Centro
+RES26-000001   ← Residuo
+DOC26-000001   ← Documento
+REC26-000001   ← Recogida
+USU26-000001   ← Usuario
+DIR26-000001   ← Direccion
+EMP26-000001   ← Empresa
+```
+
+**Modelo de soporte:**
+```java
+// Tabla de secuencias por prefijo (evita colisiones en caso de borrado+reinsercion)
+SecuenciaCodigo {
+  String prefijo;   // "TRA", "RUT", etc. (PK)
+  Long ultimo;      // ultimo numero usado
+}
+
+// Servicio centralizado
+CodigoService {
+  String generar(String prefijo); // incrementa atomicamente y devuelve "TRA26-000001"
+}
+```
+
+**Cambios en entidades existentes:** anadir campo `String codigo` (`@Column(unique=true)`)
+con `@PrePersist` que llama a `CodigoService`. El campo es de solo lectura tras la creacion.
+
+**DataInitializer:** regenerar codigos para los registros de seed (todos existentes quedan con
+codigo asignado desde la primera arrancada post-migracion).
+
+**Tareas:**
+- [ ] 22.1 Crear entidad `SecuenciaCodigo` y `CodigoService` (atomico, con `@Transactional`)
+- [ ] 22.2 Anadir campo `codigo` a: `Traslado`, `Centro`, `Residuo`, `Documento`, `Recogida`, `Usuario`, `Direccion`, `Empresa`
+- [ ] 22.3 `@PrePersist` en cada entidad llama a `CodigoService.generar(prefijo)`
+- [ ] 22.4 Mostrar `codigo` en lugar de `id` en todas las tablas de la UI
+- [ ] 22.5 Busqueda por `codigo` en todos los buscadores existentes
+- [ ] 22.6 Seed: `DataInitializer` asigna `codigo` a los registros iniciales
+- [ ] 22.7 Tests: `CodigoService` (unicidad, formato, concurrencia basica)
+
+---
+
+### FASE 23 — Perfil Transportista y sistema de tarifas
+
+**Objetivo:** Ampliar el rol `TRANSPORTISTA` con datos profesionales (matricula, tarifa),
+sin tocar la entidad `Usuario`. Patron: `OneToOne` opcional solo para transportistas.
+
+**Modelo de datos:**
+```java
+// Nueva entidad — solo para usuarios con rol TRANSPORTISTA
+PerfilTransportista {
+  Long id;
+  String codigo;             // TRP26-000001
+  Usuario usuario;           // @OneToOne, unique
+  String matricula;          // matricula del vehiculo principal
+  String formulaTarifa;      // ej: "w * 0.5 + D * 0.1"
+                             // variables permitidas: w (peso kg), D (distancia km)
+                             // solo digitos, +-*/(), w, D, espacios
+  String unidadTarifa;       // "EUR/operacion" (calculado desde formula)
+  String observaciones;
+}
+```
+
+**Validacion de formula (backend):**
+- Libreria: `exp4j` (net.objecthunter:exp4j:0.4.8) — evaluador de expresiones matematicas, sin reflection, sin eval
+- Regex de whitelist antes de persistir: `^[0-9wD\s\+\-\*/\(\)\.]+$`
+- Test de evaluacion con `w=1, D=1` antes de guardar (si falla → error de validacion 400)
+
+**Calculadora de precios (frontend):**
+- Inputs: `w` (kg) y/o `D` (km) segun variables presentes en la formula
+- Calculo en tiempo real: `GET /api/transportistas/{id}/calcular-tarifa?w=100&d=50` → `{"resultado": 55.00, "moneda": "EUR"}`
+- Muestra detalle: "Tarifa aplicada: w * 0.5 + D * 0.1 con w=100kg, D=50km = 55.00 EUR"
+
+**Adjuntos de usuario (extender `Adjunto` existente):**
+La entidad `Adjunto` ya existe. Se extiende para soportar FK a `Usuario` (nullable),
+permitiendo subir documentos a cualquier usuario (licencia transporte, contrato, DNI, etc.)
+
+**Tareas:**
+- [ ] 23.1 Crear entidad `PerfilTransportista` con repositorio y servicio
+- [ ] 23.2 Anadir dependencia `exp4j` al `pom.xml`
+- [ ] 23.3 `TarifaValidator`: valida formula con regex + evaluacion test
+- [ ] 23.4 Vista `/usuarios/{id}` (perfil publico): si rol=TRANSPORTISTA, mostrar tab "Datos Transportista"
+       - Formulario: matricula, formula tarifa, observaciones
+       - Preview de calculo en tiempo real (JS)
+- [ ] 23.5 Endpoint `GET /api/transportistas/{id}/calcular-tarifa?w=&d=` (calcula y devuelve resultado)
+- [ ] 23.6 Adjuntos para usuarios: anadir FK `usuario` nullable a entidad `Adjunto` existente
+       - Endpoint: `POST /api/usuarios/{id}/adjuntos` (subir documento)
+       - Vista en perfil de usuario: tab "Documentos" con lista de adjuntos + upload
+- [ ] 23.7 Tests: `TarifaValidator` (formulas validas, invalidas, inyeccion), calculo correcto
+
+---
+
+### FASE 24 — Modulo Rutas (mapa + tarifas + calculadora)
+
+**Objetivo:** Vista completa de rutas: mapa con traslados activos, tab de rutas registradas
+por transportistas con calculadora de precios, buscador y filtros.
+
+**Contexto de mapa (decision tecnica):**
+Google Maps API requiere tarjeta de credito y cobra por request. Se usa la alternativa
+open source equivalente:
+- **Leaflet.js** (ya en el proyecto) — motor de mapa interactivo
+- **Leaflet Routing Machine** (plugin MIT) — dibuja rutas reales siguiendo carreteras
+- **OSRM demo server** (`https://router.project-osrm.org`) — routing gratuito con datos
+  OpenStreetMap, sin API key, adecuado para desarrollo y proyectos academicos
+- Migracion futura a produccion: OpenRouteService API (2.000 req/dia gratis con API key)
+  o self-hosted OSRM
+
+**Modelo de datos nuevo:**
+```java
+Ruta {
+  Long id;
+  String codigo;                     // RUT26-000001
+  String nombre;                     // ej: "Norte → Centro Reciclaje Sur"
+  PerfilTransportista transportista; // @ManyToOne
+  Direccion origen;                  // @ManyToOne (del catalogo de Direcciones)
+  Direccion destino;                 // @ManyToOne (del catalogo de Direcciones)
+  Double distanciaKm;                // calculada por OSRM o introducida manualmente
+  String formulaTarifa;              // puede sobreescribir la del transportista para esta ruta
+  String observaciones;
+}
+```
+
+`Traslado` gana campo `Ruta ruta` (`@ManyToOne`, nullable — no rompe datos existentes).
+
+**Vista `/rutas` — estructura:**
+```
+[Filtros: rango de fechas] [Buscador: transportista / nombre ruta / nº traslado]
+
+MAPA (vista por defecto)
+  ├── Rutas de traslados ACTIVOS dibujadas con Leaflet Routing Machine (linea real en carretera)
+  ├── Marcadores: origen (verde) / destino (rojo) / transportista (azul)
+  ├── Click en ruta → popup con: nº traslado, transportista, estado, fecha
+  └── Buscador y filtros actualizan el mapa en tiempo real (HTMX o fetch)
+
+TAB "Rutas y Tarifas"
+  ├── Tabla de rutas registradas por transportistas (nombre, transportista, origen→destino, km, tarifa)
+  ├── Click en fila → panel lateral: calculadora de precios
+  │     ├── Formula aplicada: "w * 0.5 + D * 0.1"
+  │     ├── Input w (kg) y/o D (km) segun variables en formula
+  │     ├── Resultado en tiempo real: "Estimacion: 55.00 EUR"
+  │     └── Boton "Asignar a traslado" (abre selector de traslado abierto)
+  └── Boton "Nueva Ruta" (solo TRANSPORTISTA y ADMIN)
+```
+
+**Tareas:**
+- [ ] 24.1 Crear entidad `Ruta` con repositorio y servicio (`RutaService`)
+- [ ] 24.2 Anadir FK `ruta` a entidad `Traslado` (nullable, `@ManyToOne`)
+- [ ] 24.3 `RutaController`: CRUD + endpoint `GET /api/rutas/activas` (rutas de traslados activos)
+- [ ] 24.4 Integrar Leaflet Routing Machine via CDN en la vista `/rutas`
+       ```html
+       <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/>
+       <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+       ```
+- [ ] 24.5 JavaScript: para cada ruta activa, crear `L.Routing.control` con origen/destino (lat/lon de `Direccion`)
+       usando OSRM: `router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })`
+- [ ] 24.6 Buscador y filtros de fecha → `GET /api/rutas/activas?desde=&hasta=&q=` (filtra por transportista, nombre, codigo traslado)
+- [ ] 24.7 Tab "Rutas y Tarifas": tabla + calculadora lateral con calculo en tiempo real
+- [ ] 24.8 Asignar ruta a traslado desde la calculadora (HTMX PATCH)
+- [ ] 24.9 En vista de traslado (detalle): mostrar ruta asignada con mini-mapa embebido
+- [ ] 24.10 Tests: `RutaService`, calculo de tarifa en ruta
+
+---
+
+### FASE 25 — QR funcional: marcar entrada de traslado
+
+**Objetivo:** El QR que ya se genera por traslado codifica el `codigo` del traslado (`TRA26-000001`).
+Al escanearlo con la app movil (o la camara del navegador), se marca automaticamente la
+entrada del traslado (cambio de estado a `EN_TRANSITO` o el que corresponda segun la maquina de estados).
+
+**Requisito previo:** FASE 22 completada (el traslado debe tener `codigo` antes de generar el QR).
+
+**Flujo:**
+```
+Transportista escanea QR (fisico o en pantalla)
+       ↓
+Navegador / App Android abre: /qr/entrada?codigo=TRA26-000001
+       ↓
+Backend valida: ¿existe el traslado? ¿esta en estado PENDIENTE?
+       ↓
+Cambia estado → EN_TRANSITO + crea EventoTraslado ("Entrada registrada via QR")
+       ↓
+Respuesta JSON: { "ok": true, "traslado": "TRA26-000001", "nuevoEstado": "EN_TRANSITO" }
+```
+
+**Generacion del QR (actualizar `QrController` existente):**
+- Contenido del QR: URL completa `https://{host}/qr/entrada?codigo=TRA26-000001`
+- (Antes contenia solo el ID numerico — actualizar para usar `codigo`)
+
+**Tareas:**
+- [ ] 25.1 Actualizar `QrController`: generar QR con URL `{host}/qr/entrada?codigo={codigo}`
+- [ ] 25.2 Endpoint `POST /qr/entrada?codigo=TRA26-000001`:
+       - Valida existencia y estado del traslado
+       - Cambia estado a `EN_TRANSITO` (o siguiente estado logico)
+       - Crea `EventoTraslado` con origen "QR_SCAN"
+       - Devuelve JSON + vista HTML de confirmacion (para escaner web)
+- [ ] 25.3 Vista `/qr/confirmacion`: pagina simple responsive (se abre en movil tras escanear)
+       - Muestra: codigo traslado, origen, destino, transportista, nuevo estado
+       - Boton "Ver detalle" → redirige al traslado completo
+- [ ] 25.4 Pagina `/qr/scanner` con camara (WebRTC + libreria `html5-qrcode` CDN) para
+       escaner desde navegador de escritorio (util para testing sin app movil)
+- [ ] 25.5 Tests: entrada via QR (estado valido, estado invalido, codigo inexistente)
+
+---
+
 ### Orden de ejecucion (Bloque II)
 
 | Prioridad | Fase | Justificacion |
@@ -496,6 +740,10 @@ datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
 | 3 | 19 (documentos) | Nucleo legal del producto. Bloquea los informes. |
 | 4 | 20 (informes) | Depende de documentos y FIFO. Cierre del producto. |
 | 5 | 21 (negocio) | Datos de empresa necesarios para PDFs correctos. |
+| 6 | 22 (numeracion) | Cross-cutting. Debe hacerse antes de 23-25 para que todo lo nuevo use codigo. |
+| 7 | 23 (transportista + tarifas) | Requiere 22 (codigo en entidades). |
+| 8 | 24 (rutas + mapa) | Requiere 22 + 23 (PerfilTransportista existe). |
+| 9 | 25 (QR funcional) | Requiere 22 (codigo en traslados). Cierre de trazabilidad. |
 
 ### Dependencias Bloque II
 
@@ -505,6 +753,10 @@ datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
 19 (documentos) → requiere 18 (Recogida existe antes que Documento)
 20 (informes) → requiere 18 + 19 (datos completos)
 21 (negocio) → requiere 17, paralelo con 18
+22 (codigos) → puede ir en paralelo con 17-21, pero BLOQUEA 23, 24, 25
+23 (transportista) → requiere 22
+24 (rutas) → requiere 22 + 23
+25 (QR) → requiere 22
 ```
 
 ---
@@ -516,7 +768,12 @@ datos de contacto. Necesario para pre-rellenar documentos (DI, NP, contratos).
 | `Recogida` | 18 | Recogida programada con fechas, estado y transportista |
 | `Documento` | 19 | Documento legal (DI, NP, Contrato, etc.) vinculado a traslado/recogida |
 | `Empresa` | 21 | Datos legales de la empresa (singleton) |
+| `SecuenciaCodigo` | 22 | Tabla de secuencias por prefijo para generacion de codigos unicos |
+| `PerfilTransportista` | 23 | Datos profesionales del transportista (matricula, formula tarifa) |
+| `Ruta` | 24 | Ruta entre dos Direcciones del catalogo, asignable a Traslado |
 | Campos en `Residuo` | 18 | `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` |
+| Campo `ruta` en `Traslado` | 24 | FK nullable a `Ruta` |
+| Campo `codigo` en todas | 22 | Codigo legible unico (`TRA26-000001`) sustituyendo ID en UI |
 
 ---
 
