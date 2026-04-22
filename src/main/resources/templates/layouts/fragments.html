@@ -34,7 +34,7 @@
      Uso: <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
      =================================================================== -->
 <button th:fragment="modalCloseBtn(modalId)" type="button"
-        th:attr="data-modal-hide=${modalId}"
+        th:attr="data-modal-close=${modalId}" aria-label="Cerrar"
         class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100">
     <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -47,13 +47,12 @@
      Uso: <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
      =================================================================== -->
 <div th:fragment="modalFooter(modalId, saveLabel, saveAction)"
-     class="flex items-center justify-end gap-3 p-5 border-t border-slate-100">
-    <button type="button" th:attr="data-modal-hide=${modalId}"
-            class="btn btn-ghost btn-sm normal-case">Cancelar</button>
+     class="modal-foot">
+    <button type="button" th:attr="data-modal-close=${modalId}" class="btn-ghost-eco">Cancelar</button>
     <button type="button"
             th:attr="data-action=${saveAction}"
             onclick="window[this.dataset.action] && window[this.dataset.action]()"
-            class="btn btn-sm bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case px-6 shadow"
+            class="btn-primary"
             th:text="${saveLabel}">Guardar</button>
 </div>
 

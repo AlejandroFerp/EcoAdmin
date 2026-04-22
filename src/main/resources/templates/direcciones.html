@@ -4,16 +4,17 @@
 <body>
 
 <th:block th:fragment="pageContent">
-<main class="flex-1 p-4 sm:p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<main class="page-main">
+    <div class="page-header">
         <div>
-            <h2 class="text-xl font-bold text-slate-900">Direcciones</h2>
-            <p class="text-sm text-slate-500 mt-0.5">Gestion de ubicaciones</p>
+            <h2 class="page-title">Direcciones</h2>
+            <p class="page-subtitle">Gestion de ubicaciones</p>
         </div>
-        <button type="button" onclick="abrirCrear()"
-                class="btn bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case shrink-0 shadow-md">
-            + Anadir Direccion
-        </button>
+        <div class="page-actions">
+            <button type="button" onclick="abrirCrear()" class="btn-primary shrink-0">
+                + Anadir Direccion
+            </button>
+        </div>
     </div>
     <div th:replace="~{layouts/fragments :: searchBar('Buscar direcciones...')}"></div>
     <!-- Mapa general de direcciones -->
@@ -27,7 +28,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+    <div class="card overflow-x-auto">
         <table class="table table-zebra table-sm w-full">
             <thead>
                 <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
@@ -52,49 +53,49 @@
 
 <!-- MODAL FORM -->
 <div id="modalForm" tabindex="-1" aria-hidden="true"
-     class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/20">
-    <div class="relative p-4 w-full max-w-lg">
-        <div class="relative bg-white rounded-2xl shadow-xl">
-            <div class="flex items-center justify-between p-5 border-b border-slate-100">
-                <h3 id="modalTitulo" class="text-base font-semibold text-slate-900">Crear Direccion</h3>
+     class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--md">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 id="modalTitulo" class="modal-title">Crear Direccion</h3>
                 <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
             </div>
-            <div class="p-5 grid grid-cols-2 gap-4">
+            <div class="modal-body grid grid-cols-2 gap-4">
                 <input type="hidden" id="itemId">
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                    <label class="label-eco">Nombre</label>
                     <input type="text" id="fNombre" class="form-control-eco" placeholder="Nombre identificativo">
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Calle *</label>
+                    <label class="label-eco">Calle *</label>
                     <input type="text" id="fCalle" class="form-control-eco" placeholder="Calle y numero">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Ciudad</label>
+                    <label class="label-eco">Ciudad</label>
                     <input type="text" id="fCiudad" class="form-control-eco" placeholder="Ciudad">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Codigo Postal</label>
+                    <label class="label-eco">Codigo Postal</label>
                     <input type="text" id="fCP" class="form-control-eco" placeholder="00000">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Provincia</label>
+                    <label class="label-eco">Provincia</label>
                     <input type="text" id="fProvincia" class="form-control-eco" placeholder="Provincia">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Pais</label>
+                    <label class="label-eco">Pais</label>
                     <input type="text" id="fPais" class="form-control-eco" value="Espana" placeholder="Espana">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Latitud</label>
+                    <label class="label-eco">Latitud</label>
                     <input type="number" step="any" id="fLat" class="form-control-eco" placeholder="38.3452" oninput="sincronizarMapaForm()">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Longitud</label>
+                    <label class="label-eco">Longitud</label>
                     <input type="number" step="any" id="fLon" class="form-control-eco" placeholder="-0.4815" oninput="sincronizarMapaForm()">
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">
+                    <label class="label-eco">
                         Ubicacion en el mapa
                         <span class="text-xs text-slate-400 font-normal ml-1">Haz clic para establecer coordenadas</span>
                     </label>
@@ -118,10 +119,10 @@ var mapaFormInstance = null, mapaFormMarker = null;
 var mapaGeneralInstance = null, mapaGeneralVisible = false;
 
 function initModales() {
-    var el = document.getElementById('modalForm');
-    if (el && typeof Modal !== 'undefined') {
-        mForm = new Modal(el, { backdrop:'dynamic', closable:true });
-    }
+    mForm = {
+        show: function() { document.getElementById('modalForm').classList.remove('hidden'); },
+        hide: function() { document.getElementById('modalForm').classList.add('hidden'); }
+    };
 }
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
@@ -172,8 +173,8 @@ function renderTabla() {
                 + '<td class="text-sm text-slate-500 hidden md:table-cell">' + esc(d.provincia || '\u2014') + '</td>'
                 + '<td class="text-xs text-slate-400 hidden lg:table-cell">' + coords + '</td>'
                 + '<td class="text-right whitespace-nowrap">'
-                + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Editar" onclick="abrirEditar(' + d.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
-                + '  <button class="btn btn-ghost btn-xs text-red-500 tooltip" data-tip="Eliminar" onclick="pedirBorrar(' + d.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>'
+                + '  <button class="btn-icon" title="Editar" onclick="abrirEditar(' + d.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
+                + '  <button class="btn-icon btn-icon--danger" title="Eliminar" onclick="pedirBorrar(' + d.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>'
                 + '</td></tr>';
         }).join('');
 

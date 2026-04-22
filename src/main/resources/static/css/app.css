@@ -1,0 +1,434 @@
+/* ==========================================================================
+   EcoAdmin — app.css
+   Semantic class library. Companion to Tailwind CDN + DaisyUI.
+   Load AFTER daisyui + tailwind so these declarations win specificity.
+   ========================================================================== */
+
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  --eco-primary:        #3b82f6;
+  --eco-primary-hover:  #2563eb;
+  --eco-primary-dark:   #1d4ed8;
+  --eco-danger:         #ef4444;
+  --eco-danger-hover:   #dc2626;
+
+  --eco-bg:             #f1f5f9;
+  --eco-surface:        #ffffff;
+  --eco-border:         #e2e8f0;
+  --eco-border-light:   #f1f5f9;
+
+  --eco-text-strong:    #0f172a;
+  --eco-text:           #1e293b;
+  --eco-text-muted:     #475569;
+  --eco-text-subtle:    #94a3b8;
+
+  --eco-radius-sm:      0.375rem;
+  --eco-radius:         0.625rem;
+  --eco-radius-lg:      0.75rem;
+  --eco-radius-xl:      1rem;
+  --eco-radius-2xl:     1.25rem;
+
+  --eco-shadow-card:    0 1px 2px rgba(15,23,42,.05), 0 1px 3px rgba(15,23,42,.04);
+  --eco-shadow-modal:   0 20px 60px rgba(15,23,42,.18), 0 4px 16px rgba(15,23,42,.08);
+  --eco-shadow-btn:     0 1px 2px rgba(59,130,246,.18), 0 4px 12px -2px rgba(59,130,246,.28);
+
+  --eco-transition:     background-color .15s ease, color .15s ease,
+                        border-color .15s ease, box-shadow .15s ease,
+                        transform .05s ease;
+}
+
+/* ─── Dark mode token overrides ─────────────────────────────────────────── */
+body.dark-mode {
+  --eco-bg:            #0f172a;
+  --eco-surface:       #1e293b;
+  --eco-border:        #334155;
+  --eco-border-light:  #1e293b;
+  --eco-text-strong:   #f8fafc;
+  --eco-text:          #e2e8f0;
+  --eco-text-muted:    #cbd5e1;
+  --eco-text-subtle:   #64748b;
+  --eco-shadow-card:   0 1px 2px rgba(0,0,0,.4);
+}
+
+/* ==========================================================================
+   PAGE LAYOUT
+   ========================================================================== */
+
+.page-main {
+  flex: 1;
+  padding: 1rem;
+}
+@media (min-width: 640px) { .page-main { padding: 1.5rem; } }
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 640px) { .page-header { flex-direction: row; align-items: center; } }
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--eco-text-strong);
+  letter-spacing: -0.02em;
+}
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--eco-text-subtle);
+  margin-top: 0.125rem;
+}
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ==========================================================================
+   CARD / SURFACE
+   ========================================================================== */
+
+.card {
+  background: var(--eco-surface);
+  border-radius: var(--eco-radius-xl);
+  box-shadow: var(--eco-shadow-card);
+  border: 1px solid var(--eco-border-light);
+}
+body.dark-mode .card {
+  background: var(--eco-surface);
+  border-color: var(--eco-border);
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+/* Base shared */
+.btn-primary, .btn-secondary, .btn-ghost-eco, .btn-danger, .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--eco-radius);
+  cursor: pointer;
+  border: none;
+  transition: var(--eco-transition);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn-primary:active, .btn-secondary:active,
+.btn-ghost-eco:active, .btn-danger:active { transform: scale(0.97); }
+
+/* Primary — blue with soft shadow */
+.btn-primary {
+  padding: 0.45rem 1rem;
+  color: #fff;
+  background-color: var(--eco-primary);
+  box-shadow: var(--eco-shadow-btn);
+}
+.btn-primary:hover {
+  background-color: var(--eco-primary-hover);
+  box-shadow: 0 2px 4px rgba(37,99,235,.22), 0 6px 16px -2px rgba(37,99,235,.34);
+  transform: translateY(-1px);
+}
+
+/* Secondary — ghost with border */
+.btn-secondary {
+  padding: 0.45rem 1rem;
+  color: var(--eco-text-muted);
+  background-color: var(--eco-surface);
+  border: 1px solid var(--eco-border);
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 1px 3px rgba(15,23,42,.08);
+}
+body.dark-mode .btn-secondary {
+  background: var(--eco-surface); color: var(--eco-text-muted); border-color: var(--eco-border);
+}
+body.dark-mode .btn-secondary:hover { background: #273548; }
+
+/* Ghost — no background */
+.btn-ghost-eco {
+  padding: 0.45rem 0.75rem;
+  color: var(--eco-text-muted);
+  background: transparent;
+}
+.btn-ghost-eco:hover { background-color: #f1f5f9; color: var(--eco-text); }
+body.dark-mode .btn-ghost-eco:hover { background-color: #1e293b; }
+
+/* Danger */
+.btn-danger {
+  padding: 0.45rem 1rem;
+  color: #fff;
+  background-color: var(--eco-danger);
+  box-shadow: 0 1px 2px rgba(239,68,68,.2);
+}
+.btn-danger:hover { background-color: var(--eco-danger-hover); }
+
+/* Icon-only button */
+.btn-icon {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: var(--eco-radius-sm);
+  color: var(--eco-text-muted);
+  background: transparent;
+}
+.btn-icon:hover { background-color: #f1f5f9; color: var(--eco-text); }
+.btn-icon--danger:hover { background-color: #fee2e2; color: #dc2626; }
+body.dark-mode .btn-icon:hover { background-color: #1e293b; }
+body.dark-mode .btn-icon--danger:hover { background-color: rgba(239,68,68,.12); color: #fca5a5; }
+
+/* ==========================================================================
+   VIEW TOGGLE  (Lista / Kanban)
+   ========================================================================== */
+
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--eco-border);
+  border-radius: var(--eco-radius);
+  overflow: hidden;
+}
+.view-toggle__btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--eco-surface);
+  color: var(--eco-text-muted);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: var(--eco-transition);
+}
+.view-toggle__btn--active {
+  background-color: var(--eco-primary) !important;
+  color: #fff !important;
+}
+.view-toggle__btn:hover:not(.view-toggle__btn--active) { background-color: #f8fafc; }
+body.dark-mode .view-toggle { border-color: var(--eco-border); }
+body.dark-mode .view-toggle__btn { background: var(--eco-surface); color: var(--eco-text-muted); }
+body.dark-mode .view-toggle__btn:hover:not(.view-toggle__btn--active) { background: #273548; }
+
+/* ==========================================================================
+   SEARCH BAR
+   ========================================================================== */
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  max-width: 20rem;
+}
+.search-bar__icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem; height: 1rem;
+  color: var(--eco-text-subtle);
+  pointer-events: none;
+}
+.search-bar__input {
+  width: 100%;
+  padding: 0.375rem 0.75rem 0.375rem 2.25rem;
+  font-size: 0.875rem;
+  background: var(--eco-surface);
+  border: 1px solid var(--eco-border);
+  border-radius: var(--eco-radius);
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  color: var(--eco-text);
+}
+.search-bar__input:focus {
+  border-color: var(--eco-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+body.dark-mode .search-bar__input {
+  background: var(--eco-surface);
+  border-color: #475569;
+  color: var(--eco-text);
+}
+
+/* ==========================================================================
+   FORM LABEL
+   ========================================================================== */
+
+.label-eco {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--eco-text-muted);
+  margin-bottom: 0.25rem;
+}
+body.dark-mode .label-eco { color: var(--eco-text-muted); }
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, .2);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* Flowbite controls .hidden; we just define the flex layout */
+.modal-overlay:not(.hidden) { display: flex; }
+
+.modal-shell {
+  position: relative;
+  padding: 1rem;
+  width: 100%;
+
+}
+.modal-shell--sm  { max-width: 28rem; }
+.modal-shell--md  { max-width: 42rem; }
+.modal-shell--lg  { max-width: 56rem; }
+.modal-shell--xl  { max-width: 72rem; }
+
+.modal-card {
+  position: relative;
+  background: var(--eco-surface);
+  border-radius: var(--eco-radius-2xl);
+  box-shadow: var(--eco-shadow-modal);
+}
+body.dark-mode .modal-card { background: var(--eco-surface); }
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--eco-border-light);
+}
+body.dark-mode .modal-head { border-color: var(--eco-border); }
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--eco-text-strong);
+}
+body.dark-mode .modal-title { color: var(--eco-text-strong); }
+
+.modal-body {
+  padding: 1.25rem;
+}
+.modal-body--scroll {
+  padding: 1.25rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-top: 1px solid var(--eco-border-light);
+}
+body.dark-mode .modal-foot { border-color: var(--eco-border); }
+
+/* Tab strip inside modal */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--eco-border-light);
+  padding: 0 1.25rem;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+}
+body.dark-mode .modal-tabs { border-color: var(--eco-border); }
+
+.modal-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  color: var(--eco-text-subtle);
+  background: transparent;
+  border-top: none; border-left: none; border-right: none;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color .15s ease, border-color .15s ease;
+}
+.modal-tab:hover { color: var(--eco-text); }
+.modal-tab--active {
+  border-bottom-color: var(--eco-primary) !important;
+  color: var(--eco-primary) !important;
+}
+body.dark-mode .modal-tab:hover { color: var(--eco-text-muted); }
+
+/* ==========================================================================
+   KANBAN
+   ========================================================================== */
+
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+@media (min-width: 1280px) { .kanban-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.kanban-col-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.kanban-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.kanban-col-dot {
+  width: 0.75rem; height: 0.75rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.kanban-col-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kanban-col-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   DOCUMENT LIST ITEM  (modal Documentos tab)
+   ========================================================================== */
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--eco-radius-xl);
+  border: 1px solid var(--eco-border);
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+  text-align: left;
+  background: transparent;
+  width: 100%;
+}
+.doc-item:hover { background-color: #eff6ff; border-color: #93c5fd; }
+.doc-item__title { font-weight: 500; color: var(--eco-text); font-size: 0.875rem; }
+.doc-item__sub   { font-size: 0.75rem; color: var(--eco-text-subtle); }
+body.dark-mode .doc-item { border-color: var(--eco-border); }
+body.dark-mode .doc-item:hover { background-color: rgba(59,130,246,.08); border-color: #3b82f6; }
+body.dark-mode .doc-item__title { color: var(--eco-text); }

@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* ─── Tipografia con caracter ─────────────────────────────── */
@@ -90,9 +91,13 @@
             border-color: #94a3b8;
             box-shadow: 0 0 0 4px rgba(148,163,184,0.12);
         }
+        input[type="checkbox"].checkbox:focus,
+        input[type="checkbox"].batch-check:focus {
+            outline: none;
+            box-shadow: none;
+        }
         input[type="checkbox"].checkbox:focus-visible,
         input[type="checkbox"].batch-check:focus-visible {
-            outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
         }
@@ -452,7 +457,7 @@
             <a th:href="@{/traslados}"
                th:class="${pageId == 'traslados'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                Recogidas
+                Traslados
             </a>
             <a th:href="@{/rutas}"
                th:class="${pageId == 'rutas'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
@@ -920,6 +925,22 @@ function limpiarSeleccion() {
     actualizarBatchBar();
 }
 // borrarSeleccionados() is implemented per-page
+
+// ─── Modal backdrop: click outside to close ─────────────────────────────────
+document.addEventListener('click', function(e) {
+    // Click on backdrop (the overlay itself) → close
+    if (e.target.classList.contains('modal-overlay') && !e.target.classList.contains('hidden')) {
+        e.target.classList.add('hidden');
+        return;
+    }
+    // Click on element with data-modal-close="<modalId>" → close that modal
+    var closer = e.target.closest('[data-modal-close]');
+    if (closer) {
+        var id = closer.getAttribute('data-modal-close');
+        var m = document.getElementById(id);
+        if (m) m.classList.add('hidden');
+    }
+});
 </script>
 
 <!-- Page-specific scripts -->
