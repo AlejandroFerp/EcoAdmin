@@ -178,7 +178,7 @@ function renderTabla() {
                 + '</td></tr>';
         }).join('');
 
-    document.getElementById('pgBotones').innerHTML = Array.from({ length: totalPags }, function(_, i) { return i + 1; })
+    document.getElementById('pgBotones').innerHTML = totalPags <= 1 ? '' : Array.from({ length: totalPags }, function(_, i) { return i + 1; })
         .map(function(i) { return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>'; }).join('');
 }
 

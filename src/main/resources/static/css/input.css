@@ -1,0 +1,1072 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+
+  --eco-primary:        #3b82f6;
+  --eco-primary-hover:  #2563eb;
+  --eco-primary-dark:   #1d4ed8;
+  --eco-danger:         #ef4444;
+  --eco-danger-hover:   #dc2626;
+
+  --eco-bg:             #f1f5f9;
+  --eco-surface:        #ffffff;
+  --eco-border:         #e2e8f0;
+  --eco-border-light:   #f1f5f9;
+
+  --eco-text-strong:    #0f172a;
+  --eco-text:           #1e293b;
+  --eco-text-muted:     #475569;
+  --eco-text-subtle:    #94a3b8;
+
+  --eco-radius-sm:      0.375rem;
+  --eco-radius:         0.625rem;
+  --eco-radius-lg:      0.75rem;
+  --eco-radius-xl:      1rem;
+  --eco-radius-2xl:     1.25rem;
+
+  --eco-shadow-card:    0 1px 2px rgba(15,23,42,.05), 0 1px 3px rgba(15,23,42,.04);
+  --eco-shadow-modal:   0 20px 60px rgba(15,23,42,.18), 0 4px 16px rgba(15,23,42,.08);
+  --eco-shadow-btn:     0 1px 2px rgba(59,130,246,.18), 0 4px 12px -2px rgba(59,130,246,.28);
+
+  --eco-transition:     background-color .15s ease, color .15s ease,
+                        border-color .15s ease, box-shadow .15s ease,
+                        transform .05s ease;
+
+}
+  body.dark-mode {
+
+  --eco-bg:            #0f172a;
+  --eco-surface:       #1e293b;
+  --eco-border:        #334155;
+  --eco-border-light:  #1e293b;
+  --eco-text-strong:   #f8fafc;
+  --eco-text:          #e2e8f0;
+  --eco-text-muted:    #cbd5e1;
+  --eco-text-subtle:   #64748b;
+  --eco-shadow-card:   0 1px 2px rgba(0,0,0,.4);
+
+}
+}
+
+@layer components {
+  /* ==========================================================================
+   EcoAdmin — app.css
+   Semantic class library. Companion to Tailwind CDN + DaisyUI.
+   Load AFTER daisyui + tailwind so these declarations win specificity.
+   ========================================================================== */
+
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+
+
+/* ─── Dark mode token overrides ─────────────────────────────────────────── */
+
+
+/* ==========================================================================
+   PAGE LAYOUT
+   ========================================================================== */
+
+.page-main {
+  flex: 1;
+  padding: 1rem;
+}
+@media (min-width: 640px) { .page-main { padding: 1.5rem; } }
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 640px) { .page-header { flex-direction: row; align-items: center; } }
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--eco-text-strong);
+  letter-spacing: -0.02em;
+}
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--eco-text-subtle);
+  margin-top: 0.125rem;
+}
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ==========================================================================
+   CARD / SURFACE
+   ========================================================================== */
+
+.card {
+  background: var(--eco-surface);
+  border-radius: var(--eco-radius-xl);
+  box-shadow: var(--eco-shadow-card);
+  border: 1px solid var(--eco-border-light);
+}
+body.dark-mode .card {
+  background: var(--eco-surface);
+  border-color: var(--eco-border);
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+/* Base shared */
+.btn-primary, .btn-secondary, .btn-ghost-eco, .btn-danger, .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--eco-radius);
+  cursor: pointer;
+  border: none;
+  transition: var(--eco-transition);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn-primary:active, .btn-secondary:active,
+.btn-ghost-eco:active, .btn-danger:active { transform: scale(0.97); }
+
+/* Primary — blue with soft shadow */
+.btn-primary {
+  padding: 0.45rem 1rem;
+  color: #fff;
+  background-color: var(--eco-primary);
+  box-shadow: var(--eco-shadow-btn);
+}
+.btn-primary:hover {
+  background-color: var(--eco-primary-hover);
+  box-shadow: 0 2px 4px rgba(37,99,235,.22), 0 6px 16px -2px rgba(37,99,235,.34);
+  transform: translateY(-1px);
+}
+
+/* Secondary — ghost with border */
+.btn-secondary {
+  padding: 0.45rem 1rem;
+  color: var(--eco-text-muted);
+  background-color: var(--eco-surface);
+  border: 1px solid var(--eco-border);
+  box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 1px 3px rgba(15,23,42,.08);
+}
+body.dark-mode .btn-secondary {
+  background: var(--eco-surface); color: var(--eco-text-muted); border-color: var(--eco-border);
+}
+body.dark-mode .btn-secondary:hover { background: #273548; }
+
+/* Ghost — no background */
+.btn-ghost-eco {
+  padding: 0.45rem 0.75rem;
+  color: var(--eco-text-muted);
+  background: transparent;
+}
+.btn-ghost-eco:hover { background-color: #f1f5f9; color: var(--eco-text); }
+body.dark-mode .btn-ghost-eco:hover { background-color: #1e293b; }
+
+/* Danger */
+.btn-danger {
+  padding: 0.45rem 1rem;
+  color: #fff;
+  background-color: var(--eco-danger);
+  box-shadow: 0 1px 2px rgba(239,68,68,.2);
+}
+.btn-danger:hover { background-color: var(--eco-danger-hover); }
+
+/* Icon-only button */
+.btn-icon {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: var(--eco-radius-sm);
+  color: var(--eco-text-muted);
+  background: transparent;
+}
+.btn-icon:hover { background-color: #f1f5f9; color: var(--eco-text); }
+.btn-icon--danger:hover { background-color: #fee2e2; color: #dc2626; }
+body.dark-mode .btn-icon:hover { background-color: #1e293b; }
+body.dark-mode .btn-icon--danger:hover { background-color: rgba(239,68,68,.12); color: #fca5a5; }
+
+/* ==========================================================================
+   VIEW TOGGLE  (Lista / Kanban)
+   ========================================================================== */
+
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--eco-border);
+  border-radius: var(--eco-radius);
+  overflow: hidden;
+}
+.view-toggle__btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--eco-surface);
+  color: var(--eco-text-muted);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: var(--eco-transition);
+}
+.view-toggle__btn--active {
+  background-color: var(--eco-primary) !important;
+  color: #fff !important;
+}
+.view-toggle__btn:hover:not(.view-toggle__btn--active) { background-color: #f8fafc; }
+body.dark-mode .view-toggle { border-color: var(--eco-border); }
+body.dark-mode .view-toggle__btn { background: var(--eco-surface); color: var(--eco-text-muted); }
+body.dark-mode .view-toggle__btn:hover:not(.view-toggle__btn--active) { background: #273548; }
+
+/* ==========================================================================
+   SEARCH BAR
+   ========================================================================== */
+
+.search-bar {
+  position: relative;
+  width: 100%;
+  max-width: 20rem;
+}
+.search-bar__icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem; height: 1rem;
+  color: var(--eco-text-subtle);
+  pointer-events: none;
+}
+.search-bar__input {
+  width: 100%;
+  padding: 0.375rem 0.75rem 0.375rem 2.25rem;
+  font-size: 0.875rem;
+  background: var(--eco-surface);
+  border: 1px solid var(--eco-border);
+  border-radius: var(--eco-radius);
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  color: var(--eco-text);
+}
+.search-bar__input:focus {
+  border-color: var(--eco-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+body.dark-mode .search-bar__input {
+  background: var(--eco-surface);
+  border-color: #475569;
+  color: var(--eco-text);
+}
+
+/* ==========================================================================
+   FORM LABEL
+   ========================================================================== */
+
+.label-eco {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--eco-text-muted);
+  margin-bottom: 0.25rem;
+}
+body.dark-mode .label-eco { color: var(--eco-text-muted); }
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, .2);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* Flowbite controls .hidden; we just define the flex layout */
+.modal-overlay:not(.hidden) { display: flex; }
+
+.modal-shell {
+  position: relative;
+  padding: 1rem;
+  width: 100%;
+
+}
+.modal-shell--sm  { max-width: 28rem; }
+.modal-shell--md  { max-width: 42rem; }
+.modal-shell--lg  { max-width: 56rem; }
+.modal-shell--xl  { max-width: 72rem; }
+
+.modal-card {
+  position: relative;
+  background: var(--eco-surface);
+  border-radius: var(--eco-radius-2xl);
+  box-shadow: var(--eco-shadow-modal);
+}
+body.dark-mode .modal-card { background: var(--eco-surface); }
+
+.modal-head {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--eco-border-light);
+}
+body.dark-mode .modal-head { border-color: var(--eco-border); }
+
+.modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--eco-text-strong);
+}
+body.dark-mode .modal-title { color: var(--eco-text-strong); }
+
+.modal-body {
+  padding: 1.25rem;
+}
+.modal-body--scroll {
+  padding: 1.25rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-top: 1px solid var(--eco-border-light);
+}
+body.dark-mode .modal-foot { border-color: var(--eco-border); }
+
+/* Tab strip inside modal */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--eco-border-light);
+  padding: 0 1.25rem;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+}
+body.dark-mode .modal-tabs { border-color: var(--eco-border); }
+
+.modal-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  color: var(--eco-text-subtle);
+  background: transparent;
+  border-top: none; border-left: none; border-right: none;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color .15s ease, border-color .15s ease;
+}
+.modal-tab:hover { color: var(--eco-text); }
+.modal-tab--active {
+  border-bottom-color: var(--eco-primary) !important;
+  color: var(--eco-primary) !important;
+}
+body.dark-mode .modal-tab:hover { color: var(--eco-text-muted); }
+
+/* ==========================================================================
+   KANBAN
+   ========================================================================== */
+
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+@media (min-width: 1280px) { .kanban-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.kanban-col-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.kanban-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.kanban-col-dot {
+  width: 0.75rem; height: 0.75rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.kanban-col-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kanban-col-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   DOCUMENT LIST ITEM  (modal Documentos tab)
+   ========================================================================== */
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--eco-radius-xl);
+  border: 1px solid var(--eco-border);
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+  text-align: left;
+  background: transparent;
+  width: 100%;
+}
+.doc-item:hover { background-color: #eff6ff; border-color: #93c5fd; }
+.doc-item__title { font-weight: 500; color: var(--eco-text); font-size: 0.875rem; }
+.doc-item__sub   { font-size: 0.75rem; color: var(--eco-text-subtle); }
+body.dark-mode .doc-item { border-color: var(--eco-border); }
+body.dark-mode .doc-item:hover { background-color: rgba(59,130,246,.08); border-color: #3b82f6; }
+body.dark-mode .doc-item__title { color: var(--eco-text); }
+
+/* ---------- SweetAlert2 overrides ---------- */
+.swal2-styled.swal2-confirm { background-color: #1a6b3c !important; background-image: none !important; color: #fff !important; box-shadow: 0 2px 6px rgba(26,107,60,0.35) !important; border: none !important; }
+.swal2-styled.swal2-confirm:hover { background-color: #145a32 !important; }
+.swal2-styled.swal2-cancel { background-color: #e2e8f0 !important; background-image: none !important; color: #334155 !important; border: none !important; }
+.swal2-styled.swal2-cancel:hover { background-color: #cbd5e1 !important; }
+.swal2-styled.swal2-deny { background-color: #ef4444 !important; background-image: none !important; color: #fff !important; border: none !important; }
+.swal2-styled.swal2-deny:hover { background-color: #dc2626 !important; }
+
+
+  @charset "UTF-8";
+
+/* ============================================================
+   EcoAdmin — Sistema de clases CSS global (Phase 11.3)
+   Semantic utility classes that wrap repeated Tailwind patterns
+   ============================================================ */
+
+/* ---------- Botones ---------- */
+
+/* Botón principal: crear / guardar */
+.ea-btn-primary {
+  background-color: var(--eco-primary);
+  color: #fff;
+  border: none;
+  text-transform: none;
+  box-shadow: 0 2px 6px rgba(59,130,246,0.35);
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+.ea-btn-primary:hover {
+  background-color: var(--eco-primary-hover);
+}
+
+/* Botón de confirmación de peligro: eliminar definitivo */
+.ea-btn-danger {
+  background-color: var(--eco-danger);
+  color: #fff;
+  border: none;
+  text-transform: none;
+  transition: background-color 0.15s;
+}
+.ea-btn-danger:hover {
+  background-color: var(--eco-danger-hover);
+}
+
+/* Botón cancelar / secundario */
+.ea-btn-cancel {
+  background-color: transparent;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  text-transform: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ea-btn-cancel:hover {
+  color: #fff;
+  border-color: #64748b;
+}
+
+/* Botón de acción de éxito / confirmar */
+.ea-btn-success {
+  background-color: #22c55e;
+  color: #fff;
+  border: none;
+  text-transform: none;
+  transition: background-color 0.15s;
+}
+.ea-btn-success:hover {
+  background-color: #16a34a;
+}
+
+/* Botón ghost acento (informar / ver) */
+.ea-btn-info {
+  background-color: transparent;
+  color: #38bdf8 /* sky-400 */;
+  border: 1px solid #38bdf8 /* sky-400 */;
+  text-transform: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.ea-btn-info:hover {
+  background-color: #38bdf8 /* sky-400 */;
+  color: #0f172a;
+}
+
+/* Botón icono editar (inline en tabla) */
+.ea-btn-icon-edit {
+  background-color: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s, background-color 0.15s;
+}
+.ea-btn-icon-edit:hover {
+  color: var(--eco-primary);
+  background-color: rgba(59,130,246,0.12);
+}
+
+/* Botón icono eliminar (inline en tabla) */
+.ea-btn-icon-delete {
+  background-color: transparent;
+  border: none;
+  color: #f87171;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s, background-color 0.15s;
+}
+.ea-btn-icon-delete:hover {
+  color: var(--eco-danger);
+  background-color: rgba(239,68,68,0.12);
+}
+
+/* ---------- Tarjetas / paneles ---------- */
+
+/* Tarjeta oscura estándar (panel de stats, modales, etc.) */
+.ea-card {
+  background-color: #1e293b; /* slate-800 */
+  border: 1px solid #334155; /* slate-700 */
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+/* Tarjeta elevada (hover highlight) */
+.ea-card-elevated {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ---------- Inputs y Selects ---------- */
+
+/* Input oscuro estándar (para futuros dark-mode forms) */
+.ea-input {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ea-input:focus {
+  border-color: var(--eco-primary);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.25);
+}
+
+/* ---------- Badges de estado ---------- */
+
+.ea-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.ea-badge-pending   { background-color: #d97706; color: #fff; }
+.ea-badge-transit   { background-color: var(--eco-primary); color: #fff; }
+.ea-badge-completed { background-color: #22c55e; color: #fff; }
+.ea-badge-cancelled { background-color: #6b7280; color: #fff; }
+.ea-badge-incident  { background-color: var(--eco-danger); color: #fff; }
+
+/* ---------- Textos semánticos ---------- */
+.ea-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b; /* slate-500 */
+}
+
+/* ---------- Tabla ---------- */
+table {
+  border: 0;
+}
+td {
+  font-size: 16px;
+}
+
+/* ---------- Legacy bootstrap overrides ---------- */
+.navbar {
+  margin-bottom: 20px;
+  border-radius: 0;
+  font-size: 16px;
+}
+.jumbotron {
+  margin-bottom: 0;
+}
+footer {
+  background-color: #f2f2f2;
+  padding: 25px;
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 90%;
+    max-width: 90%;
+  }
+}
+
+
+/* ---------- SweetAlert overrides ---------- */
+.swal2-styled.swal2-confirm { background-color: #1a6b3c !important; color: #fff !important; box-shadow: 0 2px 6px rgba(26,107,60,0.35) !important; border: none !important; }
+.swal2-styled.swal2-confirm:hover { background-color: #145a32 !important; }
+.swal2-styled.swal2-cancel { background-color: #e2e8f0 !important; color: #334155 !important; border: none !important; }
+.swal2-styled.swal2-cancel:hover { background-color: #cbd5e1 !important; }
+.swal2-styled.swal2-deny { background-color: var(--eco-danger) !important; color: #fff !important; border: none !important; }
+.swal2-styled.swal2-deny:hover { background-color: var(--eco-danger-hover) !important; }
+
+
+  
+        /* ─── Tipografia con caracter ─────────────────────────────── */
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body, * { font-family: 'Inter', sans-serif; }
+        body {
+            font-weight: 450;
+            letter-spacing: -0.005em;
+            font-feature-settings: 'cv11','ss01','ss03';
+            color: #0f172a;
+        }
+        h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; font-weight: 700; }
+        .text-xs, .text-\[11px\], .text-\[10px\] { letter-spacing: 0; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        /* Ocultar scrollbar horizontal en zonas con overflow-x-auto pero mantener funcionalidad */
+        .overflow-x-auto { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+        .overflow-x-auto:hover { scrollbar-color: #cbd5e1 transparent; }
+        .overflow-x-auto::-webkit-scrollbar { height: 0px; }
+        .overflow-x-auto:hover::-webkit-scrollbar { height: 6px; }
+        .nav-group-body { max-height: 500px; overflow: hidden; transition: max-height 0.25s ease; }
+        /* Evita scroll horizontal a nivel de pagina; las tablas tienen su propio overflow-x-auto */
+        html, body { overflow-x: clip; }
+        /* Empty state hint para columnas Kanban vacias (CSS puro, no hijo del Sortable) */
+        .kanban-col:empty::before { content: 'Sin traslados'; display: block; text-align: center; color: #cbd5e1; font-size: 0.75rem; padding: 1rem 0; pointer-events: none; }
+        .nav-group-body.nav-collapsed { max-height: 0 !important; }
+        /* Controles de formulario unificados */
+        .form-control-eco {
+            width: 100%;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #1e293b;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-control-eco:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        .form-control-eco:disabled { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+        select.form-control-eco {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.25rem;
+            padding-right: 2rem;
+        }
+        textarea.form-control-eco { resize: vertical; min-height: 64px; }
+        /* Checkboxes redondeados y suaves (anula el estilo afilado de DaisyUI) */
+        input[type="checkbox"].checkbox,
+        input[type="checkbox"].batch-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+            position: relative;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        input[type="checkbox"].checkbox.checkbox-xs,
+        input[type="checkbox"].batch-check { width: 15px; height: 15px; border-radius: 5px; }
+        input[type="checkbox"].checkbox:hover,
+        input[type="checkbox"].batch-check:hover {
+            border-color: #94a3b8;
+            box-shadow: 0 0 0 4px rgba(148,163,184,0.12);
+        }
+        input[type="checkbox"].checkbox:focus,
+        input[type="checkbox"].batch-check:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        input[type="checkbox"].checkbox:focus-visible,
+        input[type="checkbox"].batch-check:focus-visible {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+        }
+        input[type="checkbox"].checkbox:checked,
+        input[type="checkbox"].batch-check:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(59,130,246,0.35);
+        }
+        input[type="checkbox"].checkbox:checked::after,
+        input[type="checkbox"].batch-check:checked::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 45%;
+            width: 4px; height: 8px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        input[type="checkbox"].checkbox:active,
+        input[type="checkbox"].batch-check:active { transform: scale(0.92); }
+        input[type="checkbox"].checkbox:indeterminate,
+        input[type="checkbox"].batch-check:indeterminate {
+            background-color: #3b82f6; border-color: #3b82f6;
+        }
+        input[type="checkbox"].checkbox:indeterminate::after,
+        input[type="checkbox"].batch-check:indeterminate::after {
+            content: ''; position: absolute; left: 3px; right: 3px; top: 50%;
+            height: 2px; background: #fff; border-radius: 1px; transform: translateY(-50%);
+        }
+        body.dark-mode input[type="checkbox"].checkbox,
+        body.dark-mode input[type="checkbox"].batch-check {
+            background-color: #1e293b; border-color: #475569;
+        }
+        body.dark-mode input[type="checkbox"].checkbox:hover,
+        body.dark-mode input[type="checkbox"].batch-check:hover {
+            border-color: #64748b; box-shadow: 0 0 0 4px rgba(148,163,184,0.18);
+        }
+        body.dark-mode input[type="checkbox"].checkbox:checked,
+        body.dark-mode input[type="checkbox"].batch-check:checked {
+            background-color: #3b82f6; border-color: #3b82f6;
+        }
+        /* Anular el tick SVG por defecto de DaisyUI (evita doble efecto) */
+        input[type="checkbox"].checkbox:checked,
+        input[type="checkbox"].batch-check:checked,
+        input[type="checkbox"].checkbox:indeterminate,
+        input[type="checkbox"].batch-check:indeterminate {
+            background-image: none !important;
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+        }
+
+        /* ─── Botones suaves estilo pastel ───────────────────────────── */
+        /* Suaviza el .btn de DaisyUI: bordes redondeados y sombra sutil */
+        .btn { border-radius: 0.625rem; transition: background-color .15s ease, box-shadow .15s ease, transform .05s ease; }
+        .btn:active { transform: scale(0.98); }
+        /* Botón primario (Anadir/Nuevo X): sombra azul suave, no plana */
+        .btn.bg-\[\#3b82f6\] {
+            box-shadow: 0 1px 2px rgba(59,130,246,0.18), 0 4px 12px -2px rgba(59,130,246,0.28) !important;
+        }
+        .btn.bg-\[\#3b82f6\]:hover {
+            box-shadow: 0 2px 4px rgba(37,99,235,0.22), 0 6px 16px -2px rgba(37,99,235,0.34) !important;
+            transform: translateY(-1px);
+        }
+        /* Botón outline (los "+") más suave */
+        .btn.btn-outline { box-shadow: 0 1px 2px rgba(15,23,42,0.04); background-color: #fff; }
+        .btn.btn-outline:hover { background-color: #f8fafc; box-shadow: 0 1px 3px rgba(15,23,42,0.08); }
+
+        /* ─── Paginación armonizada ──────────────────────────────────── */
+        #pgBotones.join { display: inline-flex; gap: 4px; border-radius: 0.625rem; }
+        #pgBotones .btn,
+        #pgBotones .join-item {
+            border-radius: 0.5rem !important;
+            border: 1px solid #e2e8f0 !important;
+            background-color: #fff;
+            color: #475569;
+            font-weight: 500;
+            min-width: 32px; height: 32px; padding: 0 10px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+            transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .05s ease;
+        }
+        #pgBotones .btn:hover:not([disabled]),
+        #pgBotones .join-item:hover:not([disabled]) {
+            background-color: #f1f5f9; color: #1e293b;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+        }
+        #pgBotones .btn:active:not([disabled]) { transform: scale(0.95); }
+        #pgBotones .btn[disabled],
+        #pgBotones .join-item[disabled] { opacity: .45; cursor: not-allowed; }
+        /* Página activa: pastilla azul suave con sombra difusa */
+        #pgBotones .btn.bg-\[\#3b82f6\],
+        #pgBotones .join-item.bg-\[\#3b82f6\] {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 1px 2px rgba(59,130,246,0.25), 0 4px 10px -2px rgba(59,130,246,0.35) !important;
+        }
+        body.dark-mode #pgBotones .btn,
+        body.dark-mode #pgBotones .join-item {
+            background-color: #1e293b; color: #cbd5e1; border-color: #334155 !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        body.dark-mode #pgBotones .btn:hover:not([disabled]),
+        body.dark-mode #pgBotones .join-item:hover:not([disabled]) {
+            background-color: #273548; color: #f1f5f9;
+        }
+        body.dark-mode #pgBotones .btn.bg-\[\#3b82f6\],
+        body.dark-mode #pgBotones .join-item.bg-\[\#3b82f6\] {
+            background-color: #3b82f6 !important; color: #fff !important;
+        }
+
+        /* Combobox FK reutilizable */
+        .combobox-list { scrollbar-width: thin; }
+        .combobox-list li { transition: background-color 0.1s ease; }
+        body.dark-mode .combobox-list { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0; }
+        body.dark-mode .combobox-list li:hover { background-color: #273548 !important; }
+        body.dark-mode .combobox-list li .text-slate-700 { color: #e2e8f0 !important; }
+        body.dark-mode .combobox-list li .text-slate-500 { color: #94a3b8 !important; }
+        body.dark-mode .combobox-list li .text-slate-400 { color: #64748b !important; }
+        /* Modal animation */
+        .modal-eco { transition: opacity 0.18s ease, transform 0.18s ease; }
+
+        /* ─── Dark mode ──────────────────────────────────────────────── */
+        body.dark-mode { background-color: #0f172a !important; color: #e2e8f0; }
+        body.dark-mode .bg-white { background-color: #1e293b !important; }
+        body.dark-mode .bg-\[\#f1f5f9\] { background-color: #0f172a !important; }
+        body.dark-mode header { background-color: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .text-slate-900 { color: #f8fafc !important; }
+        body.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
+        body.dark-mode .text-slate-700 { color: #cbd5e1 !important; }
+        body.dark-mode .text-slate-600 { color: #94a3b8 !important; }
+        body.dark-mode .text-slate-500 { color: #64748b !important; }
+        body.dark-mode .text-slate-400 { color: #64748b !important; }
+        body.dark-mode .text-black { color: #f1f5f9 !important; }
+        /* Headings y cualquier texto que no haya recibido clase explicita */
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+        body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 { color: #f1f5f9 !important; }
+        body.dark-mode label { color: #cbd5e1 !important; }
+        body.dark-mode .modal-header, body.dark-mode .card-title { color: #f1f5f9 !important; }
+        body.dark-mode .border-slate-200 { border-color: #334155 !important; }
+        body.dark-mode .border-slate-100 { border-color: #1e293b !important; }
+        body.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+        body.dark-mode table thead tr { background-color: #0f172a !important; }
+        body.dark-mode table tbody tr:hover { background-color: #1e293b !important; }
+        body.dark-mode table tbody tr { border-color: #334155 !important; }
+        /* Forzar fondo uniforme en TODAS las filas (anula el zebra de DaisyUI/Flowbite) */
+        body.dark-mode table,
+        body.dark-mode table tbody,
+        body.dark-mode table tbody tr,
+        body.dark-mode table tbody tr:nth-child(even),
+        body.dark-mode table tbody tr:nth-child(odd),
+        body.dark-mode table td,
+        body.dark-mode table th {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode table thead th { background-color: #0f172a !important; color: #cbd5e1 !important; }
+        body.dark-mode table tbody tr:hover td { background-color: #273548 !important; }
+        /* Kanban dark mode: tinte oscuro por estado, manteniendo identidad de color */
+        body.dark-mode .kanban-col[data-estado="PENDIENTE"]   { background-color: #3a2e0f !important; border-color: #6b5012 !important; }
+        body.dark-mode .kanban-col[data-estado="EN_TRANSITO"] { background-color: #142a4a !important; border-color: #1e4a82 !important; }
+        body.dark-mode .kanban-col[data-estado="ENTREGADO"]   { background-color: #2c1f4a !important; border-color: #5a3fa8 !important; }
+        body.dark-mode .kanban-col[data-estado="COMPLETADO"]  { background-color: #0f3a2c !important; border-color: #166848 !important; }
+        body.dark-mode .kanban-card { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+        body.dark-mode .kanban-card * { color: #e2e8f0 !important; }
+        body.dark-mode .kanban-card .text-slate-400 { color: #94a3b8 !important; }
+        body.dark-mode .kanban-col:empty::before { color: #64748b; }
+        body.dark-mode .form-control-eco { background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+        body.dark-mode .form-control-eco:focus { border-color: #3b82f6 !important; }
+        body.dark-mode .bg-slate-50 { background-color: #1e293b !important; }
+        body.dark-mode .bg-slate-100 { background-color: #0f172a !important; }
+        body.dark-mode .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
+        body.dark-mode .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
+            background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important;
+        }
+        body.dark-mode .badge { border-color: #475569; }
+        body.dark-mode [class*="bg-blue-50"] { background-color: rgba(59,130,246,0.15) !important; }
+        body.dark-mode [class*="bg-green-50"] { background-color: rgba(34,197,94,0.15) !important; }
+        body.dark-mode [class*="bg-red-50"] { background-color: rgba(239,68,68,0.15) !important; }
+        body.dark-mode [class*="bg-yellow-50"] { background-color: rgba(234,179,8,0.15) !important; }
+        body.dark-mode .kanban-col { background-color: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .kanban-card { background-color: #0f172a !important; border-color: #334155 !important; }
+        /* Rounded panels / cards */
+        body.dark-mode .rounded-2xl.bg-white,
+        body.dark-mode .rounded-xl.bg-white,
+        body.dark-mode .rounded-lg.bg-white { background-color: #1e293b !important; }
+
+        /* ─── Pill de estado unificada ───────────────────────────── */
+        .estado-pill {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .estado-pill .dot {
+            width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px;
+        }
+        .estado-pill[data-estado='PENDIENTE']    { background:#fef3c7; color:#b45309; }
+        .estado-pill[data-estado='PENDIENTE'] .dot    { background:#f59e0b; }
+        .estado-pill[data-estado='EN_TRANSITO']  { background:#dbeafe; color:#1d4ed8; }
+        .estado-pill[data-estado='EN_TRANSITO'] .dot  { background:#3b82f6; }
+        .estado-pill[data-estado='ENTREGADO']    { background:#ede9fe; color:#6d28d9; }
+        .estado-pill[data-estado='ENTREGADO'] .dot    { background:#8b5cf6; }
+        .estado-pill[data-estado='COMPLETADO']   { background:#d1fae5; color:#047857; }
+        .estado-pill[data-estado='COMPLETADO'] .dot   { background:#10b981; }
+        .estado-pill[data-estado='CANCELADO']    { background:#fee2e2; color:#b91c1c; }
+        .estado-pill[data-estado='CANCELADO'] .dot    { background:#ef4444; }
+
+        /* ─── Tag pill genérica (rol, tipo, etc.) ─────────────────── */
+        .tag-pill {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .tag-pill .dot { width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px; }
+        .tag-pill[data-color='slate']   { background:#f1f5f9; color:#475569; }
+        .tag-pill[data-color='slate']   .dot { background:#94a3b8; }
+        .tag-pill[data-color='blue']    { background:#dbeafe; color:#1d4ed8; }
+        .tag-pill[data-color='blue']    .dot { background:#3b82f6; }
+        .tag-pill[data-color='sky']     { background:#e0f2fe; color:#0369a1; }
+        .tag-pill[data-color='sky']     .dot { background:#0ea5e9; }
+        .tag-pill[data-color='indigo']  { background:#e0e7ff; color:#4338ca; }
+        .tag-pill[data-color='indigo']  .dot { background:#6366f1; }
+        .tag-pill[data-color='violet']  { background:#ede9fe; color:#6d28d9; }
+        .tag-pill[data-color='violet']  .dot { background:#8b5cf6; }
+        .tag-pill[data-color='emerald'] { background:#d1fae5; color:#047857; }
+        .tag-pill[data-color='emerald'] .dot { background:#10b981; }
+        .tag-pill[data-color='teal']    { background:#ccfbf1; color:#0f766e; }
+        .tag-pill[data-color='teal']    .dot { background:#14b8a6; }
+        .tag-pill[data-color='amber']   { background:#fef3c7; color:#b45309; }
+        .tag-pill[data-color='amber']   .dot { background:#f59e0b; }
+        .tag-pill[data-color='orange']  { background:#ffedd5; color:#c2410c; }
+        .tag-pill[data-color='orange']  .dot { background:#f97316; }
+        .tag-pill[data-color='rose']    { background:#ffe4e6; color:#be123c; }
+        .tag-pill[data-color='rose']    .dot { background:#f43f5e; }
+        .tag-pill[data-color='red']     { background:#fee2e2; color:#b91c1c; }
+        .tag-pill[data-color='red']     .dot { background:#ef4444; }
+
+        /* ─── Selects nativos con estilo moderno (sin librería) ──────────────
+           Aplicado SOLO a <select>. Los <input>/<textarea> con .form-control-eco
+           reciben el estilo base sin flecha. */
+        select.js-choice,
+        select.form-control-eco {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 32px 6px 12px;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            line-height: 1.4;
+            transition: border-color .15s ease, box-shadow .15s ease;
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
+            cursor: pointer;
+        }
+        /* Estilo base para inputs/textareas con .form-control-eco — SIN flecha */
+        input.form-control-eco,
+        textarea.form-control-eco {
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            line-height: 1.4;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        textarea.form-control-eco { min-height: 76px; padding: 8px 12px; resize: vertical; }
+        select.js-choice:focus,
+        select.form-control-eco:focus,
+        input.form-control-eco:focus,
+        textarea.form-control-eco:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        select.js-choice:disabled,
+        select.form-control-eco:disabled,
+        input.form-control-eco:disabled,
+        textarea.form-control-eco:disabled {
+            background-color: #f8fafc;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        /* Datalist en input[list]: escondemos la flechita nativa de WebKit
+           que aparece superpuesta y queda como "globo de cómic". */
+        input[list]::-webkit-calendar-picker-indicator {
+            display: none !important;
+            opacity: 0;
+        }
+        body.dark-mode select.js-choice,
+        body.dark-mode select.form-control-eco {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
+        }
+        body.dark-mode input.form-control-eco,
+        body.dark-mode textarea.form-control-eco {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+        /* Evita el salto horizontal al abrir/cerrar modales (gutter de scrollbar) */
+        html { scrollbar-gutter: stable; }
+    
+}

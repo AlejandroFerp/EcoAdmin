@@ -11,419 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* ─── Tipografia con caracter ─────────────────────────────── */
-        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        body, * { font-family: 'Inter', sans-serif; }
-        body {
-            font-weight: 450;
-            letter-spacing: -0.005em;
-            font-feature-settings: 'cv11','ss01','ss03';
-            color: #0f172a;
-        }
-        h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; font-weight: 700; }
-        .text-xs, .text-\[11px\], .text-\[10px\] { letter-spacing: 0; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        /* Ocultar scrollbar horizontal en zonas con overflow-x-auto pero mantener funcionalidad */
-        .overflow-x-auto { scrollbar-width: thin; scrollbar-color: transparent transparent; }
-        .overflow-x-auto:hover { scrollbar-color: #cbd5e1 transparent; }
-        .overflow-x-auto::-webkit-scrollbar { height: 0px; }
-        .overflow-x-auto:hover::-webkit-scrollbar { height: 6px; }
-        .nav-group-body { max-height: 500px; overflow: hidden; transition: max-height 0.25s ease; }
-        /* Evita scroll horizontal a nivel de pagina; las tablas tienen su propio overflow-x-auto */
-        html, body { overflow-x: clip; }
-        /* Empty state hint para columnas Kanban vacias (CSS puro, no hijo del Sortable) */
-        .kanban-col:empty::before { content: 'Sin traslados'; display: block; text-align: center; color: #cbd5e1; font-size: 0.75rem; padding: 1rem 0; pointer-events: none; }
-        .nav-group-body.nav-collapsed { max-height: 0 !important; }
-        /* Controles de formulario unificados */
-        .form-control-eco {
-            width: 100%;
-            padding: 0.4rem 0.75rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            color: #1e293b;
-            background-color: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
-            outline: none;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-        .form-control-eco:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-        }
-        .form-control-eco:disabled { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
-        select.form-control-eco {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 1.25rem;
-            padding-right: 2rem;
-        }
-        textarea.form-control-eco { resize: vertical; min-height: 64px; }
-        /* Checkboxes redondeados y suaves (anula el estilo afilado de DaisyUI) */
-        input[type="checkbox"].checkbox,
-        input[type="checkbox"].batch-check {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 6px;
-            background-color: #fff;
-            cursor: pointer;
-            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
-            position: relative;
-            flex-shrink: 0;
-            vertical-align: middle;
-        }
-        input[type="checkbox"].checkbox.checkbox-xs,
-        input[type="checkbox"].batch-check { width: 15px; height: 15px; border-radius: 5px; }
-        input[type="checkbox"].checkbox:hover,
-        input[type="checkbox"].batch-check:hover {
-            border-color: #94a3b8;
-            box-shadow: 0 0 0 4px rgba(148,163,184,0.12);
-        }
-        input[type="checkbox"].checkbox:focus,
-        input[type="checkbox"].batch-check:focus {
-            outline: none;
-            box-shadow: none;
-        }
-        input[type="checkbox"].checkbox:focus-visible,
-        input[type="checkbox"].batch-check:focus-visible {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
-        }
-        input[type="checkbox"].checkbox:checked,
-        input[type="checkbox"].batch-check:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            box-shadow: 0 1px 3px rgba(59,130,246,0.35);
-        }
-        input[type="checkbox"].checkbox:checked::after,
-        input[type="checkbox"].batch-check:checked::after {
-            content: '';
-            position: absolute;
-            left: 50%; top: 45%;
-            width: 4px; height: 8px;
-            border: solid #fff;
-            border-width: 0 2px 2px 0;
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-        input[type="checkbox"].checkbox:active,
-        input[type="checkbox"].batch-check:active { transform: scale(0.92); }
-        input[type="checkbox"].checkbox:indeterminate,
-        input[type="checkbox"].batch-check:indeterminate {
-            background-color: #3b82f6; border-color: #3b82f6;
-        }
-        input[type="checkbox"].checkbox:indeterminate::after,
-        input[type="checkbox"].batch-check:indeterminate::after {
-            content: ''; position: absolute; left: 3px; right: 3px; top: 50%;
-            height: 2px; background: #fff; border-radius: 1px; transform: translateY(-50%);
-        }
-        body.dark-mode input[type="checkbox"].checkbox,
-        body.dark-mode input[type="checkbox"].batch-check {
-            background-color: #1e293b; border-color: #475569;
-        }
-        body.dark-mode input[type="checkbox"].checkbox:hover,
-        body.dark-mode input[type="checkbox"].batch-check:hover {
-            border-color: #64748b; box-shadow: 0 0 0 4px rgba(148,163,184,0.18);
-        }
-        body.dark-mode input[type="checkbox"].checkbox:checked,
-        body.dark-mode input[type="checkbox"].batch-check:checked {
-            background-color: #3b82f6; border-color: #3b82f6;
-        }
-        /* Anular el tick SVG por defecto de DaisyUI (evita doble efecto) */
-        input[type="checkbox"].checkbox:checked,
-        input[type="checkbox"].batch-check:checked,
-        input[type="checkbox"].checkbox:indeterminate,
-        input[type="checkbox"].batch-check:indeterminate {
-            background-image: none !important;
-            -webkit-mask-image: none !important;
-            mask-image: none !important;
-        }
-
-        /* ─── Botones suaves estilo pastel ───────────────────────────── */
-        /* Suaviza el .btn de DaisyUI: bordes redondeados y sombra sutil */
-        .btn { border-radius: 0.625rem; transition: background-color .15s ease, box-shadow .15s ease, transform .05s ease; }
-        .btn:active { transform: scale(0.98); }
-        /* Botón primario (Anadir/Nuevo X): sombra azul suave, no plana */
-        .btn.bg-\[\#3b82f6\] {
-            box-shadow: 0 1px 2px rgba(59,130,246,0.18), 0 4px 12px -2px rgba(59,130,246,0.28) !important;
-        }
-        .btn.bg-\[\#3b82f6\]:hover {
-            box-shadow: 0 2px 4px rgba(37,99,235,0.22), 0 6px 16px -2px rgba(37,99,235,0.34) !important;
-            transform: translateY(-1px);
-        }
-        /* Botón outline (los "+") más suave */
-        .btn.btn-outline { box-shadow: 0 1px 2px rgba(15,23,42,0.04); background-color: #fff; }
-        .btn.btn-outline:hover { background-color: #f8fafc; box-shadow: 0 1px 3px rgba(15,23,42,0.08); }
-
-        /* ─── Paginación armonizada ──────────────────────────────────── */
-        #pgBotones.join { display: inline-flex; gap: 4px; border-radius: 0.625rem; }
-        #pgBotones .btn,
-        #pgBotones .join-item {
-            border-radius: 0.5rem !important;
-            border: 1px solid #e2e8f0 !important;
-            background-color: #fff;
-            color: #475569;
-            font-weight: 500;
-            min-width: 32px; height: 32px; padding: 0 10px;
-            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
-            transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .05s ease;
-        }
-        #pgBotones .btn:hover:not([disabled]),
-        #pgBotones .join-item:hover:not([disabled]) {
-            background-color: #f1f5f9; color: #1e293b;
-            box-shadow: 0 1px 3px rgba(15,23,42,0.08);
-        }
-        #pgBotones .btn:active:not([disabled]) { transform: scale(0.95); }
-        #pgBotones .btn[disabled],
-        #pgBotones .join-item[disabled] { opacity: .45; cursor: not-allowed; }
-        /* Página activa: pastilla azul suave con sombra difusa */
-        #pgBotones .btn.bg-\[\#3b82f6\],
-        #pgBotones .join-item.bg-\[\#3b82f6\] {
-            background-color: #3b82f6 !important;
-            color: #fff !important;
-            border-color: #3b82f6 !important;
-            box-shadow: 0 1px 2px rgba(59,130,246,0.25), 0 4px 10px -2px rgba(59,130,246,0.35) !important;
-        }
-        body.dark-mode #pgBotones .btn,
-        body.dark-mode #pgBotones .join-item {
-            background-color: #1e293b; color: #cbd5e1; border-color: #334155 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-        body.dark-mode #pgBotones .btn:hover:not([disabled]),
-        body.dark-mode #pgBotones .join-item:hover:not([disabled]) {
-            background-color: #273548; color: #f1f5f9;
-        }
-        body.dark-mode #pgBotones .btn.bg-\[\#3b82f6\],
-        body.dark-mode #pgBotones .join-item.bg-\[\#3b82f6\] {
-            background-color: #3b82f6 !important; color: #fff !important;
-        }
-
-        /* Combobox FK reutilizable */
-        .combobox-list { scrollbar-width: thin; }
-        .combobox-list li { transition: background-color 0.1s ease; }
-        body.dark-mode .combobox-list { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0; }
-        body.dark-mode .combobox-list li:hover { background-color: #273548 !important; }
-        body.dark-mode .combobox-list li .text-slate-700 { color: #e2e8f0 !important; }
-        body.dark-mode .combobox-list li .text-slate-500 { color: #94a3b8 !important; }
-        body.dark-mode .combobox-list li .text-slate-400 { color: #64748b !important; }
-        /* Modal animation */
-        .modal-eco { transition: opacity 0.18s ease, transform 0.18s ease; }
-
-        /* ─── Dark mode ──────────────────────────────────────────────── */
-        body.dark-mode { background-color: #0f172a !important; color: #e2e8f0; }
-        body.dark-mode .bg-white { background-color: #1e293b !important; }
-        body.dark-mode .bg-\[\#f1f5f9\] { background-color: #0f172a !important; }
-        body.dark-mode header { background-color: #1e293b !important; border-color: #334155 !important; }
-        body.dark-mode .text-slate-900 { color: #f8fafc !important; }
-        body.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
-        body.dark-mode .text-slate-700 { color: #cbd5e1 !important; }
-        body.dark-mode .text-slate-600 { color: #94a3b8 !important; }
-        body.dark-mode .text-slate-500 { color: #64748b !important; }
-        body.dark-mode .text-slate-400 { color: #64748b !important; }
-        body.dark-mode .text-black { color: #f1f5f9 !important; }
-        /* Headings y cualquier texto que no haya recibido clase explicita */
-        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
-        body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 { color: #f1f5f9 !important; }
-        body.dark-mode label { color: #cbd5e1 !important; }
-        body.dark-mode .modal-header, body.dark-mode .card-title { color: #f1f5f9 !important; }
-        body.dark-mode .border-slate-200 { border-color: #334155 !important; }
-        body.dark-mode .border-slate-100 { border-color: #1e293b !important; }
-        body.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
-        body.dark-mode table thead tr { background-color: #0f172a !important; }
-        body.dark-mode table tbody tr:hover { background-color: #1e293b !important; }
-        body.dark-mode table tbody tr { border-color: #334155 !important; }
-        /* Forzar fondo uniforme en TODAS las filas (anula el zebra de DaisyUI/Flowbite) */
-        body.dark-mode table,
-        body.dark-mode table tbody,
-        body.dark-mode table tbody tr,
-        body.dark-mode table tbody tr:nth-child(even),
-        body.dark-mode table tbody tr:nth-child(odd),
-        body.dark-mode table td,
-        body.dark-mode table th {
-            background-color: #1e293b !important;
-            color: #e2e8f0 !important;
-        }
-        body.dark-mode table thead th { background-color: #0f172a !important; color: #cbd5e1 !important; }
-        body.dark-mode table tbody tr:hover td { background-color: #273548 !important; }
-        /* Kanban dark mode: tinte oscuro por estado, manteniendo identidad de color */
-        body.dark-mode .kanban-col[data-estado="PENDIENTE"]   { background-color: #3a2e0f !important; border-color: #6b5012 !important; }
-        body.dark-mode .kanban-col[data-estado="EN_TRANSITO"] { background-color: #142a4a !important; border-color: #1e4a82 !important; }
-        body.dark-mode .kanban-col[data-estado="ENTREGADO"]   { background-color: #2c1f4a !important; border-color: #5a3fa8 !important; }
-        body.dark-mode .kanban-col[data-estado="COMPLETADO"]  { background-color: #0f3a2c !important; border-color: #166848 !important; }
-        body.dark-mode .kanban-card { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-        body.dark-mode .kanban-card * { color: #e2e8f0 !important; }
-        body.dark-mode .kanban-card .text-slate-400 { color: #94a3b8 !important; }
-        body.dark-mode .kanban-col:empty::before { color: #64748b; }
-        body.dark-mode .form-control-eco { background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important; }
-        body.dark-mode .form-control-eco:focus { border-color: #3b82f6 !important; }
-        body.dark-mode .bg-slate-50 { background-color: #1e293b !important; }
-        body.dark-mode .bg-slate-100 { background-color: #0f172a !important; }
-        body.dark-mode .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
-        body.dark-mode .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
-        body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
-            background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important;
-        }
-        body.dark-mode .badge { border-color: #475569; }
-        body.dark-mode [class*="bg-blue-50"] { background-color: rgba(59,130,246,0.15) !important; }
-        body.dark-mode [class*="bg-green-50"] { background-color: rgba(34,197,94,0.15) !important; }
-        body.dark-mode [class*="bg-red-50"] { background-color: rgba(239,68,68,0.15) !important; }
-        body.dark-mode [class*="bg-yellow-50"] { background-color: rgba(234,179,8,0.15) !important; }
-        body.dark-mode .kanban-col { background-color: #1e293b !important; border-color: #334155 !important; }
-        body.dark-mode .kanban-card { background-color: #0f172a !important; border-color: #334155 !important; }
-        /* Rounded panels / cards */
-        body.dark-mode .rounded-2xl.bg-white,
-        body.dark-mode .rounded-xl.bg-white,
-        body.dark-mode .rounded-lg.bg-white { background-color: #1e293b !important; }
-
-        /* ─── Pill de estado unificada ───────────────────────────── */
-        .estado-pill {
-            display: inline-flex; align-items: center;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            line-height: 1.4;
-            white-space: nowrap;
-        }
-        .estado-pill .dot {
-            width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px;
-        }
-        .estado-pill[data-estado='PENDIENTE']    { background:#fef3c7; color:#b45309; }
-        .estado-pill[data-estado='PENDIENTE'] .dot    { background:#f59e0b; }
-        .estado-pill[data-estado='EN_TRANSITO']  { background:#dbeafe; color:#1d4ed8; }
-        .estado-pill[data-estado='EN_TRANSITO'] .dot  { background:#3b82f6; }
-        .estado-pill[data-estado='ENTREGADO']    { background:#ede9fe; color:#6d28d9; }
-        .estado-pill[data-estado='ENTREGADO'] .dot    { background:#8b5cf6; }
-        .estado-pill[data-estado='COMPLETADO']   { background:#d1fae5; color:#047857; }
-        .estado-pill[data-estado='COMPLETADO'] .dot   { background:#10b981; }
-        .estado-pill[data-estado='CANCELADO']    { background:#fee2e2; color:#b91c1c; }
-        .estado-pill[data-estado='CANCELADO'] .dot    { background:#ef4444; }
-
-        /* ─── Tag pill genérica (rol, tipo, etc.) ─────────────────── */
-        .tag-pill {
-            display: inline-flex; align-items: center;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            line-height: 1.4;
-            white-space: nowrap;
-        }
-        .tag-pill .dot { width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px; }
-        .tag-pill[data-color='slate']   { background:#f1f5f9; color:#475569; }
-        .tag-pill[data-color='slate']   .dot { background:#94a3b8; }
-        .tag-pill[data-color='blue']    { background:#dbeafe; color:#1d4ed8; }
-        .tag-pill[data-color='blue']    .dot { background:#3b82f6; }
-        .tag-pill[data-color='sky']     { background:#e0f2fe; color:#0369a1; }
-        .tag-pill[data-color='sky']     .dot { background:#0ea5e9; }
-        .tag-pill[data-color='indigo']  { background:#e0e7ff; color:#4338ca; }
-        .tag-pill[data-color='indigo']  .dot { background:#6366f1; }
-        .tag-pill[data-color='violet']  { background:#ede9fe; color:#6d28d9; }
-        .tag-pill[data-color='violet']  .dot { background:#8b5cf6; }
-        .tag-pill[data-color='emerald'] { background:#d1fae5; color:#047857; }
-        .tag-pill[data-color='emerald'] .dot { background:#10b981; }
-        .tag-pill[data-color='teal']    { background:#ccfbf1; color:#0f766e; }
-        .tag-pill[data-color='teal']    .dot { background:#14b8a6; }
-        .tag-pill[data-color='amber']   { background:#fef3c7; color:#b45309; }
-        .tag-pill[data-color='amber']   .dot { background:#f59e0b; }
-        .tag-pill[data-color='orange']  { background:#ffedd5; color:#c2410c; }
-        .tag-pill[data-color='orange']  .dot { background:#f97316; }
-        .tag-pill[data-color='rose']    { background:#ffe4e6; color:#be123c; }
-        .tag-pill[data-color='rose']    .dot { background:#f43f5e; }
-        .tag-pill[data-color='red']     { background:#fee2e2; color:#b91c1c; }
-        .tag-pill[data-color='red']     .dot { background:#ef4444; }
-
-        /* ─── Selects nativos con estilo moderno (sin librería) ──────────────
-           Aplicado SOLO a <select>. Los <input>/<textarea> con .form-control-eco
-           reciben el estilo base sin flecha. */
-        select.js-choice,
-        select.form-control-eco {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 100%;
-            min-height: 38px;
-            padding: 6px 32px 6px 12px;
-            font-size: 0.875rem;
-            color: #1e293b;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
-            line-height: 1.4;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 14px;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
-            cursor: pointer;
-        }
-        /* Estilo base para inputs/textareas con .form-control-eco — SIN flecha */
-        input.form-control-eco,
-        textarea.form-control-eco {
-            width: 100%;
-            min-height: 38px;
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            color: #1e293b;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.625rem;
-            line-height: 1.4;
-            transition: border-color .15s ease, box-shadow .15s ease;
-        }
-        textarea.form-control-eco { min-height: 76px; padding: 8px 12px; resize: vertical; }
-        select.js-choice:focus,
-        select.form-control-eco:focus,
-        input.form-control-eco:focus,
-        textarea.form-control-eco:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-        }
-        select.js-choice:disabled,
-        select.form-control-eco:disabled,
-        input.form-control-eco:disabled,
-        textarea.form-control-eco:disabled {
-            background-color: #f8fafc;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-        /* Datalist en input[list]: escondemos la flechita nativa de WebKit
-           que aparece superpuesta y queda como "globo de cómic". */
-        input[list]::-webkit-calendar-picker-indicator {
-            display: none !important;
-            opacity: 0;
-        }
-        body.dark-mode select.js-choice,
-        body.dark-mode select.form-control-eco {
-            background-color: #1e293b;
-            border-color: #475569;
-            color: #f1f5f9;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
-        }
-        body.dark-mode input.form-control-eco,
-        body.dark-mode textarea.form-control-eco {
-            background-color: #1e293b;
-            border-color: #475569;
-            color: #f1f5f9;
-        }
-        /* Evita el salto horizontal al abrir/cerrar modales (gutter de scrollbar) */
-        html { scrollbar-gutter: stable; }
-    </style>
-</head>
+        <link rel="stylesheet" th:href="@{/css/app.css}">
+        </head>
 <body class="bg-[#f1f5f9] min-h-screen" data-theme="light">
 
 <!-- SIDEBAR -->
@@ -624,7 +213,6 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
 
 <!-- ─── ESTADO_CONFIG y helper estadoBadge globales ─── -->
 <script>
@@ -885,6 +473,40 @@ document.addEventListener('DOMContentLoaded', function() {
         icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>';
     }
 });
+
+// ─── Modal Draggable (Fase UX) ──────────────────────────────────────────────
+document.addEventListener('mousedown', function(e) {
+    var head = e.target.closest('.modal-head');
+    if (!head) return;
+    var shell = head.closest('.modal-shell');
+    if (!shell) return;
+    if (e.target.closest('button')) return; // Ignore close buttons
+
+    var startX = e.clientX;
+    var startY = e.clientY;
+    
+    // Read existing transform
+    var match = shell.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    var currentTx = match ? parseFloat(match[1]) : 0;
+    var currentTy = match ? parseFloat(match[2]) : 0;
+    
+    // Set cursor
+    head.style.cursor = 'grabbing';
+
+    function onMouseMove(moveEvent) {
+        var dx = moveEvent.clientX - startX;
+        var dy = moveEvent.clientY - startY;
+        shell.style.transform = 'translate(' + (currentTx + dx) + 'px, ' + (currentTy + dy) + 'px)';
+    }
+    function onMouseUp() {
+        head.style.cursor = '';
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
+
 // ─── Sidebar ────────────────────────────────────────────────────────────────
 function openSidebar() {
     document.getElementById('sidebar').classList.remove('-translate-x-full');

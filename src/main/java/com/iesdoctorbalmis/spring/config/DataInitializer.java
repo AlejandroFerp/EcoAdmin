@@ -43,6 +43,7 @@ public class DataInitializer implements ApplicationRunner {
     private final ListaLerRepository listaLerRepo;
     private final TrasladoService trasladoService;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Value("${ecoadmin.admin.email:admin@ecoadmin.com}")
     private String adminEmail;
@@ -56,7 +57,8 @@ public class DataInitializer implements ApplicationRunner {
     public DataInitializer(UsuarioRepository usuarioRepo, DireccionRepository direccionRepo,
             CentroRepository centroRepo, ResiduoRepository residuoRepo,
             TrasladoRepository trasladoRepo, ListaLerRepository listaLerRepo,
-            TrasladoService trasladoService, PasswordEncoder passwordEncoder) {
+            TrasladoService trasladoService, PasswordEncoder passwordEncoder,
+            org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.usuarioRepo = usuarioRepo;
         this.direccionRepo = direccionRepo;
         this.centroRepo = centroRepo;
@@ -65,6 +67,7 @@ public class DataInitializer implements ApplicationRunner {
         this.listaLerRepo = listaLerRepo;
         this.trasladoService = trasladoService;
         this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -190,6 +193,19 @@ public class DataInitializer implements ApplicationRunner {
         trasladoService.cambiarEstado(t5.getId(), EstadoTraslado.EN_TRANSITO, "Rumbo a Castellon", trans);
         trasladoService.cambiarEstado(t5.getId(), EstadoTraslado.ENTREGADO, "Recibido", trans);
         trasladoService.cambiarEstado(t5.getId(), EstadoTraslado.COMPLETADO, "Procesado y certificado", trans);
+
+        // Esparcir las fechas de creacion en el pasado para que los filtros de graficas (Hoy, 7 dias, 30 dias) funcionen
+        log.info("Ajustando fechas de creacion para simular historico (filtros de graficas)...");
+        try {
+            int[] diasAtras = { 0, 1, 3, 5, 10, 15, 25 };
+            List<Traslado> todos = trasladoRepo.findAll();
+            for (int i = 0; i < todos.size(); i++) {
+                int restar = diasAtras[i % diasAtras.length];
+                jdbcTemplate.update("UPDATE traslados SET fecha_creacion = DATEADD(DAY, ?, CURRENT_TIMESTAMP) WHERE id = ?", -restar, todos.get(i).getId());
+            }
+        } catch (Exception e) {
+            log.warn("No se pudieron ajustar las fechas historicas: {}", e.getMessage());
+        }
 
         log.info("Creados 7 residuos, 7 traslados con historial y fechas programadas");
     }

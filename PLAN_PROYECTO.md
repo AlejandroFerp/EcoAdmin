@@ -1,4 +1,4 @@
-﻿# EcoAdmin — Plan de Proyecto Intermodular DAM
+# EcoAdmin — Plan de Proyecto Intermodular DAM
 
 ## Descripcion del proyecto
 Plataforma de gestion de traslados de residuos peligrosos (baterias de litio).
@@ -86,7 +86,7 @@ Garantiza trazabilidad completa desde generacion hasta tratamiento final, con ge
 
 ---
 
-### FASE 16.5 — Deuda tecnica frontend (consolidacion CSS/Tailwind) [PENDIENTE]
+### FASE 16.5 — Deuda tecnica frontend (consolidacion CSS/Tailwind) [COMPLETADA]
 
 **Contexto:** el patron actual (Utility-First Tailwind + Component Extraction con clases `.ea-*`)
 es correcto y profesional, pero la implementacion esta a nivel de prototipo. Esta fase consolida
@@ -102,16 +102,16 @@ la capa de estilos sin cambiar el patron, antes de entrar en produccion real.
 - Comentarios "Phase 11.3" en codigo de produccion.
 
 **Tareas:**
-- [ ] 16.5.1 Instalar Tailwind como dependencia npm + build a un unico `app.css` minificado con purge/content scan (objetivo: pasar de ~3 MB a ~10 KB).
-- [ ] 16.5.2 Configurar `tailwind.config.js` con los tokens `--eco-*` integrados como utilidades (`bg-eco-primary`, `text-eco-danger`, etc.).
-- [ ] 16.5.3 Elegir UNA libreria de componentes (DaisyUI O Flowbite) y eliminar la otra.
-- [ ] 16.5.4 Mover el `<style>` inline de `main.html` a `app.css` (separar en bloques: tipografia, scrollbars, form-control-eco, kanban, nav).
-- [ ] 16.5.5 Unificar `styles.css` dentro de `app.css` y reemplazar colores hardcodeados por `var(--eco-*)` para que un cambio de token propague a todas las clases `.ea-*`.
-- [ ] 16.5.6 Cargar `app.css` desde `layouts/main.html` UNICAMENTE (eliminar carga duplicada en `header.html`).
-- [ ] 16.5.7 Eliminar reglas sobre tags globales (`table`, `td`, `.navbar`, `.jumbotron`, `footer`) o convertirlas en clases (`.ea-table`, `.ea-table-cell`).
-- [ ] 16.5.8 Decidir politica para `login.html` y `preview.html` (paginas standalone): o usan el layout o documentar por que no.
-- [ ] 16.5.9 Anadir lint de CSS (Stylelint con `stylelint-config-standard`) y un script `npm run css:build` integrado en el ciclo de Maven (frontend-maven-plugin) para que `mvn package` produzca el CSS final.
-- [ ] 16.5.10 Eliminar comentarios "Phase 11.3" y similares del codigo de produccion.
+- [x] 16.5.1 Instalar Tailwind como dependencia npm + build a un unico `app.css` minificado con purge/content scan (objetivo: pasar de ~3 MB a ~10 KB).
+- [x] 16.5.2 Configurar `tailwind.config.js` con los tokens `--eco-*` integrados como utilidades (`bg-eco-primary`, `text-eco-danger`, etc.).
+- [x] 16.5.3 Elegir UNA libreria de componentes (DaisyUI O Flowbite) y eliminar la otra.
+- [x] 16.5.4 Mover el `<style>` inline de `main.html` a `app.css` (separar en bloques: tipografia, scrollbars, form-control-eco, kanban, nav).
+- [x] 16.5.5 Unificar `styles.css` dentro de `app.css` y reemplazar colores hardcodeados por `var(--eco-*)` para que un cambio de token propague a todas las clases `.ea-*`.
+- [x] 16.5.6 Cargar `app.css` desde `layouts/main.html` UNICAMENTE (eliminar carga duplicada en `header.html`).
+- [x] 16.5.7 Eliminar reglas sobre tags globales (`table`, `td`, `.navbar`, `.jumbotron`, `footer`) o convertirlas en clases (`.ea-table`, `.ea-table-cell`).
+- [x] 16.5.8 Decidir politica para `login.html` y `preview.html` (paginas standalone): o usan el layout o documentar por que no.
+- [x] 16.5.9 Anadir lint de CSS (Stylelint con `stylelint-config-standard`) y un script `npm run css:build` integrado en el ciclo de Maven (frontend-maven-plugin) para que `mvn package` produzca el CSS final.
+- [x] 16.5.10 Eliminar comentarios "Phase 11.3" y similares del codigo de produccion.
 
 **Criterio de finalizacion:** un solo `<link>` a `app.css` minificado en `main.html`, sin `<script src="cdn.tailwindcss.com">`, sin `<style>` inline, una unica libreria de componentes, tokens unificados.
 
