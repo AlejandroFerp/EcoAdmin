@@ -54,6 +54,7 @@ public class SeguridadConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/login", "/webjars/**", "/css/**",
+                    "/logo.png", "/favicon.ico", "/images/**", "/js/**",
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()

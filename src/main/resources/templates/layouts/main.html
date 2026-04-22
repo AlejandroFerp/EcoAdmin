@@ -530,7 +530,12 @@
     <!-- User footer -->
     <div class="shrink-0 border-t border-white/10 p-4">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-bold shrink-0">A</div>
+            <img th:if="${usuarioActual != null and usuarioActual.fotoUrl != null and !#strings.isEmpty(usuarioActual.fotoUrl)}"
+                 th:src="${usuarioActual.fotoUrl}" alt="Foto"
+                 class="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-white/20">
+            <div th:unless="${usuarioActual != null and usuarioActual.fotoUrl != null and !#strings.isEmpty(usuarioActual.fotoUrl)}"
+                 class="w-9 h-9 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-bold shrink-0"
+                 th:text="${usuarioActual != null ? #strings.toUpperCase(#strings.substring(usuarioActual.nombre,0,1)) : 'A'}">A</div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-white truncate" sec:authentication="name">Admin</p>
                 <p class="text-[11px] text-slate-400">Administrador</p>
@@ -571,7 +576,12 @@
         </a>
         <div class="flex-1"></div>
         <div class="flex items-center gap-2.5 pl-4 border-l border-slate-200">
-            <div class="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-bold">A</div>
+            <img th:if="${usuarioActual != null and usuarioActual.fotoUrl != null and !#strings.isEmpty(usuarioActual.fotoUrl)}"
+                 th:src="${usuarioActual.fotoUrl}" alt="Foto"
+                 class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200">
+            <div th:unless="${usuarioActual != null and usuarioActual.fotoUrl != null and !#strings.isEmpty(usuarioActual.fotoUrl)}"
+                 class="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-bold"
+                 th:text="${usuarioActual != null ? #strings.toUpperCase(#strings.substring(usuarioActual.nombre,0,1)) : 'A'}">A</div>
             <span class="hidden sm:block text-sm font-medium text-slate-700" sec:authentication="name">Admin</span>
         </div>
     </header>

@@ -4,7 +4,7 @@
 Plataforma de gestion de traslados de residuos peligrosos (baterias de litio).
 Garantiza trazabilidad completa desde generacion hasta tratamiento final, con generacion automatica de documentos legales.
 
-**Stack:** Spring Boot 4.0.0 + SQLite (dev) / H2 (test) / PostgreSQL (prod) + Thymeleaf + DaisyUI/Tailwind CSS
+**Stack:** Spring Boot 4.0.5 / Java 25 + SQLite (dev) / H2 (test) / PostgreSQL (prod) + Thymeleaf + Tailwind CSS (CDN)
 **Referencia:** [myshipment (PHP/Laravel)](https://github.com/AlejandroFerp/myshipment) para modelo de datos y acciones
 
 ---
@@ -86,6 +86,39 @@ Garantiza trazabilidad completa desde generacion hasta tratamiento final, con ge
 
 ---
 
+### FASE 16.5 — Deuda tecnica frontend (consolidacion CSS/Tailwind) [PENDIENTE]
+
+**Contexto:** el patron actual (Utility-First Tailwind + Component Extraction con clases `.ea-*`)
+es correcto y profesional, pero la implementacion esta a nivel de prototipo. Esta fase consolida
+la capa de estilos sin cambiar el patron, antes de entrar en produccion real.
+
+**Estado actual a corregir:**
+- Tailwind cargado por CDN (`cdn.tailwindcss.com`) — el propio Tailwind lo marca como "not for production".
+- Tres librerias de componentes simultaneas (Tailwind + DaisyUI + Flowbite) con solapamientos.
+- ~750 lineas de `<style>` inline en `templates/layouts/main.html`.
+- Doble sistema sin integrar: tokens `--eco-*` en `app.css` + clases `.ea-*` en `styles.css` con colores hardcodeados (`#3b82f6` en vez de `var(--eco-primary)`).
+- `styles.css` cargado solo desde `header.html`, no desde el `layout(...)` principal — paginas inconsistentes.
+- Reglas globales sobre tags genericos (`table { border: 0; }`, `td { font-size: 16px; }`) afectan todo, incluso terceros.
+- Comentarios "Phase 11.3" en codigo de produccion.
+
+**Tareas:**
+- [ ] 16.5.1 Instalar Tailwind como dependencia npm + build a un unico `app.css` minificado con purge/content scan (objetivo: pasar de ~3 MB a ~10 KB).
+- [ ] 16.5.2 Configurar `tailwind.config.js` con los tokens `--eco-*` integrados como utilidades (`bg-eco-primary`, `text-eco-danger`, etc.).
+- [ ] 16.5.3 Elegir UNA libreria de componentes (DaisyUI O Flowbite) y eliminar la otra.
+- [ ] 16.5.4 Mover el `<style>` inline de `main.html` a `app.css` (separar en bloques: tipografia, scrollbars, form-control-eco, kanban, nav).
+- [ ] 16.5.5 Unificar `styles.css` dentro de `app.css` y reemplazar colores hardcodeados por `var(--eco-*)` para que un cambio de token propague a todas las clases `.ea-*`.
+- [ ] 16.5.6 Cargar `app.css` desde `layouts/main.html` UNICAMENTE (eliminar carga duplicada en `header.html`).
+- [ ] 16.5.7 Eliminar reglas sobre tags globales (`table`, `td`, `.navbar`, `.jumbotron`, `footer`) o convertirlas en clases (`.ea-table`, `.ea-table-cell`).
+- [ ] 16.5.8 Decidir politica para `login.html` y `preview.html` (paginas standalone): o usan el layout o documentar por que no.
+- [ ] 16.5.9 Anadir lint de CSS (Stylelint con `stylelint-config-standard`) y un script `npm run css:build` integrado en el ciclo de Maven (frontend-maven-plugin) para que `mvn package` produzca el CSS final.
+- [ ] 16.5.10 Eliminar comentarios "Phase 11.3" y similares del codigo de produccion.
+
+**Criterio de finalizacion:** un solo `<link>` a `app.css` minificado en `main.html`, sin `<script src="cdn.tailwindcss.com">`, sin `<style>` inline, una unica libreria de componentes, tokens unificados.
+
+**Patron objetivo (sin cambiar):** Utility-First con Component Extraction (estandar Tailwind, oficialmente recomendado para apps que crecen mas alla del prototipo).
+
+---
+
 ## Orden de ejecucion
 
 | Prioridad | Fase | Justificacion |
@@ -144,12 +177,52 @@ com.iesdoctorbalmis.spring
 ---
 
 ## Notas tecnicas
-- Spring Boot 4.0.0 / Java 21 (Temurin 21.0.10)
+- Spring Boot 4.0.5 / Java 25 (JDK en `C:\Users\afp5\.jdk\jdk-25`)
 - Spring Security 7.0.0, thymeleaf-extras-springsecurity6 (compatible)
 - SQLite (dev), H2 (test), PostgreSQL (prod)
 - @AutoConfigureMockMvc NO existe en SB4: usar MockMvcBuilders.webAppContextSetup()
-- Frontend: DaisyUI 4 + Tailwind CSS (CDN) + Flowbite + HTMX
+- Frontend: Tailwind CSS (CDN) + FullCalendar 6.1.15 + HTMX
 - OpenPDF, ZXing, spring-boot-starter-mail, springdoc-openapi 2.8.6
+- Jackson 3.x (parte de SB4): serializa LocalDateTime como ISO-8601 por defecto (no como arrays)
+
+---
+
+## Observaciones: Bugs recurrentes y precauciones
+
+### 1. Variable de entorno ADMIN_PASSWORD
+**Bug:** El DataInitializer no crea datos de seed si `ADMIN_PASSWORD` esta vacia. Esto deja la BD completamente vacia y el login falla sin mensaje claro.
+**Solucion:** Se agrego default `admin123` en application.properties: `ecoadmin.admin.password=${ADMIN_PASSWORD:admin123}`
+**Precaucion:** En produccion, SIEMPRE definir ADMIN_PASSWORD como variable de entorno real.
+
+### 2. Start-Process y JAVA_HOME / cwd en PowerShell
+**Bug:** `Start-Process -FilePath ".\mvnw.cmd"` falla si el cwd del shell no es el directorio del proyecto. Tambien, Start-Process hereda env vars del proceso padre, pero NO si se usa `-Environment` (no existe en PS 5.1).
+**Solucion:** Usar rutas absolutas en `-FilePath` y siempre `cd` al directorio correcto antes. Setear `$env:JAVA_HOME` y `$env:Path` ANTES de llamar Start-Process.
+**Precaucion:** Compilar y ejecutar en el mismo shell donde se setearon las env vars. Verificar cwd con `pwd` si Start-Process da "archivo no encontrado".
+
+### 3. UnsupportedClassVersionError (class 69 vs 65)
+**Bug:** Compilar con JDK 25 (class file 69) y ejecutar con JDK 21 (class file 65) produce error al arrancar.
+**Solucion:** Asegurar que JAVA_HOME apunta a JDK 25 tanto para compilacion como para ejecucion.
+**Precaucion:** Start-Process hereda JAVA_HOME del proceso padre. Si se cambio PATH pero no JAVA_HOME en el shell hijo, puede usar otra version de Java.
+
+### 4. Jackson 3.x: `write-dates-as-timestamps` no existe
+**Bug:** En Spring Boot 4.x + Jackson 3.x, `spring.jackson.serialization.write-dates-as-timestamps=false` causa error fatal porque `SerializationFeature.WRITE_DATES_AS_TIMESTAMPS` no existe.
+**Solucion:** Jackson 3.x serializa LocalDateTime como ISO-8601 string por defecto; no hace falta la propiedad. Si los datos llegan como arrays `[y,m,d,h,m,s]`, convertir en JS con un helper `toISO(val)`.
+**Precaucion:** No copiar propiedades Jackson de proyectos Spring Boot 2.x/3.x sin verificar compatibilidad con SB4.
+
+### 5. FullCalendar events callback signature
+**Bug:** Si se pasa `events: miFuncion` donde `miFuncion` retorna un array, FullCalendar 6.x no lo llama correctamente porque espera `function(fetchInfo, successCallback, failureCallback)`.
+**Solucion:** Wrappear: `events: function(fetchInfo, successCb, failureCb) { successCb(miArray()); }`
+**Precaucion:** Siempre usar la forma con callbacks cuando la fuente de datos es local/sincrona.
+
+### 6. Thymeleaf cache en desarrollo
+**Bug:** Cambios en templates HTML no se reflejan sin reiniciar si el servidor uso la version compilada anterior.
+**Solucion:** `spring.thymeleaf.cache=false` (ya configurado). Si persiste, recompilar con `mvnw compile`.
+**Precaucion:** Verificar que el target/classes tiene la version actualizada del template.
+
+### 7. Archivo login.html duplicado
+**Bug:** Al recrear login.html, el contenido viejo se pego al nuevo resultando en 2 documentos HTML consecutivos en el mismo archivo. El navegador renderizo ambos forms.
+**Solucion:** Verificar longitud del archivo despues de crear/editar. Truncar si tiene contenido sobrante.
+**Precaucion:** Al reescribir un archivo completo, verificar que el resultado tiene exactamente 1 estructura HTML.
 
 ---
 
@@ -192,6 +265,17 @@ No se elimina funcionalidad, se reorganiza y renombra.
 - [x] 17.6 Crear pagina vacia con placeholder para Rutas, Negocio, Mis Datos
 - [x] 17.7 Indicador de pagina activa en sidebar (clase `active` por ruta)
 - [ ] 17.8 Breadcrumb en cabecera: Principal > Recogidas > Detalle
+
+#### Mejoras adicionales Fase 17 (implementadas)
+- [x] 17.9 Vista Kanban de traslados (columnas por estado, drag visual)
+- [x] 17.10 Vista Calendario de traslados (FullCalendar 6.1.15, integrada como 3ra pestaña)
+       - Chips de filtro por estado (activar/desactivar)
+       - Buscador global filtra las 3 vistas (lista, kanban, calendario)
+       - Eventos coloreados por estado
+- [x] 17.11 Campos `fechaProgramadaInicio` / `fechaProgramadaFin` en Traslado (para calendario)
+- [x] 17.12 Campo `fechaUltimoCambioEstado` en Traslado (denormalizado, actualizado en cambiarEstado)
+- [x] 17.13 Login rediseñado estilo MaterialDark (fondo gradiente verde ecologista, card glassmorphism, inputs Material con floating labels)
+- [x] 17.14 Default `admin123` para ADMIN_PASSWORD en dev (evita seed vacio)
 
 **Impacto en backend:** Minimo. Solo anadir endpoints de vista en ZonaPublicaController.
 
@@ -671,3 +755,4 @@ El temario cubre tres formas distintas de acceder a datos, con roles muy distint
 **Consejo:** usa el emulador de Android Studio apuntando a `http://10.0.2.2:8080` para
 conectar con el servidor Spring Boot corriendo en tu maquina local (10.0.2.2 es el alias
 del host en el emulador Android).
+

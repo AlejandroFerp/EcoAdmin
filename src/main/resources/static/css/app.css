@@ -432,3 +432,12 @@ body.dark-mode .modal-tab:hover { color: var(--eco-text-muted); }
 body.dark-mode .doc-item { border-color: var(--eco-border); }
 body.dark-mode .doc-item:hover { background-color: rgba(59,130,246,.08); border-color: #3b82f6; }
 body.dark-mode .doc-item__title { color: var(--eco-text); }
+
+/* ---------- SweetAlert2 overrides ---------- */
+.swal2-styled.swal2-confirm { background-color: #1a6b3c !important; background-image: none !important; color: #fff !important; box-shadow: 0 2px 6px rgba(26,107,60,0.35) !important; border: none !important; }
+.swal2-styled.swal2-confirm:hover { background-color: #145a32 !important; }
+.swal2-styled.swal2-cancel { background-color: #e2e8f0 !important; background-image: none !important; color: #334155 !important; border: none !important; }
+.swal2-styled.swal2-cancel:hover { background-color: #cbd5e1 !important; }
+.swal2-styled.swal2-deny { background-color: #ef4444 !important; background-image: none !important; color: #fff !important; border: none !important; }
+.swal2-styled.swal2-deny:hover { background-color: #dc2626 !important; }
+

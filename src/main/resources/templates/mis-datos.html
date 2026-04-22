@@ -31,15 +31,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                 </div>
-                <!-- Botón lápiz para cambiar foto -->
-                <button type="button" onclick="document.getElementById('fileFoto').click()"
-                        title="Cambiar foto"
-                        class="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg border-2 border-white flex items-center justify-center transition-colors">
+                <!-- Label-as-button para abrir el selector (mas fiable que onclick programatico) -->
+                <label for="fileFoto" title="Cambiar foto"
+                       class="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg border-2 border-white flex items-center justify-center transition-colors cursor-pointer">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                </button>
-                <input type="file" id="fileFoto" accept="image/*" class="hidden" onchange="onFotoSeleccionada(event)">
+                </label>
+                <input type="file" id="fileFoto" accept="image/*" class="sr-only" onchange="onFotoSeleccionada(event)">
                 <!-- Botón borrar foto (solo visible si hay foto) -->
                 <button type="button" id="btnBorrarFoto" onclick="borrarFoto()" title="Quitar foto"
                         class="hidden absolute top-1 right-1 w-7 h-7 rounded-full bg-white hover:bg-red-50 text-red-500 shadow border border-slate-200 flex items-center justify-center transition-colors">
@@ -160,9 +159,36 @@
         </div>
     </div>
 </main>
+
+<!-- MODAL CROP FOTO PERFIL (circular) -->
+<div id="modalCropFoto" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+            <h3 class="text-base font-bold text-slate-800">Centra tu foto</h3>
+            <button type="button" onclick="cerrarCropFoto()" class="text-slate-400 hover:text-slate-700 text-xl leading-none">&times;</button>
+        </div>
+        <div class="p-5">
+            <p class="text-xs text-slate-500 mb-3">Arrastra y haz zoom para encuadrar tu rostro dentro del circulo.</p>
+            <div class="bg-slate-900 rounded-lg overflow-hidden" style="max-height:60vh;">
+                <img id="cropFotoImg" alt="" style="display:block;max-width:100%;">
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 px-5 py-3 bg-slate-50 border-t border-slate-200">
+            <button type="button" onclick="cerrarCropFoto()" class="btn-secondary">Cancelar</button>
+            <button type="button" onclick="aplicarCropFoto()" class="btn-primary">Aplicar</button>
+        </div>
+    </div>
+</div>
 </th:block>
 
 <th:block th:fragment="pageScripts">
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<style>
+  /* Mascara circular sobre el cropper para el avatar */
+  #modalCropFoto .cropper-view-box,
+  #modalCropFoto .cropper-face { border-radius: 50%; }
+</style>
 <script>
 const API = '/api/perfil';
 
@@ -217,7 +243,9 @@ function actualizarAvatar() {
     }
 }
 
-// Lee la imagen seleccionada, la redimensiona a 256x256 y la guarda como dataURL
+// Lee la imagen seleccionada y la abre en el cropper para que el usuario la centre
+let cropperFoto = null;
+
 function onFotoSeleccionada(ev) {
     const file = ev.target.files && ev.target.files[0];
     ev.target.value = ''; // permite reseleccionar el mismo fichero
@@ -232,27 +260,50 @@ function onFotoSeleccionada(ev) {
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            // Recortar a cuadrado central y redimensionar a 256x256
-            const size = 256;
-            const min = Math.min(img.width, img.height);
-            const sx = (img.width - min) / 2;
-            const sy = (img.height - min) / 2;
-            const canvas = document.createElement('canvas');
-            canvas.width = size; canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-            document.getElementById('fFotoUrl').value = dataUrl;
-            actualizarAvatar();
-        };
-        img.onerror = function() {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo procesar la imagen.' });
-        };
-        img.src = e.target.result;
+        abrirCropFoto(e.target.result);
     };
     reader.readAsDataURL(file);
+}
+
+function abrirCropFoto(dataUrl) {
+    const modal = document.getElementById('modalCropFoto');
+    const img = document.getElementById('cropFotoImg');
+    img.src = dataUrl;
+    modal.classList.remove('hidden');
+    if (cropperFoto) { cropperFoto.destroy(); cropperFoto = null; }
+    // Esperar a que el modal sea visible para que Cropper calcule dimensiones
+    setTimeout(function() {
+        cropperFoto = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.85,
+            background: true,
+            movable: true,
+            zoomable: true,
+            zoomOnWheel: true,
+            zoomOnTouch: true,
+            scalable: false,
+            rotatable: false,
+            cropBoxResizable: true,
+            cropBoxMovable: true,
+            toggleDragModeOnDblclick: true
+        });
+    }, 50);
+}
+
+function cerrarCropFoto() {
+    if (cropperFoto) { cropperFoto.destroy(); cropperFoto = null; }
+    document.getElementById('modalCropFoto').classList.add('hidden');
+}
+
+function aplicarCropFoto() {
+    if (!cropperFoto) return;
+    const canvas = cropperFoto.getCroppedCanvas({ width: 256, height: 256, imageSmoothingQuality: 'high' });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    document.getElementById('fFotoUrl').value = dataUrl;
+    actualizarAvatar();
+    cerrarCropFoto();
 }
 
 function borrarFoto() {
