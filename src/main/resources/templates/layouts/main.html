@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es"
       th:fragment="layout(pageId, pageTitle, pageHeading, pageContent, pageScripts)"
       xmlns:th="http://www.thymeleaf.org"
@@ -14,10 +14,25 @@
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        /* ─── Tipografia con caracter ─────────────────────────────── */
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body, * { font-family: 'Inter', sans-serif; }
+        body {
+            font-weight: 450;
+            letter-spacing: -0.005em;
+            font-feature-settings: 'cv11','ss01','ss03';
+            color: #0f172a;
+        }
+        h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; font-weight: 700; }
+        .text-xs, .text-\[11px\], .text-\[10px\] { letter-spacing: 0; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        /* Ocultar scrollbar horizontal en zonas con overflow-x-auto pero mantener funcionalidad */
+        .overflow-x-auto { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+        .overflow-x-auto:hover { scrollbar-color: #cbd5e1 transparent; }
+        .overflow-x-auto::-webkit-scrollbar { height: 0px; }
+        .overflow-x-auto:hover::-webkit-scrollbar { height: 6px; }
         .nav-group-body { max-height: 500px; overflow: hidden; transition: max-height 0.25s ease; }
         /* Evita scroll horizontal a nivel de pagina; las tablas tienen su propio overflow-x-auto */
         html, body { overflow-x: clip; }
@@ -52,6 +67,151 @@
             padding-right: 2rem;
         }
         textarea.form-control-eco { resize: vertical; min-height: 64px; }
+        /* Checkboxes redondeados y suaves (anula el estilo afilado de DaisyUI) */
+        input[type="checkbox"].checkbox,
+        input[type="checkbox"].batch-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+            position: relative;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+        input[type="checkbox"].checkbox.checkbox-xs,
+        input[type="checkbox"].batch-check { width: 15px; height: 15px; border-radius: 5px; }
+        input[type="checkbox"].checkbox:hover,
+        input[type="checkbox"].batch-check:hover {
+            border-color: #94a3b8;
+            box-shadow: 0 0 0 4px rgba(148,163,184,0.12);
+        }
+        input[type="checkbox"].checkbox:focus-visible,
+        input[type="checkbox"].batch-check:focus-visible {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+        }
+        input[type="checkbox"].checkbox:checked,
+        input[type="checkbox"].batch-check:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 1px 3px rgba(59,130,246,0.35);
+        }
+        input[type="checkbox"].checkbox:checked::after,
+        input[type="checkbox"].batch-check:checked::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 45%;
+            width: 4px; height: 8px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        input[type="checkbox"].checkbox:active,
+        input[type="checkbox"].batch-check:active { transform: scale(0.92); }
+        input[type="checkbox"].checkbox:indeterminate,
+        input[type="checkbox"].batch-check:indeterminate {
+            background-color: #3b82f6; border-color: #3b82f6;
+        }
+        input[type="checkbox"].checkbox:indeterminate::after,
+        input[type="checkbox"].batch-check:indeterminate::after {
+            content: ''; position: absolute; left: 3px; right: 3px; top: 50%;
+            height: 2px; background: #fff; border-radius: 1px; transform: translateY(-50%);
+        }
+        body.dark-mode input[type="checkbox"].checkbox,
+        body.dark-mode input[type="checkbox"].batch-check {
+            background-color: #1e293b; border-color: #475569;
+        }
+        body.dark-mode input[type="checkbox"].checkbox:hover,
+        body.dark-mode input[type="checkbox"].batch-check:hover {
+            border-color: #64748b; box-shadow: 0 0 0 4px rgba(148,163,184,0.18);
+        }
+        body.dark-mode input[type="checkbox"].checkbox:checked,
+        body.dark-mode input[type="checkbox"].batch-check:checked {
+            background-color: #3b82f6; border-color: #3b82f6;
+        }
+        /* Anular el tick SVG por defecto de DaisyUI (evita doble efecto) */
+        input[type="checkbox"].checkbox:checked,
+        input[type="checkbox"].batch-check:checked,
+        input[type="checkbox"].checkbox:indeterminate,
+        input[type="checkbox"].batch-check:indeterminate {
+            background-image: none !important;
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+        }
+
+        /* ─── Botones suaves estilo pastel ───────────────────────────── */
+        /* Suaviza el .btn de DaisyUI: bordes redondeados y sombra sutil */
+        .btn { border-radius: 0.625rem; transition: background-color .15s ease, box-shadow .15s ease, transform .05s ease; }
+        .btn:active { transform: scale(0.98); }
+        /* Botón primario (Anadir/Nuevo X): sombra azul suave, no plana */
+        .btn.bg-\[\#3b82f6\] {
+            box-shadow: 0 1px 2px rgba(59,130,246,0.18), 0 4px 12px -2px rgba(59,130,246,0.28) !important;
+        }
+        .btn.bg-\[\#3b82f6\]:hover {
+            box-shadow: 0 2px 4px rgba(37,99,235,0.22), 0 6px 16px -2px rgba(37,99,235,0.34) !important;
+            transform: translateY(-1px);
+        }
+        /* Botón outline (los "+") más suave */
+        .btn.btn-outline { box-shadow: 0 1px 2px rgba(15,23,42,0.04); background-color: #fff; }
+        .btn.btn-outline:hover { background-color: #f8fafc; box-shadow: 0 1px 3px rgba(15,23,42,0.08); }
+
+        /* ─── Paginación armonizada ──────────────────────────────────── */
+        #pgBotones.join { display: inline-flex; gap: 4px; border-radius: 0.625rem; }
+        #pgBotones .btn,
+        #pgBotones .join-item {
+            border-radius: 0.5rem !important;
+            border: 1px solid #e2e8f0 !important;
+            background-color: #fff;
+            color: #475569;
+            font-weight: 500;
+            min-width: 32px; height: 32px; padding: 0 10px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+            transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .05s ease;
+        }
+        #pgBotones .btn:hover:not([disabled]),
+        #pgBotones .join-item:hover:not([disabled]) {
+            background-color: #f1f5f9; color: #1e293b;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+        }
+        #pgBotones .btn:active:not([disabled]) { transform: scale(0.95); }
+        #pgBotones .btn[disabled],
+        #pgBotones .join-item[disabled] { opacity: .45; cursor: not-allowed; }
+        /* Página activa: pastilla azul suave con sombra difusa */
+        #pgBotones .btn.bg-\[\#3b82f6\],
+        #pgBotones .join-item.bg-\[\#3b82f6\] {
+            background-color: #3b82f6 !important;
+            color: #fff !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 1px 2px rgba(59,130,246,0.25), 0 4px 10px -2px rgba(59,130,246,0.35) !important;
+        }
+        body.dark-mode #pgBotones .btn,
+        body.dark-mode #pgBotones .join-item {
+            background-color: #1e293b; color: #cbd5e1; border-color: #334155 !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        body.dark-mode #pgBotones .btn:hover:not([disabled]),
+        body.dark-mode #pgBotones .join-item:hover:not([disabled]) {
+            background-color: #273548; color: #f1f5f9;
+        }
+        body.dark-mode #pgBotones .btn.bg-\[\#3b82f6\],
+        body.dark-mode #pgBotones .join-item.bg-\[\#3b82f6\] {
+            background-color: #3b82f6 !important; color: #fff !important;
+        }
+
+        /* Combobox FK reutilizable */
+        .combobox-list { scrollbar-width: thin; }
+        .combobox-list li { transition: background-color 0.1s ease; }
+        body.dark-mode .combobox-list { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0; }
+        body.dark-mode .combobox-list li:hover { background-color: #273548 !important; }
+        body.dark-mode .combobox-list li .text-slate-700 { color: #e2e8f0 !important; }
+        body.dark-mode .combobox-list li .text-slate-500 { color: #94a3b8 !important; }
+        body.dark-mode .combobox-list li .text-slate-400 { color: #64748b !important; }
         /* Modal animation */
         .modal-eco { transition: opacity 0.18s ease, transform 0.18s ease; }
 
@@ -60,16 +220,46 @@
         body.dark-mode .bg-white { background-color: #1e293b !important; }
         body.dark-mode .bg-\[\#f1f5f9\] { background-color: #0f172a !important; }
         body.dark-mode header { background-color: #1e293b !important; border-color: #334155 !important; }
+        body.dark-mode .text-slate-900 { color: #f8fafc !important; }
         body.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
         body.dark-mode .text-slate-700 { color: #cbd5e1 !important; }
         body.dark-mode .text-slate-600 { color: #94a3b8 !important; }
         body.dark-mode .text-slate-500 { color: #64748b !important; }
+        body.dark-mode .text-slate-400 { color: #64748b !important; }
+        body.dark-mode .text-black { color: #f1f5f9 !important; }
+        /* Headings y cualquier texto que no haya recibido clase explicita */
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+        body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 { color: #f1f5f9 !important; }
+        body.dark-mode label { color: #cbd5e1 !important; }
+        body.dark-mode .modal-header, body.dark-mode .card-title { color: #f1f5f9 !important; }
         body.dark-mode .border-slate-200 { border-color: #334155 !important; }
         body.dark-mode .border-slate-100 { border-color: #1e293b !important; }
         body.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
         body.dark-mode table thead tr { background-color: #0f172a !important; }
         body.dark-mode table tbody tr:hover { background-color: #1e293b !important; }
         body.dark-mode table tbody tr { border-color: #334155 !important; }
+        /* Forzar fondo uniforme en TODAS las filas (anula el zebra de DaisyUI/Flowbite) */
+        body.dark-mode table,
+        body.dark-mode table tbody,
+        body.dark-mode table tbody tr,
+        body.dark-mode table tbody tr:nth-child(even),
+        body.dark-mode table tbody tr:nth-child(odd),
+        body.dark-mode table td,
+        body.dark-mode table th {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode table thead th { background-color: #0f172a !important; color: #cbd5e1 !important; }
+        body.dark-mode table tbody tr:hover td { background-color: #273548 !important; }
+        /* Kanban dark mode: tinte oscuro por estado, manteniendo identidad de color */
+        body.dark-mode .kanban-col[data-estado="PENDIENTE"]   { background-color: #3a2e0f !important; border-color: #6b5012 !important; }
+        body.dark-mode .kanban-col[data-estado="EN_TRANSITO"] { background-color: #142a4a !important; border-color: #1e4a82 !important; }
+        body.dark-mode .kanban-col[data-estado="ENTREGADO"]   { background-color: #2c1f4a !important; border-color: #5a3fa8 !important; }
+        body.dark-mode .kanban-col[data-estado="COMPLETADO"]  { background-color: #0f3a2c !important; border-color: #166848 !important; }
+        body.dark-mode .kanban-card { background-color: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+        body.dark-mode .kanban-card * { color: #e2e8f0 !important; }
+        body.dark-mode .kanban-card .text-slate-400 { color: #94a3b8 !important; }
+        body.dark-mode .kanban-col:empty::before { color: #64748b; }
         body.dark-mode .form-control-eco { background-color: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important; }
         body.dark-mode .form-control-eco:focus { border-color: #3b82f6 !important; }
         body.dark-mode .bg-slate-50 { background-color: #1e293b !important; }
@@ -90,6 +280,143 @@
         body.dark-mode .rounded-2xl.bg-white,
         body.dark-mode .rounded-xl.bg-white,
         body.dark-mode .rounded-lg.bg-white { background-color: #1e293b !important; }
+
+        /* ─── Pill de estado unificada ───────────────────────────── */
+        .estado-pill {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .estado-pill .dot {
+            width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px;
+        }
+        .estado-pill[data-estado='PENDIENTE']    { background:#fef3c7; color:#b45309; }
+        .estado-pill[data-estado='PENDIENTE'] .dot    { background:#f59e0b; }
+        .estado-pill[data-estado='EN_TRANSITO']  { background:#dbeafe; color:#1d4ed8; }
+        .estado-pill[data-estado='EN_TRANSITO'] .dot  { background:#3b82f6; }
+        .estado-pill[data-estado='ENTREGADO']    { background:#ede9fe; color:#6d28d9; }
+        .estado-pill[data-estado='ENTREGADO'] .dot    { background:#8b5cf6; }
+        .estado-pill[data-estado='COMPLETADO']   { background:#d1fae5; color:#047857; }
+        .estado-pill[data-estado='COMPLETADO'] .dot   { background:#10b981; }
+        .estado-pill[data-estado='CANCELADO']    { background:#fee2e2; color:#b91c1c; }
+        .estado-pill[data-estado='CANCELADO'] .dot    { background:#ef4444; }
+
+        /* ─── Tag pill genérica (rol, tipo, etc.) ─────────────────── */
+        .tag-pill {
+            display: inline-flex; align-items: center;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .tag-pill .dot { width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px; }
+        .tag-pill[data-color='slate']   { background:#f1f5f9; color:#475569; }
+        .tag-pill[data-color='slate']   .dot { background:#94a3b8; }
+        .tag-pill[data-color='blue']    { background:#dbeafe; color:#1d4ed8; }
+        .tag-pill[data-color='blue']    .dot { background:#3b82f6; }
+        .tag-pill[data-color='sky']     { background:#e0f2fe; color:#0369a1; }
+        .tag-pill[data-color='sky']     .dot { background:#0ea5e9; }
+        .tag-pill[data-color='indigo']  { background:#e0e7ff; color:#4338ca; }
+        .tag-pill[data-color='indigo']  .dot { background:#6366f1; }
+        .tag-pill[data-color='violet']  { background:#ede9fe; color:#6d28d9; }
+        .tag-pill[data-color='violet']  .dot { background:#8b5cf6; }
+        .tag-pill[data-color='emerald'] { background:#d1fae5; color:#047857; }
+        .tag-pill[data-color='emerald'] .dot { background:#10b981; }
+        .tag-pill[data-color='teal']    { background:#ccfbf1; color:#0f766e; }
+        .tag-pill[data-color='teal']    .dot { background:#14b8a6; }
+        .tag-pill[data-color='amber']   { background:#fef3c7; color:#b45309; }
+        .tag-pill[data-color='amber']   .dot { background:#f59e0b; }
+        .tag-pill[data-color='orange']  { background:#ffedd5; color:#c2410c; }
+        .tag-pill[data-color='orange']  .dot { background:#f97316; }
+        .tag-pill[data-color='rose']    { background:#ffe4e6; color:#be123c; }
+        .tag-pill[data-color='rose']    .dot { background:#f43f5e; }
+        .tag-pill[data-color='red']     { background:#fee2e2; color:#b91c1c; }
+        .tag-pill[data-color='red']     .dot { background:#ef4444; }
+
+        /* ─── Selects nativos con estilo moderno (sin librería) ──────────────
+           Aplicado SOLO a <select>. Los <input>/<textarea> con .form-control-eco
+           reciben el estilo base sin flecha. */
+        select.js-choice,
+        select.form-control-eco {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 32px 6px 12px;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            line-height: 1.4;
+            transition: border-color .15s ease, box-shadow .15s ease;
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
+            cursor: pointer;
+        }
+        /* Estilo base para inputs/textareas con .form-control-eco — SIN flecha */
+        input.form-control-eco,
+        textarea.form-control-eco {
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            color: #1e293b;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.625rem;
+            line-height: 1.4;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        textarea.form-control-eco { min-height: 76px; padding: 8px 12px; resize: vertical; }
+        select.js-choice:focus,
+        select.form-control-eco:focus,
+        input.form-control-eco:focus,
+        textarea.form-control-eco:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        }
+        select.js-choice:disabled,
+        select.form-control-eco:disabled,
+        input.form-control-eco:disabled,
+        textarea.form-control-eco:disabled {
+            background-color: #f8fafc;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        /* Datalist en input[list]: escondemos la flechita nativa de WebKit
+           que aparece superpuesta y queda como "globo de cómic". */
+        input[list]::-webkit-calendar-picker-indicator {
+            display: none !important;
+            opacity: 0;
+        }
+        body.dark-mode select.js-choice,
+        body.dark-mode select.form-control-eco {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'><path fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/></svg>");
+        }
+        body.dark-mode input.form-control-eco,
+        body.dark-mode textarea.form-control-eco {
+            background-color: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+        /* Evita el salto horizontal al abrir/cerrar modales (gutter de scrollbar) */
+        html { scrollbar-gutter: stable; }
     </style>
 </head>
 <body class="bg-[#f1f5f9] min-h-screen" data-theme="light">
@@ -97,15 +424,15 @@
 <!-- SIDEBAR -->
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[260px] bg-[#1e2a3b] flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
 
-    <!-- Logo -->
-    <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10 shrink-0">
+    <!-- Logo (clicable: vuelve al dashboard) -->
+    <a th:href="@{/index}" class="flex items-center gap-3 px-6 py-5 border-b border-white/10 shrink-0 hover:bg-white/5 transition-colors">
         <div class="w-9 h-9 rounded-xl bg-[#3b82f6] flex items-center justify-center text-white shadow-lg">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
         </div>
-        <span class="font-bold text-white text-[15px]">EcoAdmin</span>
-    </div>
+        <span class="font-bold text-white text-[15px] tracking-tight">EcoAdmin</span>
+    </a>
 
     <!-- Nav -->
     <nav class="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
@@ -117,17 +444,17 @@
             <svg id="grp-principal-ic" class="w-3 h-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div id="grp-principal" class="nav-group-body space-y-0.5 pl-1">
-            <a th:href="@{/public/index}"
+            <a th:href="@{/index}"
                th:class="${pageId == 'index'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
                 Dashboard
             </a>
-            <a th:href="@{/public/traslados}"
+            <a th:href="@{/traslados}"
                th:class="${pageId == 'traslados'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                 Recogidas
             </a>
-            <a th:href="@{/public/rutas}"
+            <a th:href="@{/rutas}"
                th:class="${pageId == 'rutas'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                 Rutas
@@ -135,7 +462,7 @@
         </div>
 
         <!-- ALMACÉN -->
-        <a th:href="@{/public/residuos}"
+        <a th:href="@{/residuos}"
            th:class="${pageId == 'residuos'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all mt-1' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all mt-1'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
             Residuos
@@ -148,17 +475,17 @@
             <svg id="grp-contactos-ic" class="w-3 h-3 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </button>
         <div id="grp-contactos" class="nav-group-body space-y-0.5 pl-1">
-            <a th:href="@{/public/centros}"
+            <a th:href="@{/centros}"
                th:class="${pageId == 'centros'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 Centros
             </a>
-            <a th:href="@{/public/usuarios}"
+            <a th:href="@{/usuarios}"
                th:class="${pageId == 'usuarios'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m8-4a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 Usuarios
             </a>
-            <a th:href="@{/public/direcciones}"
+            <a th:href="@{/direcciones}"
                th:class="${pageId == 'direcciones'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
                 <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 Direcciones
@@ -166,29 +493,29 @@
         </div>
 
         <!-- NEGOCIO -->
-        <a th:href="@{/public/negocio}"
+        <a th:href="@{/negocio}"
            th:class="${pageId == 'negocio'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all mt-1' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all mt-1'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             Negocio
         </a>
 
         <!-- MIS DATOS -->
-        <a th:href="@{/public/mis-datos}"
+        <a th:href="@{/mis-datos}"
            th:class="${pageId == 'mis-datos'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Mis Datos
         </a>
 
         <!-- DOCUMENTOS -->
-        <a th:href="@{/public/documentos}"
+        <a th:href="@{/documentos}"
            th:class="${pageId == 'documentos'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all mt-1' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all mt-1'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Documentos
         </a>
 
         <!-- INFORMES -->
-        <a th:href="@{/public/index}" title="Ver estadísticas en el dashboard"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+        <a th:href="@{/informes}" title="Informes y exportaciones"
+           th:class="${pageId == 'informes'} ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold bg-[#3b82f6] text-white shadow-md transition-all' : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-all'">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Informes
         </a>
@@ -234,9 +561,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
-        <div class="flex items-center gap-2 text-sm text-slate-500">
+        <a th:href="@{/index}" class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors" title="Ir al dashboard">
             <span class="font-semibold text-slate-800" th:text="${pageHeading}">EcoAdmin</span>
-        </div>
+        </a>
         <div class="flex-1"></div>
         <div class="flex items-center gap-2.5 pl-4 border-l border-slate-200">
             <div class="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-bold">A</div>
@@ -250,7 +577,7 @@
 
 <!-- BATCH ACTION BAR (shared, controlled per page via actualizarBatchBar()) -->
 <div id="batchBar"
-     class="hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-slate-900 text-white shadow-2xl"
+     class="hidden fixed bottom-0 left-0 lg:left-[260px] right-0 z-40 flex items-center justify-between px-6 py-3 bg-slate-900 text-white shadow-2xl"
      style="transition: transform 0.2s ease; transform: translateY(100%);">
     <span class="text-sm font-medium"><span id="batchCount">0</span> seleccionados</span>
     <div class="flex items-center gap-3">
@@ -268,6 +595,239 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+
+<!-- ─── ESTADO_CONFIG y helper estadoBadge globales ─── -->
+<script>
+(function() {
+    window.ESTADO_CONFIG = {
+        PENDIENTE:   { label: 'Pendiente'   },
+        EN_TRANSITO: { label: 'En tránsito' },
+        ENTREGADO:   { label: 'Entregado'   },
+        COMPLETADO:  { label: 'Completado'  },
+        CANCELADO:   { label: 'Cancelado'   }
+    };
+    function escEstado(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c];}); }
+    window.estadoBadge = function(estado) {
+        var cfg = window.ESTADO_CONFIG[estado] || { label: estado || '—' };
+        var key = estado || 'PENDIENTE';
+        return '<span class="estado-pill" data-estado="' + escEstado(key) + '"><span class="dot"></span>' + escEstado(cfg.label) + '</span>';
+    };
+
+    // ─── Pills genéricas con paleta unificada ─────────────────────────
+    window.ROL_CONFIG = {
+        ADMIN:         { label: 'Admin',         color: 'rose'    },
+        GESTOR:        { label: 'Gestor',        color: 'amber'   },
+        PRODUCTOR:     { label: 'Productor',     color: 'blue'    },
+        TRANSPORTISTA: { label: 'Transportista', color: 'emerald' }
+    };
+    window.TIPO_CENTRO_CONFIG = {
+        PRODUCTOR: { label: 'Productor', color: 'blue'    },
+        GESTOR:    { label: 'Gestor',    color: 'violet'  },
+        AMBOS:     { label: 'Ambos',     color: 'teal'    }
+    };
+    window.TIPO_DOC_CONFIG = {
+        DOCUMENTO_IDENTIFICACION: { label: 'D. Identificación', color: 'slate'   },
+        CONTRATO:                 { label: 'Contrato',          color: 'indigo'  },
+        NOTIFICACION_PREVIA:      { label: 'Notif. previa',     color: 'amber'   },
+        ARCHIVO_CRONOLOGICO:      { label: 'Archivo',           color: 'sky'     },
+        FICHA_ACEPTACION:         { label: 'F. Aceptación',     color: 'emerald' },
+        HOJA_SEGUIMIENTO:         { label: 'H. Seguimiento',    color: 'teal'    },
+        INFORME_FINAL:            { label: 'Informe',           color: 'violet'  },
+        CARTA_DE_PORTE:           { label: 'Carta de porte',    color: 'orange'  }
+    };
+    function pill(label, color, withDot) {
+        var dot = (withDot === false) ? '' : '<span class="dot"></span>';
+        return '<span class="tag-pill" data-color="' + escEstado(color || 'slate') + '">' + dot + escEstado(label) + '</span>';
+    }
+    window.tagBadge = pill;
+    window.rolBadge = function(rol) {
+        var cfg = window.ROL_CONFIG[rol] || { label: rol || '—', color: 'slate' };
+        return pill(cfg.label, cfg.color);
+    };
+    window.tipoCentroBadge = function(tipo) {
+        var cfg = window.TIPO_CENTRO_CONFIG[tipo] || { label: tipo || '—', color: 'slate' };
+        return pill(cfg.label, cfg.color);
+    };
+    window.tipoDocBadge = function(tipo) {
+        var cfg = window.TIPO_DOC_CONFIG[tipo] || { label: tipo || '—', color: 'slate' };
+        return pill(cfg.label, cfg.color, false);
+    };
+    window.ESTADO_DOC_CONFIG = {
+        BORRADOR: { label: 'Borrador', color: 'slate'   },
+        EMITIDO:  { label: 'Emitido',  color: 'emerald' },
+        CERRADO:  { label: 'Cerrado',  color: 'indigo'  },
+        VENCIDO:  { label: 'Vencido',  color: 'red'     }
+    };
+    window.estadoDocBadge = function(estado) {
+        var cfg = window.ESTADO_DOC_CONFIG[estado] || { label: estado || '—', color: 'slate' };
+        return pill(cfg.label, cfg.color);
+    };
+    window.ESTADO_RESIDUO_CONFIG = {
+        PENDIENTE:   { label: 'Pendiente',   color: 'amber'   },
+        ALMACENADO:  { label: 'Almacenado',  color: 'blue'    },
+        EN_TRANSITO: { label: 'En tránsito', color: 'sky'     },
+        TRATADO:     { label: 'Tratado',     color: 'emerald' },
+        ELIMINADO:   { label: 'Eliminado',   color: 'red'     }
+    };
+    window.estadoResiduoBadge = function(estado) {
+        var cfg = window.ESTADO_RESIDUO_CONFIG[estado] || { label: estado || '—', color: 'slate' };
+        return pill(cfg.label, cfg.color);
+    };
+    // Selects nativos con CSS — sin librería externa.
+    // Estas funciones se mantienen como NO-OP para compatibilidad con páginas
+    // que ya las llaman tras modificar sel.innerHTML o sel.value.
+    window.initChoicesIn = function(_root) { /* no-op: estilos por CSS */ };
+    window.refreshChoices = function(_sel) { /* no-op: el <select> nativo se refresca solo */ };
+    window.refreshChoicesAll = function(_root) { /* no-op */ };
+})();
+
+// ─── Combobox FK reutilizable ───────────────────────────────────────────────
+// Uso:
+//   <div data-combobox="fProductor" data-placeholder="Buscar centro..."></div>
+//   Combobox.bind({ id:'fProductor', items:[{value, label, sub?}], placeholder?, emptyOption?, onChange? });
+//   Combobox.setValue('fProductor', id);   // selecciona por value
+//   Combobox.clear('fProductor');
+//   document.getElementById('fProductor').value  // sigue devolviendo el value seleccionado
+window.Combobox = (function() {
+    var registry = {};
+    function escLocal(s) {
+        if (s == null) return '';
+        var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
+    }
+    function ensure(id, placeholder) {
+        if (registry[id]) return registry[id];
+        var anchor = document.querySelector('[data-combobox="' + id + '"]');
+        if (!anchor) { console.warn('[Combobox] anchor no encontrado para id=' + id); return null; }
+        anchor.classList.add('relative');
+        anchor.innerHTML =
+            '<input type="text" class="form-control-eco combobox-display" autocomplete="off"' +
+            '       placeholder="' + escLocal(placeholder || anchor.getAttribute('data-placeholder') || 'Buscar...') + '">' +
+            '<input type="hidden" id="' + id + '">' +
+            '<ul class="combobox-list hidden absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg text-sm"></ul>';
+        var disp = anchor.querySelector('.combobox-display');
+        var hidden = anchor.querySelector('input[type="hidden"]');
+        var list = anchor.querySelector('.combobox-list');
+        var entry = { id:id, anchor:anchor, disp:disp, hidden:hidden, list:list, items:[], onChange:null, emptyOption:null };
+        registry[id] = entry;
+        disp.addEventListener('input', function() { filtrar(id, disp.value); });
+        disp.addEventListener('focus', function() { mostrar(id); });
+        disp.addEventListener('blur',  function() { setTimeout(function(){ ocultar(id); }, 150); });
+        disp.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Escape') { disp.blur(); }
+            if (ev.key === 'Enter')  { ev.preventDefault(); }
+        });
+        return entry;
+    }
+    function bind(opts) {
+        var e = ensure(opts.id, opts.placeholder);
+        if (!e) return;
+        if (opts.placeholder) e.disp.placeholder = opts.placeholder;
+        e.onChange = opts.onChange || null;
+        e.emptyOption = opts.emptyOption || null; // {value:'', label:'Sin asignar'}
+        e.items = (opts.items || []).map(function(it) {
+            return {
+                value: String(it.value),
+                label: String(it.label == null ? '' : it.label),
+                sub:   it.sub == null ? '' : String(it.sub)
+            };
+        });
+        // Re-render lista si visible y refresca display si había valor
+        var v = e.hidden.value;
+        if (v) setValue(opts.id, v);
+        if (!e.list.classList.contains('hidden')) render(opts.id, e.items);
+    }
+    function listAll(e) {
+        if (e.emptyOption) {
+            return [{ value: String(e.emptyOption.value || ''), label: e.emptyOption.label, sub: '', _empty:true }].concat(e.items);
+        }
+        return e.items;
+    }
+    function render(id, items) {
+        var e = registry[id]; if (!e) return;
+        if (!items.length) {
+            e.list.innerHTML = '<li class="px-3 py-2 text-slate-400">Sin coincidencias</li>';
+            return;
+        }
+        e.list.innerHTML = items.slice(0, 100).map(function(it) {
+            var label = escLocal(it.label);
+            var sub = escLocal(it.sub || '');
+            var val = String(it.value).replace(/"/g,'&quot;');
+            return '<li data-value="' + val + '" class="px-3 py-2 hover:bg-blue-50 cursor-pointer flex gap-2 items-baseline">' +
+                   '<span class="text-slate-700 shrink-0">' + (label || '<span class="text-slate-400">—</span>') + '</span>' +
+                   (sub ? '<span class="text-slate-500 truncate text-xs">' + sub + '</span>' : '') +
+                   '</li>';
+        }).join('');
+        Array.prototype.forEach.call(e.list.children, function(li) {
+            li.addEventListener('mousedown', function(ev) {
+                ev.preventDefault();
+                seleccionar(id, li.getAttribute('data-value'));
+            });
+        });
+    }
+    function filtrar(id, value) {
+        var e = registry[id]; if (!e) return;
+        var v = (value || '').toLowerCase().trim();
+        var pool = listAll(e);
+        var items = !v ? pool : pool.filter(function(it) {
+            return it.label.toLowerCase().indexOf(v) !== -1 ||
+                   (it.sub || '').toLowerCase().indexOf(v) !== -1;
+        });
+        render(id, items);
+        mostrar(id);
+        if (!value) { e.hidden.value = ''; if (e.onChange) try { e.onChange('', null); } catch(_){} }
+    }
+    function mostrar(id) {
+        var e = registry[id]; if (!e) return;
+        if (!e.list.innerHTML.trim()) render(id, listAll(e));
+        e.list.classList.remove('hidden');
+    }
+    function ocultar(id) {
+        var e = registry[id]; if (!e) return;
+        e.list.classList.add('hidden');
+        // Restaurar display al label del valor actual (si quedó texto huérfano)
+        var v = e.hidden.value;
+        if (v) {
+            var hit = e.items.find(function(it) { return it.value === String(v); });
+            e.disp.value = hit ? hit.label : '';
+        } else {
+            e.disp.value = '';
+        }
+    }
+    function seleccionar(id, value) {
+        var e = registry[id]; if (!e) return;
+        if (e.emptyOption && String(value) === String(e.emptyOption.value || '')) {
+            e.hidden.value = '';
+            e.disp.value = '';
+            ocultar(id);
+            if (e.onChange) try { e.onChange('', null); } catch(_){}
+            return;
+        }
+        var hit = e.items.find(function(it) { return it.value === String(value); });
+        if (!hit) return;
+        e.hidden.value = hit.value;
+        e.disp.value = hit.label;
+        ocultar(id);
+        if (e.onChange) try { e.onChange(hit.value, hit); } catch(_){}
+    }
+    function setValue(id, value) {
+        var e = registry[id]; if (!e) return;
+        if (value === '' || value == null) {
+            e.hidden.value = '';
+            e.disp.value = '';
+            return;
+        }
+        var hit = e.items.find(function(it) { return it.value === String(value); });
+        e.hidden.value = String(value);
+        e.disp.value = hit ? hit.label : '';
+    }
+    function clear(id) { setValue(id, ''); }
+    function getValue(id) {
+        var e = registry[id]; if (!e) return '';
+        return e.hidden.value;
+    }
+    return { bind:bind, setValue:setValue, clear:clear, getValue:getValue };
+})();
+</script>
 
 <script>// ─── Dark mode ───────────────────────────────────────────────────────────────
 (function() {

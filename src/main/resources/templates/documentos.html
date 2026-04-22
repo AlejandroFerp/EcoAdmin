@@ -120,6 +120,44 @@
         </div>
     </div>
 </div>
+
+<!-- MODAL PREVIEW PDF -->
+<div id="modalPreviewDoc" tabindex="-1" aria-hidden="true"
+     class="hidden overflow-hidden fixed inset-0 z-50 flex justify-center items-center bg-black/40">
+    <div class="relative w-full h-full max-w-5xl max-h-[92vh] m-4">
+        <div class="relative bg-white rounded-2xl shadow-xl flex flex-col h-full overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b border-slate-100 shrink-0">
+                <h3 class="text-base font-semibold text-slate-900">Vista previa del documento</h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="previewDocPrint"
+                            class="px-3 py-1.5 text-xs font-medium bg-white text-slate-700 border border-slate-200 hover:border-[#3b82f6] hover:text-[#3b82f6] rounded-lg inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Imprimir
+                    </button>
+                    <a id="previewDocDownload" href="#" download
+                       class="px-3 py-1.5 text-xs font-medium bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-lg inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                        Descargar PDF
+                    </a>
+                    <button type="button" onclick="cerrarPreviewDoc()" aria-label="Cerrar"
+                            class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="relative flex-1 bg-slate-100">
+                <div id="previewDocLoader" class="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+                    <span class="loading loading-spinner loading-md mr-2"></span> Cargando vista previa...
+                </div>
+                <div id="previewDocError" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                    <svg class="w-10 h-10 text-red-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <p class="text-sm text-red-600 max-w-md" data-msg></p>
+                </div>
+                <iframe id="previewDocFrame" class="hidden w-full h-full bg-white" title="Vista previa documento"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
 </th:block>
 
 <th:block th:fragment="pageScripts">
@@ -200,16 +238,16 @@ function renderTabla() {
     }
 
     tbody.innerHTML = pagina_items.map(d => `
-        <tr class="hover:bg-slate-50 transition-colors">
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" ondblclick="emitirPdf(${d.id})" title="Doble clic: vista previa">
             <td class="font-mono text-xs text-slate-500">${d.id}</td>
             <td class="font-medium text-slate-800">${d.numeroReferencia || '<span class="text-slate-400">—</span>'}</td>
-            <td><span class="badge badge-outline badge-sm text-xs">${TIPO_LABELS[d.tipo] || d.tipo}</span></td>
-            <td><span class="badge badge-sm ${ESTADO_CLASES[d.estado] || 'badge-ghost'}">${d.estado}</span></td>
+            <td>${window.tipoDocBadge ? window.tipoDocBadge(d.tipo) : (TIPO_LABELS[d.tipo] || d.tipo)}</td>
+            <td>${window.estadoDocBadge ? window.estadoDocBadge(d.estado) : d.estado}</td>
             <td class="hidden md:table-cell text-slate-600 text-sm">${d.traslado ? '#' + d.traslado.id : '<span class="text-slate-400">—</span>'}</td>
             <td class="hidden lg:table-cell text-slate-500 text-xs">${d.fechaEmision ? formatFecha(d.fechaEmision) : '—'}</td>
             <td class="hidden lg:table-cell text-slate-500 text-xs">${vencimientoBadge(d)}</td>
             <td class="text-right">
-                <div class="flex items-center justify-end gap-1">
+                <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()" ondblclick="event.stopPropagation()">
                     <button onclick="emitirPdf(${d.id})" title="Emitir PDF"
                             ${d.traslado ? '' : 'disabled'}
                             class="btn btn-ghost btn-xs text-slate-600 hover:text-emerald-600 p-1 disabled:opacity-30">
@@ -276,6 +314,10 @@ function abrirCrear() {
     document.getElementById('fFechaEmision').value = '';
     document.getElementById('fFechaVencimiento').value = '';
     document.getElementById('fObservaciones').value = '';
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+        window.refreshChoices(document.getElementById('fEstado'));
+    }
     if (mForm) mForm.show(); else document.getElementById('modalForm').classList.remove('hidden');
 }
 
@@ -291,6 +333,10 @@ async function abrirEditar(id) {
     document.getElementById('fFechaEmision').value = fechaParaInput(d.fechaEmision);
     document.getElementById('fFechaVencimiento').value = fechaParaInput(d.fechaVencimiento);
     document.getElementById('fObservaciones').value = d.observaciones || '';
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+        window.refreshChoices(document.getElementById('fEstado'));
+    }
     if (mForm) mForm.show(); else document.getElementById('modalForm').classList.remove('hidden');
 }
 
@@ -355,7 +401,68 @@ async function eliminar(id) {
 }
 
 function emitirPdf(id) {
-    window.open(`${API}/${id}/pdf?inline=true`, '_blank', 'noopener');
+    var modal = document.getElementById('modalPreviewDoc');
+    var iframe = document.getElementById('previewDocFrame');
+    var loader = document.getElementById('previewDocLoader');
+    var errorBox = document.getElementById('previewDocError');
+    var dlBtn = document.getElementById('previewDocDownload');
+    var printBtn = document.getElementById('previewDocPrint');
+    if (!modal || !iframe) {
+        // fallback simple: descarga directa via anchor
+        descargarPdfDirecto(id);
+        return;
+    }
+    // Buscamos la referencia para nombrar el archivo de descarga
+    var doc = (todos || []).find(function(d) { return d.id === id; });
+    var ref = (doc && doc.numeroReferencia) ? doc.numeroReferencia : ('documento-' + id);
+
+    iframe.src = 'about:blank';
+    iframe.classList.add('hidden');
+    errorBox.classList.add('hidden');
+    loader.classList.remove('hidden');
+
+    // Configuramos el botón descargar como un anchor con download (más fiable que window.open)
+    dlBtn.href = `${API}/${id}/pdf`;
+    dlBtn.setAttribute('download', ref + '.pdf');
+
+    // Botón imprimir manda a imprimir el iframe
+    printBtn.onclick = function() {
+        try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) { window.print(); }
+    };
+
+    modal.classList.remove('hidden');
+
+    // Cargamos la vista HTML directamente en el iframe (sin blob ni mime PDF).
+    iframe.onload = function() {
+        loader.classList.add('hidden');
+        iframe.classList.remove('hidden');
+        iframe.onload = null;
+    };
+    iframe.onerror = function() {
+        loader.classList.add('hidden');
+        errorBox.classList.remove('hidden');
+        errorBox.querySelector('[data-msg]').textContent = 'No se pudo cargar la vista previa del documento.';
+    };
+    iframe.src = `/preview/documentos/${id}`;
+}
+
+function descargarPdfDirecto(id) {
+    var doc = (todos || []).find(function(d) { return d.id === id; });
+    var ref = (doc && doc.numeroReferencia) ? doc.numeroReferencia : ('documento-' + id);
+    var a = document.createElement('a');
+    a.href = `${API}/${id}/pdf`;
+    a.setAttribute('download', ref + '.pdf');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function cerrarPreviewDoc() {
+    var modal = document.getElementById('modalPreviewDoc');
+    var iframe = document.getElementById('previewDocFrame');
+    if (iframe && iframe._blobUrl) { URL.revokeObjectURL(iframe._blobUrl); iframe._blobUrl = null; }
+    if (iframe) iframe.src = 'about:blank';
+    if (modal) modal.classList.add('hidden');
 }
 
 cargar();

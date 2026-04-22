@@ -101,10 +101,12 @@ class TrasladoEndpointTest {
     }
 
     @Test
-    @DisplayName("PATCH estado: transicion invalida PENDIENTE -> COMPLETADO devuelve 400")
+    @DisplayName("PATCH estado: transicion invalida al mismo estado devuelve 400")
     void cambiarEstado_invalida_400() throws Exception {
+        // Con libertad total, lo unico no permitido es transicionar al mismo estado
+        // (genera evento vacio en historial sin aportar informacion)
         mockMvc.perform(patch("/api/traslados/" + traslado.getId() + "/estado")
-                .param("estado", "COMPLETADO")
+                .param("estado", "PENDIENTE")
                 .with(user(gestor.getEmail()).roles("GESTOR"))
                 .with(csrf()))
                 .andExpect(status().isBadRequest());
@@ -166,3 +168,4 @@ class TrasladoEndpointTest {
                 .andExpect(jsonPath("$.nombre").value("Nuevo Centro"));
     }
 }
+

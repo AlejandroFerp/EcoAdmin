@@ -10,23 +10,26 @@
             <h2 class="text-xl font-bold text-slate-900">Recogidas</h2>
             <p class="text-sm text-slate-500 mt-0.5">Seguimiento y gestión de recogidas de residuos</p>
         </div>
-        <div class="flex gap-2 flex-wrap">
-            <!-- View toggle -->
+        <div class="flex gap-2 flex-wrap items-center">
+            <!-- QR (extremo izquierdo del cluster de acciones) -->
+            <button type="button" onclick="abrirQr()" title="Leer QR" aria-label="Leer QR"
+                    class="px-3 py-1.5 text-xs font-medium bg-white text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-[#3b82f6] hover:text-[#3b82f6] transition-colors shrink-0 inline-flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4h6v6H4V4zm0 10h6v6H4v-6zm10-10h6v6h-6V4zm2 12h2v2h-2v-2zm-2 2h2v2h-2v-2zm4 2h2v2h-2v-2zm0-4h2v2h-2v-2z"/></svg>
+                <span class="hidden sm:inline">QR</span>
+            </button>
+            <!-- View toggle (en el medio) -->
             <div class="flex border border-slate-200 rounded-lg overflow-hidden">
                 <button id="btnVistaTbla" type="button" onclick="cambiarVista('tabla')"
-                        class="px-3 py-1.5 text-xs font-medium bg-[#3b82f6] text-white transition-colors">
-                    ☰ Lista
+                        class="px-3 py-1.5 text-xs font-medium bg-[#3b82f6] text-white transition-colors inline-flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    Lista
                 </button>
                 <button id="btnVistaKbn" type="button" onclick="cambiarVista('kanban')"
-                        class="px-3 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors">
-                    ⬜ Kanban
+                        class="px-3 py-1.5 text-xs font-medium bg-white text-slate-600 hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+                    Kanban
                 </button>
             </div>
-            <button type="button" onclick="abrirQr()"
-                    class="btn btn-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 normal-case shrink-0">
-                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
-                Leer QR
-            </button>
             <button type="button" onclick="abrirCrear()"
                     class="btn bg-[#3b82f6] hover:bg-[#2563eb] text-white border-none normal-case shrink-0 shadow-md">
                 + Nuevo Traslado
@@ -36,9 +39,18 @@
 
     <!-- Vista Lista (tabla) -->
     <div id="listaView" class="mt-2">
-        <div class="mb-3">
-            <input id="busqueda" type="text" placeholder="Buscar traslado..." oninput="filtrarTabla(this.value)"
-                   class="input input-bordered input-sm w-full max-w-xs bg-white border-slate-200 focus:border-blue-400 focus:outline-none" />
+        <div class="mb-4">
+            <div class="relative w-full sm:max-w-xs">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input id="busqueda" type="text" placeholder="Buscar traslado..."
+                       oninput="filtrarTabla(this.value)"
+                       class="input input-sm w-full pl-9 bg-white border border-slate-200 rounded-lg
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            </div>
         </div>
         <div class="bg-white rounded-xl shadow-sm border border-slate-100">
             <table class="table table-zebra table-sm w-full">
@@ -66,42 +78,42 @@
             <!-- Columna PENDIENTE -->
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="w-3 h-3 rounded-full bg-slate-400 shrink-0"></span>
-                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pendiente</span>
-                    <span id="kCount_PENDIENTE" class="ml-auto text-xs bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">0</span>
+                    <span class="w-3 h-3 rounded-full bg-amber-400 shrink-0"></span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">Pendiente</span>
+                    <span id="kCount_PENDIENTE" class="ml-auto text-xs bg-amber-50 text-amber-700 rounded-full px-2 py-0.5 font-semibold">0</span>
                 </div>
                 <div id="kCol_PENDIENTE" data-estado="PENDIENTE"
-                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-slate-50 rounded-xl p-2 border border-slate-200"></div>
+                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-amber-100 rounded-xl p-2 border border-amber-200"></div>
             </div>
             <!-- Columna EN_TRANSITO -->
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="w-3 h-3 rounded-full bg-blue-400 shrink-0"></span>
-                    <span class="text-xs font-semibold uppercase tracking-wide text-blue-600">En Transito</span>
-                    <span id="kCount_EN_TRANSITO" class="ml-auto text-xs bg-blue-50 text-blue-500 rounded-full px-2 py-0.5">0</span>
+                    <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0"></span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-blue-700">En tránsito</span>
+                    <span id="kCount_EN_TRANSITO" class="ml-auto text-xs bg-blue-50 text-blue-700 rounded-full px-2 py-0.5 font-semibold">0</span>
                 </div>
                 <div id="kCol_EN_TRANSITO" data-estado="EN_TRANSITO"
-                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-blue-50/50 rounded-xl p-2 border border-blue-100"></div>
+                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-blue-100 rounded-xl p-2 border border-blue-200"></div>
             </div>
             <!-- Columna ENTREGADO -->
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="w-3 h-3 rounded-full bg-amber-400 shrink-0"></span>
-                    <span class="text-xs font-semibold uppercase tracking-wide text-amber-600">Entregado</span>
-                    <span id="kCount_ENTREGADO" class="ml-auto text-xs bg-amber-50 text-amber-500 rounded-full px-2 py-0.5">0</span>
+                    <span class="w-3 h-3 rounded-full bg-violet-500 shrink-0"></span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-violet-700">Entregado</span>
+                    <span id="kCount_ENTREGADO" class="ml-auto text-xs bg-violet-50 text-violet-700 rounded-full px-2 py-0.5 font-semibold">0</span>
                 </div>
                 <div id="kCol_ENTREGADO" data-estado="ENTREGADO"
-                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-amber-50/50 rounded-xl p-2 border border-amber-100"></div>
+                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-violet-100 rounded-xl p-2 border border-violet-200"></div>
             </div>
             <!-- Columna COMPLETADO -->
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="w-3 h-3 rounded-full bg-emerald-400 shrink-0"></span>
-                    <span class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Completado</span>
-                    <span id="kCount_COMPLETADO" class="ml-auto text-xs bg-emerald-50 text-emerald-500 rounded-full px-2 py-0.5">0</span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-emerald-700">Completado</span>
+                    <span id="kCount_COMPLETADO" class="ml-auto text-xs bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5 font-semibold">0</span>
                 </div>
                 <div id="kCol_COMPLETADO" data-estado="COMPLETADO"
-                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-emerald-50/50 rounded-xl p-2 border border-emerald-100"></div>
+                     class="kanban-col flex flex-col gap-2 min-h-[120px] bg-emerald-100 rounded-xl p-2 border border-emerald-200"></div>
             </div>
         </div>
     </div>
@@ -122,27 +134,27 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Centro Productor *</label>
                         <div class="flex gap-1">
-                            <select id="fProductor" class="form-control-eco"><option value="">Seleccionar...</option></select>
+                            <div data-combobox="fProductor" data-placeholder="Buscar centro productor..." class="flex-1"></div>
                             <button type="button" onclick="abrirCrearCentroRapido('fProductor')" class="btn btn-sm btn-outline border-slate-300 px-2" title="Crear centro">+</button>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Centro Gestor *</label>
                         <div class="flex gap-1">
-                            <select id="fGestor" class="form-control-eco"><option value="">Seleccionar...</option></select>
+                            <div data-combobox="fGestor" data-placeholder="Buscar centro gestor..." class="flex-1"></div>
                             <button type="button" onclick="abrirCrearCentroRapido('fGestor')" class="btn btn-sm btn-outline border-slate-300 px-2" title="Crear centro">+</button>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Residuo *</label>
                         <div class="flex gap-1">
-                            <select id="fResiduo" class="form-control-eco"><option value="">Seleccionar...</option></select>
+                            <div data-combobox="fResiduo" data-placeholder="Buscar residuo (LER o desc)..." class="flex-1"></div>
                             <button type="button" onclick="abrirCrearResiduoRapido()" class="btn btn-sm btn-outline border-slate-300 px-2" title="Crear residuo">+</button>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
-                        <select id="fTransportista" class="form-control-eco"><option value="">Sin asignar</option></select>
+                        <div data-combobox="fTransportista" data-placeholder="Sin asignar"></div>
                     </div>
                 </div>
                 <div>
@@ -212,13 +224,14 @@
             </div>
             <div class="p-5 space-y-4">
                 <p class="text-sm text-slate-500">Sube una imagen con un codigo QR para decodificarlo.</p>
-                <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center">
-                    <label for="qrArchivo" class="cursor-pointer flex flex-col items-center gap-2">
-                        <svg class="w-10 h-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
-                        <span class="text-sm font-medium text-slate-600">Seleccionar imagen con QR</span>
-                        <span class="text-xs text-slate-400">PNG, JPG, GIF soportados</span>
-                        <input id="qrArchivo" type="file" accept="image/*" class="hidden" onchange="leerQr()">
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
+                    <label for="qrArchivo"
+                           class="w-full cursor-pointer flex flex-col items-center gap-2 select-none">
+                        <svg class="w-10 h-10 text-slate-300 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2m10-18h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 7h4v4H7V7zm0 6h4v4H7v-4zm6 0h4v4h-4v-4zm0-6h4v4h-4V7z"/></svg>
+                        <span class="text-sm font-medium text-slate-600 pointer-events-none">Seleccionar imagen con QR</span>
+                        <span class="text-xs text-slate-400 pointer-events-none">PNG, JPG, GIF soportados</span>
                     </label>
+                    <input id="qrArchivo" type="file" accept="image/*" class="sr-only" onchange="leerQr()">
                 </div>
                 <div id="qrResultado" class="hidden p-3 bg-green-50 border border-green-200 rounded-lg">
                     <p class="text-xs font-semibold text-green-700 mb-1">Contenido del QR:</p>
@@ -398,7 +411,8 @@ function initModales() {
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); poblarSelects(); });
 
-var estadoBadge = { PENDIENTE:'badge-warning', EN_TRANSITO:'badge-info', ENTREGADO:'badge-success', COMPLETADO:'badge-ghost' };
+// Helper local: usa la pill unificada definida en layouts/main.html (window.estadoBadge)
+function estadoPill(estado) { return (typeof window.estadoBadge === 'function') ? window.estadoBadge(estado) : '<span class="estado-pill" data-estado="' + esc(estado||'') + '"><span class="dot"></span>' + esc(estado||'') + '</span>'; }
 
 async function poblarSelects() {
     var results = await Promise.all([
@@ -407,13 +421,13 @@ async function poblarSelects() {
         fetch('/api/usuarios').then(function(r) { return r.json(); })
     ]);
     var centros = results[0], residuos = results[1], usuarios = results[2];
-    var centroOpts = centros.map(function(c) { return '<option value="' + c.id + '">' + esc(c.nombre) + '</option>'; }).join('');
-    var residuoOpts = residuos.map(function(r) { return '<option value="' + r.id + '">' + esc(r.codigoLER || String(r.id)) + '</option>'; }).join('');
-    var userOpts = usuarios.map(function(u) { return '<option value="' + u.id + '">' + esc(u.nombre) + '</option>'; }).join('');
-    document.getElementById('fProductor').innerHTML = '<option value="">Seleccionar...</option>' + centroOpts;
-    document.getElementById('fGestor').innerHTML = '<option value="">Seleccionar...</option>' + centroOpts;
-    document.getElementById('fResiduo').innerHTML = '<option value="">Seleccionar...</option>' + residuoOpts;
-    document.getElementById('fTransportista').innerHTML = '<option value="">Sin asignar</option>' + userOpts;
+    var centroItems = centros.map(function(c) { return { value:c.id, label:c.nombre, sub:(c.tipo || '') }; });
+    var residuoItems = residuos.map(function(r) { return { value:r.id, label:(r.codigoLER || ('#' + r.id)), sub:(r.descripcion || '') }; });
+    var userItems = usuarios.map(function(u) { return { value:u.id, label:u.nombre, sub:(u.email || '') }; });
+    Combobox.bind({ id:'fProductor',     items:centroItems,  placeholder:'Buscar centro productor...' });
+    Combobox.bind({ id:'fGestor',        items:centroItems,  placeholder:'Buscar centro gestor...' });
+    Combobox.bind({ id:'fResiduo',       items:residuoItems, placeholder:'Buscar residuo (LER o desc)...' });
+    Combobox.bind({ id:'fTransportista', items:userItems,    placeholder:'Sin asignar', emptyOption:{ value:'', label:'Sin asignar' } });
 }
 
 var vistaActual = 'tabla';
@@ -465,11 +479,10 @@ function renderLista() {
         var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
         var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '—';
         var transp = (t.transportista && t.transportista.nombre) || '—';
-        var badgeClass = estadoBadge[t.estado] || 'badge-ghost';
         return '<tr class="hover cursor-pointer" ondblclick="abrirDetalle(' + t.id + ')">'
             + '<td class="text-xs text-slate-400">' + t.id + '</td>'
             + '<td class="text-sm font-medium text-slate-800 max-w-[160px] truncate">' + escHtml(res) + '</td>'
-            + '<td><span class="badge badge-sm ' + badgeClass + '">' + esc(t.estado) + '</span></td>'
+            + '<td>' + estadoPill(t.estado) + '</td>'
             + '<td class="text-sm text-slate-700 max-w-[140px] truncate">' + escHtml(prod) + '</td>'
             + '<td class="hidden md:table-cell text-sm text-slate-600 max-w-[140px] truncate">' + escHtml(gest) + '</td>'
             + '<td class="hidden lg:table-cell text-sm text-slate-500">' + escHtml(transp) + '</td>'
@@ -504,7 +517,7 @@ function abrirCrear() {
     document.getElementById('modalTitulo').textContent = 'Nuevo Traslado';
     document.getElementById('itemId').value = '';
     document.getElementById('fObservaciones').value = '';
-    ['fProductor','fGestor','fResiduo','fTransportista'].forEach(function(id) { document.getElementById(id).value = ''; });
+    ['fProductor','fGestor','fResiduo','fTransportista'].forEach(function(id) { Combobox.clear(id); });
     mForm && mForm.show();
 }
 
@@ -512,10 +525,10 @@ async function abrirEditar(id) {
     var t = await fetch('/api/traslados/' + id).then(function(r) { return r.json(); });
     document.getElementById('modalTitulo').textContent = 'Editar Traslado';
     document.getElementById('itemId').value = t.id;
-    document.getElementById('fProductor').value = t.centroProductor ? t.centroProductor.id : '';
-    document.getElementById('fGestor').value = t.centroGestor ? t.centroGestor.id : '';
-    document.getElementById('fResiduo').value = t.residuo ? t.residuo.id : '';
-    document.getElementById('fTransportista').value = t.transportista ? t.transportista.id : '';
+    Combobox.setValue('fProductor',     t.centroProductor ? t.centroProductor.id : '');
+    Combobox.setValue('fGestor',        t.centroGestor    ? t.centroGestor.id    : '');
+    Combobox.setValue('fResiduo',       t.residuo         ? t.residuo.id         : '');
+    Combobox.setValue('fTransportista', t.transportista   ? t.transportista.id   : '');
     document.getElementById('fObservaciones').value = t.observaciones || '';
     mForm && mForm.show();
 }
@@ -564,32 +577,41 @@ async function cambiarEstado() {
 }
 
 async function verHistorial(id) {
-    var eventos = await fetch('/api/traslados/' + id + '/historial').then(function(r) { return r.json(); });
     var div = document.getElementById('contenidoHistorial');
+    div.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Cargando historial...</p>';
+    mHistorial && mHistorial.show();
+    var eventos = await fetch('/api/traslados/' + id + '/historial').then(function(r) { return r.json(); });
     if (!eventos || eventos.length === 0) {
         div.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">Sin eventos registrados.</p>';
     } else {
         var colorMap = { PENDIENTE: 'bg-yellow-400', EN_TRANSITO: 'bg-blue-500', ENTREGADO: 'bg-indigo-500', COMPLETADO: 'bg-emerald-500', CANCELADO: 'bg-red-400' };
         div.innerHTML = '<ol class="relative border-l-2 border-slate-200 ml-4 space-y-5 py-1">'
             + eventos.map(function(e, i) {
-                var color = colorMap[e.estado] || 'bg-slate-400';
+                var estadoNuevo = e.estadoNuevo || e.estado || '';
+                var estadoAnt = e.estadoAnterior || '';
+                var color = colorMap[estadoNuevo] || 'bg-slate-400';
                 var isLast = (i === eventos.length - 1);
+                var fecha = e.fecha || e.fechaEvento;
+                var usr = (e.usuario && (e.usuario.nombre || e.usuario.email)) || '';
+                var transicion = estadoAnt
+                    ? '<span class="text-[11px] text-slate-400">' + esc(estadoAnt) + '</span><span class="text-slate-300">→</span>' + (window.estadoBadge ? window.estadoBadge(estadoNuevo) : esc(estadoNuevo))
+                    : (window.estadoBadge ? window.estadoBadge(estadoNuevo) : esc(estadoNuevo));
                 return '<li class="ml-5">'
                     + '<span class="absolute -left-2.5 w-5 h-5 rounded-full border-2 border-white shadow ' + color + ' flex items-center justify-center">'
                     + (isLast ? '<svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : '')
                     + '</span>'
                     + '<div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">'
                     + '<div class="flex items-center justify-between gap-2 flex-wrap">'
-                    + '<span class="badge badge-sm ' + (estadoBadge[e.estado] || 'badge-ghost') + '">' + esc(e.estado) + '</span>'
-                    + '<time class="text-[11px] text-slate-400">' + (e.fechaEvento ? new Date(e.fechaEvento).toLocaleString('es-ES') : '') + '</time>'
+                    + '<div class="flex items-center gap-1.5 flex-wrap">' + transicion + '</div>'
+                    + '<time class="text-[11px] text-slate-400">' + (fecha ? new Date(fecha).toLocaleString('es-ES') : '') + '</time>'
                     + '</div>'
-                    + (e.comentario ? '<p class="text-sm text-slate-600 mt-2">' + esc(e.comentario) + '</p>' : '')
+                    + '<p class="text-sm text-slate-600 mt-2">' + (e.comentario ? esc(e.comentario) : '<span class="italic text-slate-400">Sin comentario</span>') + '</p>'
+                    + (usr ? '<p class="text-[11px] text-slate-400 mt-1">por ' + esc(usr) + '</p>' : '')
                     + '</div>'
                     + '</li>';
             }).join('')
             + '</ol>';
     }
-    mHistorial && mHistorial.show();
 }
 
 async function pedirBorrar(id) {
@@ -658,9 +680,8 @@ async function abrirDetalle(id) {
         var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
         var res = (t.residuo && (t.residuo.descripcion || t.residuo.codigoLER)) || '—';
         var transp = (t.transportista && t.transportista.nombre) || '—';
-        var badgeClass = estadoBadge[t.estado] || 'badge-ghost';
         document.getElementById('detalleInfo').innerHTML =
-            '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd><span class="badge badge-sm ' + badgeClass + '">' + esc(t.estado) + '</span></dd></div>'
+            '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd>' + estadoPill(t.estado) + '</dd></div>'
           + '<div><dt class="text-xs text-slate-400 mb-0.5">Residuo</dt><dd class="font-medium">' + esc(res) + '</dd></div>'
           + '<div><dt class="text-xs text-slate-400 mb-0.5">Productor</dt><dd>' + esc(prod) + '</dd></div>'
           + '<div><dt class="text-xs text-slate-400 mb-0.5">Gestor</dt><dd>' + esc(gest) + '</dd></div>'
@@ -701,16 +722,23 @@ async function cargarHistorialDetalle(id) {
         var colors = { PENDIENTE:'#f59e0b', EN_TRANSITO:'#3b82f6', ENTREGADO:'#6366f1', COMPLETADO:'#10b981', CANCELADO:'#f87171' };
         panel.innerHTML = '<ol class="relative border-l border-slate-200 ml-3 space-y-4">'
             + eventos.map(function(e, i) {
-                var color = colors[e.estado] || '#94a3b8';
-                var last = (i === eventos.length - 1);
+                var estadoNuevo = e.estadoNuevo || e.estado || '';
+                var estadoAnt = e.estadoAnterior || '';
+                var color = colors[estadoNuevo] || '#94a3b8';
+                var fecha = e.fecha || e.fechaEvento;
+                var usr = (e.usuario && (e.usuario.nombre || e.usuario.email)) || '';
+                var transicion = estadoAnt
+                    ? '<span class="text-[11px] text-slate-400">' + esc(estadoAnt) + '</span><span class="text-slate-300">→</span>' + estadoPill(estadoNuevo)
+                    : estadoPill(estadoNuevo);
                 return '<li class="ml-6">'
                     + '<span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center rounded-full ring-2 ring-white" style="background:' + color + '"></span>'
                     + '<div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">'
                     + '<div class="flex items-center justify-between gap-2 flex-wrap">'
-                    + '<span class="badge badge-sm ' + (estadoBadge[e.estado] || 'badge-ghost') + '">' + esc(e.estado) + '</span>'
-                    + '<time class="text-[11px] text-slate-400">' + (e.fechaEvento ? new Date(e.fechaEvento).toLocaleString('es-ES') : '') + '</time>'
+                    + '<div class="flex items-center gap-1.5 flex-wrap">' + transicion + '</div>'
+                    + '<time class="text-[11px] text-slate-400">' + (fecha ? new Date(fecha).toLocaleString('es-ES') : '') + '</time>'
                     + '</div>'
-                    + (e.comentario ? '<p class="text-sm text-slate-600 mt-2">' + esc(e.comentario) + '</p>' : '')
+                    + '<p class="text-sm text-slate-600 mt-2">' + (e.comentario ? esc(e.comentario) : '<span class="italic text-slate-400">Sin comentario</span>') + '</p>'
+                    + (usr ? '<p class="text-[11px] text-slate-400 mt-1">por ' + esc(usr) + '</p>' : '')
                     + '</div></li>';
             }).join('')
             + '</ol>';
@@ -781,8 +809,7 @@ async function guardarCentroRapido() {
     if (!res.ok) { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear el centro.' }); return; }
     var centro = await res.json();
     await poblarSelects();
-    var targetSel = document.getElementById(_crTargetSelect);
-    if (targetSel) targetSel.value = centro.id;
+    if (_crTargetSelect) Combobox.setValue(_crTargetSelect, centro.id);
     cerrarCrearCentroRapido();
 }
 
@@ -812,8 +839,7 @@ async function guardarResiduoRapido() {
     if (!res.ok) { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear el residuo.' }); return; }
     var residuo = await res.json();
     await poblarSelects();
-    var sel = document.getElementById('fResiduo');
-    if (sel) sel.value = residuo.id;
+    Combobox.setValue('fResiduo', residuo.id);
     cerrarCrearResiduoRapido();
 }
 
@@ -832,7 +858,7 @@ function renderKanban() {
                 var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
                 var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
                 var res = (t.residuo && t.residuo.descripcion) || '—';
-                return '<div class="kanban-card bg-white rounded-lg border border-slate-200 p-3 shadow-sm cursor-grab hover:shadow-md transition-shadow select-none" data-id="' + t.id + '">'
+                return '<div class="kanban-card bg-white rounded-lg border border-slate-200 p-3 shadow-sm cursor-grab hover:shadow-md transition-shadow select-none" data-id="' + t.id + '" ondblclick="abrirDetalle(' + t.id + ')">'
                     + '<div class="flex items-center justify-between mb-1">'
                     + '  <span class="text-xs font-bold text-slate-400">#' + t.id + '</span>'
                     + '  <button onclick="abrirEditar(' + t.id + ');event.stopPropagation()" class="text-slate-300 hover:text-blue-500 transition-colors p-0.5 rounded">'
@@ -880,6 +906,8 @@ async function confirmarCambioEstadoKanban(id, nuevoEstado, estadoAnterior, item
             var cnt = document.getElementById('kCount_' + e);
             if (cnt) cnt.textContent = todos.filter(function(x) { return x.estado === e; }).length;
         });
+        // Sincronizar la vista lista para que no quede desfasada
+        if (typeof renderLista === 'function') renderLista();
     } else {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cambiar el estado.' });
         var oldRef = fromCol.children[oldIndex] || null;

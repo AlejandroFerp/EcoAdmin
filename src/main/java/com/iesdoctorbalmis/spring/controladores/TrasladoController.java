@@ -96,7 +96,7 @@ public class TrasladoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
     public ResponseEntity<Traslado> crear(@RequestBody Traslado t) {
         Traslado saved = service.save(t);
-        if (emailService != null) emailService.notificarNuevoTraslado(saved);
+        emailService.notificarNuevoTraslado(saved);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -113,8 +113,10 @@ public class TrasladoController {
         return ResponseEntity.ok(service.save(t));
     }
 
-    @Operation(summary = "Cambiar estado de traslado", description = "Maquina de estados: PENDIENTE -> EN_TRANSITO -> ENTREGADO -> COMPLETADO")
+    @Operation(summary = "Cambiar estado de traslado",
+               description = "Permite transiciones libres entre estados; el historial registra cada cambio")
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'TRANSPORTISTA')")
     public ResponseEntity<Traslado> cambiarEstado(
             @PathVariable Long id,
             @RequestParam EstadoTraslado estado,
@@ -126,7 +128,12 @@ public class TrasladoController {
         verificarAccesoTraslado(traslado);
 
         Traslado actualizado = service.cambiarEstado(id, estado, comentario, usuario);
-        if (emailService != null) emailService.notificarCambioEstado(actualizado);
+        emailService.notificarCambioEstado(actualizado);
+
+        // Al completar el traslado, enviar el certificado de recepcion al productor
+        if (actualizado.getEstado() == EstadoTraslado.COMPLETADO) {
+            enviarCertificadoAlProductor(actualizado);
+        }
         return ResponseEntity.ok(actualizado);
     }
 
@@ -181,6 +188,20 @@ public class TrasladoController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    // -------------------------------------------------------------------------
+
+    private void enviarCertificadoAlProductor(Traslado traslado) {
+        if (traslado.getCentroProductor() == null
+                || traslado.getCentroProductor().getUsuario() == null
+                || traslado.getCentroProductor().getUsuario().getEmail() == null
+                || traslado.getCentroProductor().getUsuario().getEmail().isBlank()) {
+            return;
+        }
+        byte[] certificado = pdfService.generarCertificadoRecepcion(traslado);
+        String emailProductor = traslado.getCentroProductor().getUsuario().getEmail();
+        emailService.enviarCertificado(traslado, emailProductor, certificado);
     }
 
     private void verificarAccesoTraslado(Traslado traslado) {

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class IndexController {
     @GetMapping("/")
     public String raiz() {
-        return "redirect:/public/index";
+        return "redirect:/index";
     }
 
 }

@@ -88,7 +88,7 @@ function initModales() {
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); });
 
-var rolBadge = { ADMIN:'badge-error', GESTOR:'badge-warning', PRODUCTOR:'badge-info', TRANSPORTISTA:'badge-success' };
+// rolBadge proviene de window.rolBadge (definido en layouts/main.html)
 
 async function cargar() {
     try {
@@ -129,7 +129,7 @@ function renderTabla() {
                 + '<td class="text-xs text-slate-400">' + u.id + '</td>'
                 + '<td class="font-medium">' + esc(u.nombre || '\u2014') + '</td>'
                 + '<td class="text-sm text-slate-500">' + esc(u.email || '\u2014') + '</td>'
-                + '<td><span class="badge badge-sm ' + (rolBadge[u.rol] || 'badge-ghost') + '">' + esc(u.rol || '\u2014') + '</span></td>'
+                + '<td>' + (window.rolBadge ? window.rolBadge(u.rol) : esc(u.rol || '—')) + '</td>'
                 + '<td class="text-right whitespace-nowrap">'
                 + '  <button class="btn btn-ghost btn-xs tooltip" data-tip="Editar" onclick="abrirEditar(' + u.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
                 + '  <button class="btn btn-ghost btn-xs text-red-500 tooltip" data-tip="Eliminar" onclick="pedirBorrar(' + u.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>'
@@ -148,6 +148,7 @@ function abrirCrear() {
     ['fNombre','fEmail','fPassword'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fRol').value = 'PRODUCTOR';
     document.getElementById('bloquePassword').style.display = '';
+    if (window.refreshChoices) window.refreshChoices(document.getElementById('fRol'));
     mForm && mForm.show();
 }
 
@@ -160,6 +161,7 @@ async function abrirEditar(id) {
     document.getElementById('fPassword').value = '';
     document.getElementById('fRol').value = u.rol || 'PRODUCTOR';
     document.getElementById('bloquePassword').style.display = 'none';
+    if (window.refreshChoices) window.refreshChoices(document.getElementById('fRol'));
     mForm && mForm.show();
 }
 

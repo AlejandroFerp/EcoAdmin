@@ -31,7 +31,6 @@ public class Adjunto {
     private String mimeType;
 
     @Lob
-    @Column(columnDefinition = "LONGBLOB")
     @JsonIgnore
     private byte[] contenido;
 
@@ -73,3 +72,4 @@ public class Adjunto {
     public Traslado getTraslado() { return traslado; }
     public void setTraslado(Traslado traslado) { this.traslado = traslado; }
 }
+

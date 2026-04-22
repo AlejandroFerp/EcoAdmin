@@ -20,4 +20,11 @@ public interface DocumentoRepository extends JpaRepository<Documento, Long> {
     List<Documento> findByTrasladoOrderByCreadoEnDesc(Traslado traslado);
 
     boolean existsByTrasladoAndTipo(Traslado traslado, TipoDocumento tipo);
+
+    /**
+     * Cuenta documentos de un tipo cuya referencia empieza por el prefijo dado.
+     * Se usa para numerar correlativamente las referencias por anio
+     * (p.ej. prefijo "DI-2026-" para reiniciar la secuencia cada anio).
+     */
+    long countByTipoAndNumeroReferenciaStartingWith(TipoDocumento tipo, String prefijo);
 }

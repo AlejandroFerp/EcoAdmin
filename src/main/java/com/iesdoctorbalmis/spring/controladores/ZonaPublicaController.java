@@ -26,12 +26,12 @@ public class ZonaPublicaController {
     @Autowired
     private DocumentoRepository documentoRepo;
 
-    @GetMapping("/public/login")
+    @GetMapping("/login")
     public String login() {
         return "login";
     }
 
-    @GetMapping("/public/index")
+    @GetMapping("/index")
     public String index(Model model) {
         model.addAttribute("totalCentros",    centroRepo.count());
         model.addAttribute("totalResiduos",   residuoRepo.count());
@@ -43,30 +43,33 @@ public class ZonaPublicaController {
         return "index";
     }
 
-    @GetMapping("/public/centros")
+    @GetMapping("/centros")
     public String centros() { return "centros"; }
 
-    @GetMapping("/public/residuos")
+    @GetMapping("/residuos")
     public String residuos() { return "residuos"; }
 
-    @GetMapping("/public/usuarios")
+    @GetMapping("/usuarios")
     public String usuarios() { return "usuarios"; }
 
-    @GetMapping("/public/traslados")
+    @GetMapping("/traslados")
     public String traslados() { return "traslados"; }
 
-    @GetMapping("/public/direcciones")
+    @GetMapping("/direcciones")
     public String direcciones() { return "direcciones"; }
 
-    @GetMapping("/public/documentos")
+    @GetMapping("/documentos")
     public String documentos() { return "documentos"; }
 
-    @GetMapping("/public/rutas")
+    @GetMapping("/rutas")
     public String rutas() { return "rutas"; }
 
-    @GetMapping("/public/negocio")
+    @GetMapping("/negocio")
     public String negocio() { return "negocio"; }
 
-    @GetMapping("/public/mis-datos")
+    @GetMapping("/mis-datos")
     public String misDatos() { return "mis-datos"; }
+
+    @GetMapping("/informes")
+    public String informes() { return "informes"; }
 }

@@ -8,18 +8,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException;
+import com.iesdoctorbalmis.spring.modelo.Documento;
 import com.iesdoctorbalmis.spring.modelo.EventoTraslado;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
+import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
 import com.iesdoctorbalmis.spring.repository.EventoTrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
-import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
-import com.iesdoctorbalmis.spring.modelo.Documento;
-import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
 
 @Service
 public class TrasladoServiceDB implements TrasladoService {
@@ -30,6 +31,13 @@ public class TrasladoServiceDB implements TrasladoService {
     private final ResiduoRepository residuoRepo;
     private final UsuarioRepository usuarioRepo;
     private final DocumentoRepository documentoRepo;
+
+    /**
+     * Lock de proceso para serializar la generacion de referencias DI.
+     * Evita la race entre dos cambios a COMPLETADO concurrentes que generarian
+     * la misma referencia. Asume single-instance; en multi-nodo usar secuencia BD.
+     */
+    private static final Object DI_REFERENCIA_LOCK = new Object();
 
     public TrasladoServiceDB(TrasladoRepository trasladoRepo,
                              EventoTrasladoRepository eventoRepo,
@@ -56,6 +64,7 @@ public class TrasladoServiceDB implements TrasladoService {
     }
 
     @Override
+    @Transactional
     public Traslado save(Traslado t) {
         if (t.getCentroProductor() != null && t.getCentroProductor().getId() != null)
             t.setCentroProductor(centroRepo.findById(t.getCentroProductor().getId())
@@ -93,7 +102,7 @@ public class TrasladoServiceDB implements TrasladoService {
         if (!estadoAnterior.puedeTransicionarA(nuevoEstado)) {
             throw new TransicionEstadoInvalidaException(
                 "Transicion invalida: " + estadoAnterior + " -> " + nuevoEstado
-                + ". Transiciones permitidas desde " + estadoAnterior + " son limitadas.");
+                + ". No se permite cambiar al mismo estado.");
         }
 
         EventoTraslado evento = new EventoTraslado(traslado, estadoAnterior, nuevoEstado, comentario, usuario);
@@ -110,27 +119,44 @@ public class TrasladoServiceDB implements TrasladoService {
 
         Traslado guardado = trasladoRepo.save(traslado);
 
-        // Al completar: marcar salida del residuo y generar DI automático
+        // Al completar: marcar salida del residuo y generar DI automatico
         if (nuevoEstado == EstadoTraslado.COMPLETADO) {
             if (traslado.getResiduo() != null) {
                 traslado.getResiduo().setFechaSalidaAlmacen(LocalDateTime.now());
                 residuoRepo.save(traslado.getResiduo());
             }
-            boolean yaExisteDi = documentoRepo.existsByTrasladoAndTipo(
-                    guardado, TipoDocumento.DOCUMENTO_IDENTIFICACION);
-            if (!yaExisteDi) {
-                String anio = String.valueOf(java.time.LocalDate.now().getYear());
-                long count = documentoRepo.count() + 1;
-                String referencia = "DI-" + anio + "-" + String.format("%03d", count);
-                Documento di = new Documento(
-                        TipoDocumento.DOCUMENTO_IDENTIFICACION, guardado, referencia);
-                di.setEstado(com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento.EMITIDO);
-                di.setObservaciones("DI generado al completar traslado #" + guardado.getId());
-                documentoRepo.save(di);
-            }
+            generarDocumentoIdentificacionSiNoExiste(guardado);
         }
 
         return guardado;
+    }
+
+    /**
+     * Genera el Documento de Identificacion (DI) asociado al traslado si aun no existe.
+     * La referencia sigue el patron DI-{anio}-{NNN} con secuencia reiniciada por anio.
+     * Se serializa con un lock de proceso porque el contador depende del estado actual de la BD;
+     * dos transacciones simultaneas podrian generar la misma referencia.
+     */
+    private void generarDocumentoIdentificacionSiNoExiste(Traslado traslado) {
+        if (documentoRepo.existsByTrasladoAndTipo(traslado, TipoDocumento.DOCUMENTO_IDENTIFICACION)) {
+            return;
+        }
+        synchronized (DI_REFERENCIA_LOCK) {
+            // Re-check dentro del lock por si otra hebra creo el DI mientras esperabamos
+            if (documentoRepo.existsByTrasladoAndTipo(traslado, TipoDocumento.DOCUMENTO_IDENTIFICACION)) {
+                return;
+            }
+            String anio = String.valueOf(java.time.LocalDate.now().getYear());
+            String prefijo = "DI-" + anio + "-";
+            long siguiente = documentoRepo.countByTipoAndNumeroReferenciaStartingWith(
+                    TipoDocumento.DOCUMENTO_IDENTIFICACION, prefijo) + 1;
+            String referencia = prefijo + String.format("%03d", siguiente);
+
+            Documento di = new Documento(TipoDocumento.DOCUMENTO_IDENTIFICACION, traslado, referencia);
+            di.setEstado(EstadoDocumento.EMITIDO);
+            di.setObservaciones("DI generado al completar traslado #" + traslado.getId());
+            documentoRepo.save(di);
+        }
     }
 
     @Override

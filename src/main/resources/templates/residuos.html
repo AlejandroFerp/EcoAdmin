@@ -71,9 +71,16 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Codigo LER</label>
-                    <input type="text" id="fCodigoLER" class="form-control-eco" list="lerOpts" autocomplete="off"
-                           placeholder="Escribe codigo o descripcion..." oninput="alEscribirLer(this.value)">
-                    <datalist id="lerOpts"></datalist>
+                    <div class="relative" id="lerCombo">
+                        <input type="text" id="fCodigoLER" class="form-control-eco" autocomplete="off"
+                               placeholder="Escribe codigo o descripcion..."
+                               oninput="lerComboFiltrar(this.value)"
+                               onfocus="lerComboMostrar()"
+                               onblur="setTimeout(lerComboOcultar, 150)">
+                        <ul id="lerComboList"
+                            class="hidden absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg text-sm">
+                        </ul>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Entrada almacen</label>
@@ -85,9 +92,7 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Centro</label>
-                    <select id="fCentro" class="form-control-eco">
-                        <option value="">Sin asignar</option>
-                    </select>
+                    <div data-combobox="fCentro" data-placeholder="Buscar centro (o sin asignar)..."></div>
                 </div>
             </div>
             <div th:replace="~{layouts/fragments :: modalFooter('modalForm', 'Guardar', 'guardar')}"></div>
@@ -109,7 +114,10 @@ function initModales() {
 
 document.addEventListener('DOMContentLoaded', function() { initModales(); cargar(); cargarCentros(); cargarListaLer(); });
 
-var estadoBadge = { PENDIENTE:'badge-warning', ALMACENADO:'badge-info', EN_TRANSITO:'badge-warning', TRATADO:'badge-success', ELIMINADO:'badge-error' };
+function estadoResiduoPill(estado) {
+    if (typeof window.estadoResiduoBadge === 'function') return window.estadoResiduoBadge(estado);
+    return esc(estado || '—');
+}
 
 function diasAlmacenBadge(r) {
     if (!r.fechaEntradaAlmacen) return '<span class="text-slate-400">\u2014</span>';
@@ -138,10 +146,12 @@ function localDateTimeParaInput(arr) {
 async function cargarCentros() {
     var res = await fetch('/api/centros');
     var list = await res.json();
-    var sel = document.getElementById('fCentro');
-    sel.innerHTML = '<option value="">Sin asignar</option>' + list.map(function(c) {
-        return '<option value="' + c.id + '">' + esc(c.nombre) + '</option>';
-    }).join('');
+    Combobox.bind({
+        id: 'fCentro',
+        placeholder: 'Buscar centro (o sin asignar)...',
+        emptyOption: { value: '', label: 'Sin asignar' },
+        items: list.map(function(c) { return { value: c.id, label: c.nombre, sub: (c.tipo || '') }; })
+    });
 }
 
 var _listaLer = [];
@@ -150,25 +160,47 @@ async function cargarListaLer() {
         var res = await fetch('/api/lista-ler');
         if (!res.ok) return;
         _listaLer = await res.json();
-        renderOpcionesLer(_listaLer);
     } catch(e) { /* silencioso */ }
 }
-function renderOpcionesLer(lista) {
-    var dl = document.getElementById('lerOpts');
-    if (!dl) return;
-    dl.innerHTML = lista.map(function(l) {
-        return '<option value="' + esc(l.codigo) + '">' + esc(l.codigo) + ' - ' + esc(l.descripcion) + '</option>';
+function lerComboRender(items) {
+    var ul = document.getElementById('lerComboList');
+    if (!ul) return;
+    if (!items.length) {
+        ul.innerHTML = '<li class="px-3 py-2 text-slate-400">Sin coincidencias</li>';
+        return;
+    }
+    ul.innerHTML = items.slice(0, 50).map(function(l) {
+        var code = esc(l.codigo);
+        var desc = esc(l.descripcion);
+        return '<li class="px-3 py-2 hover:bg-blue-50 cursor-pointer flex gap-2"'
+             + ' onmousedown="lerComboSeleccionar(\'' + code.replace(/'/g, "\\'") + '\')">'
+             + '<span class="font-mono text-slate-700 shrink-0">' + code + '</span>'
+             + '<span class="text-slate-500 truncate">' + desc + '</span>'
+             + '</li>';
     }).join('');
 }
-function alEscribirLer(value) {
-    var v = (value || '').toLowerCase();
-    var item = _listaLer.find(function(l) {
-        return l.codigo.toLowerCase() === v || l.descripcion.toLowerCase() === v;
+function lerComboFiltrar(value) {
+    var v = (value || '').toLowerCase().trim();
+    var items = !v ? _listaLer : _listaLer.filter(function(l) {
+        return l.codigo.toLowerCase().includes(v) || l.descripcion.toLowerCase().includes(v);
     });
-    if (item) {
-        var input = document.getElementById('fCodigoLER');
-        if (input && input.value !== item.codigo) input.value = item.codigo;
-    }
+    lerComboRender(items);
+    lerComboMostrar();
+}
+function lerComboMostrar() {
+    var ul = document.getElementById('lerComboList');
+    if (!ul) return;
+    if (!ul.innerHTML.trim()) lerComboRender(_listaLer);
+    ul.classList.remove('hidden');
+}
+function lerComboOcultar() {
+    var ul = document.getElementById('lerComboList');
+    if (ul) ul.classList.add('hidden');
+}
+function lerComboSeleccionar(codigo) {
+    var input = document.getElementById('fCodigoLER');
+    if (input) input.value = codigo;
+    lerComboOcultar();
 }
 function descripcionDeLer(codigo) {
     var item = _listaLer.find(function(l) { return l.codigo === codigo; });
@@ -216,7 +248,7 @@ function renderTabla() {
                 + '<td class="text-sm text-slate-500">' + esc(r.descripcion || '\u2014') + '</td>'
                 + '<td class="text-sm">' + (r.cantidad != null ? r.cantidad : '\u2014') + '</td>'
                 + '<td class="text-sm">' + esc(r.unidad || '\u2014') + '</td>'
-                + '<td><span class="badge badge-sm ' + (estadoBadge[r.estado] || 'badge-ghost') + '">' + esc(r.estado || '\u2014') + '</span></td>'
+                + '<td>' + estadoResiduoPill(r.estado) + '</td>'
                 + '<td class="hidden md:table-cell">' + diasAlmacenBadge(r) + '</td>'
                 + '<td class="text-sm text-slate-500 hidden lg:table-cell">' + esc(r.centro ? r.centro.nombre : '\u2014') + '</td>'
                 + '<td class="text-right whitespace-nowrap">'
@@ -239,7 +271,10 @@ function abrirCrear() {
     document.getElementById('fEstado').value = 'PENDIENTE';
     document.getElementById('fFechaEntrada').value = '';
     document.getElementById('fDiasMaximo').value = '180';
-    document.getElementById('fCentro').value = '';
+    Combobox.clear('fCentro');
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fEstado'));
+    }
     mForm && mForm.show();
 }
 
@@ -253,7 +288,10 @@ async function abrirEditar(id) {
     document.getElementById('fCodigoLER').value = r.codigoLER || '';
     document.getElementById('fFechaEntrada').value = r.fechaEntradaAlmacen ? localDateTimeParaInput(r.fechaEntradaAlmacen) : '';
     document.getElementById('fDiasMaximo').value = r.diasMaximoAlmacenamiento != null ? r.diasMaximoAlmacenamiento : '180';
-    document.getElementById('fCentro').value = r.centro ? r.centro.id : '';
+    Combobox.setValue('fCentro', r.centro ? r.centro.id : '');
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fEstado'));
+    }
     mForm && mForm.show();
 }
 

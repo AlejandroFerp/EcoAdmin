@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Documento ' + (${doc.numeroReferencia} ?: ${doc.id})">Documento</title>
+    <style>
+        @page { size: A4; margin: 18mm 16mm; }
+        :root {
+            --primary: #1a6b3c;
+            --primary-soft: #e7f4ec;
+            --ink: #0f172a;
+            --muted: #475569;
+            --line: #e2e8f0;
+            --soft: #f8fafc;
+        }
+        * { box-sizing: border-box; }
+        html, body { background: #f1f5f9; }
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            color: var(--ink);
+            font-size: 12px;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+        .page {
+            background: #fff;
+            max-width: 210mm;
+            margin: 16px auto;
+            padding: 28px 32px;
+            box-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.18);
+            border-radius: 8px;
+        }
+        header.doc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-logo {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 18px;
+            letter-spacing: 0.02em;
+        }
+        .brand-text h1 { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: 0.01em; }
+        .brand-text p  { margin: 0; font-size: 11px; color: var(--muted); }
+        .doc-meta { text-align: right; }
+        .doc-meta .ref { font-family: ui-monospace, 'Consolas', monospace; font-size: 12px; color: var(--ink); font-weight: 600; }
+        .doc-meta .estado {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+            background: var(--primary-soft); color: var(--primary);
+        }
+        .doc-meta .estado.borrador { background:#f1f5f9; color:#475569; }
+        .doc-meta .estado.cerrado  { background:#e0e7ff; color:#4338ca; }
+        .doc-meta .estado.vencido  { background:#fee2e2; color:#b91c1c; }
+        h2.doc-title {
+            margin: 0 0 18px;
+            font-size: 22px;
+            color: var(--ink);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        section { margin-bottom: 18px; }
+        section h3 {
+            margin: 0 0 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 4px;
+        }
+        table.kv {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.kv td {
+            padding: 6px 8px;
+            font-size: 12px;
+            vertical-align: top;
+            border-bottom: 1px solid var(--line);
+        }
+        table.kv td.label {
+            width: 32%;
+            color: var(--muted);
+            font-weight: 500;
+            background: var(--soft);
+        }
+        table.kv td.value { color: var(--ink); font-weight: 500; }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px 14px;
+            background: var(--soft);
+        }
+        .panel h4 {
+            margin: 0 0 6px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+        }
+        .panel p { margin: 0; font-size: 12px; color: var(--ink); }
+        .panel small { color: var(--muted); font-size: 11px; }
+        .firmas {
+            margin-top: 36px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+        .firma {
+            border-top: 1px solid #1e293b;
+            padding-top: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+        }
+        footer.doc-footer {
+            margin-top: 28px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+            font-size: 10px;
+            color: var(--muted);
+            display: flex; justify-content: space-between;
+        }
+        .observaciones {
+            white-space: pre-wrap;
+            font-size: 12px;
+            color: var(--ink);
+            background: var(--soft);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-height: 36px;
+        }
+        /* Toolbar (no se imprime) */
+        .toolbar {
+            position: sticky; top: 0;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-bottom: 1px solid var(--line);
+            padding: 10px 16px;
+            display: flex; gap: 8px; justify-content: flex-end;
+            z-index: 10;
+        }
+        .toolbar button, .toolbar a.btn {
+            font: inherit;
+            font-size: 12px; font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .15s;
+        }
+        .toolbar button:hover, .toolbar a.btn:hover { border-color: var(--primary); color: var(--primary); }
+        .toolbar a.btn.primary {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+        }
+        .toolbar a.btn.primary:hover { background: #155a32; color:#fff; }
+        @media print {
+            html, body { background: #fff; }
+            .toolbar { display: none !important; }
+            .page { box-shadow: none; margin: 0; max-width: none; padding: 0; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a class="btn primary"
+       th:href="@{|/api/documentos/${doc.id}/pdf|}"
+       th:attr="download=|${doc.numeroReferencia ?: 'documento-' + doc.id}.pdf|">
+        Descargar PDF
+    </a>
+</div>
+
+<div class="page">
+    <header class="doc-header">
+        <div class="brand">
+            <div class="brand-logo">EA</div>
+            <div class="brand-text">
+                <h1>EcoAdmin</h1>
+                <p>Gestión de Residuos Peligrosos</p>
+            </div>
+        </div>
+        <div class="doc-meta">
+            <div class="ref" th:text="${doc.numeroReferencia ?: ('DOC-' + doc.id)}">DOC-001</div>
+            <span class="estado"
+                  th:classappend="${doc.estado != null ? doc.estado.name().toLowerCase() : ''}"
+                  th:text="${doc.estado != null ? doc.estado.name() : 'BORRADOR'}">EMITIDO</span>
+        </div>
+    </header>
+
+    <h2 class="doc-title" th:switch="${tipo}">
+        <span th:case="'NOTIFICACION_PREVIA'">Notificación Previa de Traslado</span>
+        <span th:case="'CARTA_DE_PORTE'">Carta de Porte</span>
+        <span th:case="'FICHA_ACEPTACION'">Ficha de Aceptación</span>
+        <span th:case="'HOJA_SEGUIMIENTO'">Hoja de Seguimiento</span>
+        <span th:case="'INFORME_FINAL'">Informe Final</span>
+        <span th:case="'CONTRATO'">Contrato de Tratamiento</span>
+        <span th:case="'DOCUMENTO_IDENTIFICACION'">Documento de Identificación</span>
+        <span th:case="'ARCHIVO_CRONOLOGICO'">Archivo Cronológico</span>
+        <span th:case="*">Documento</span>
+    </h2>
+
+    <section>
+        <h3>Datos del documento</h3>
+        <table class="kv">
+            <tr>
+                <td class="label">Referencia</td>
+                <td class="value" th:text="${doc.numeroReferencia ?: '—'}">—</td>
+            </tr>
+            <tr>
+                <td class="label">Tipo</td>
+                <td class="value" th:text="${tipo}">—</td>
+            </tr>
+            <tr>
+                <td class="label">Estado</td>
+                <td class="value" th:text="${doc.estado != null ? doc.estado.name() : '—'}">—</td>
+            </tr>
+            <tr>
+                <td class="label">Fecha de emisión</td>
+                <td class="value"
+                    th:text="${doc.fechaEmision != null ? #temporals.format(doc.fechaEmision, 'dd/MM/yyyy') : '—'}">—</td>
+            </tr>
+            <tr th:if="${doc.fechaVencimiento != null}">
+                <td class="label">Vencimiento</td>
+                <td class="value"
+                    th:text="${#temporals.format(doc.fechaVencimiento, 'dd/MM/yyyy')}">—</td>
+            </tr>
+            <tr th:if="${doc.fechaCierre != null}">
+                <td class="label">Cierre</td>
+                <td class="value"
+                    th:text="${#temporals.format(doc.fechaCierre, 'dd/MM/yyyy')}">—</td>
+            </tr>
+        </table>
+    </section>
+
+    <section th:if="${traslado != null}">
+        <h3>Traslado asociado</h3>
+        <table class="kv">
+            <tr>
+                <td class="label">ID traslado</td>
+                <td class="value" th:text="${traslado.id}">—</td>
+            </tr>
+            <tr>
+                <td class="label">Estado del traslado</td>
+                <td class="value" th:text="${traslado.estado != null ? traslado.estado.name() : '—'}">—</td>
+            </tr>
+            <tr th:if="${traslado.fechaCreacion != null}">
+                <td class="label">Fecha de creación</td>
+                <td class="value"
+                    th:text="${#temporals.format(traslado.fechaCreacion, 'dd/MM/yyyy HH:mm')}">—</td>
+            </tr>
+            <tr th:if="${traslado.fechaInicioTransporte != null}">
+                <td class="label">Inicio transporte</td>
+                <td class="value"
+                    th:text="${#temporals.format(traslado.fechaInicioTransporte, 'dd/MM/yyyy HH:mm')}">—</td>
+            </tr>
+            <tr th:if="${traslado.fechaEntrega != null}">
+                <td class="label">Entrega</td>
+                <td class="value"
+                    th:text="${#temporals.format(traslado.fechaEntrega, 'dd/MM/yyyy HH:mm')}">—</td>
+            </tr>
+        </table>
+
+        <div class="grid-2" style="margin-top: 12px;">
+            <div class="panel">
+                <h4>Centro productor</h4>
+                <p th:text="${traslado.centroProductor != null ? traslado.centroProductor.nombre : '—'}">—</p>
+                <small th:if="${traslado.centroProductor != null and traslado.centroProductor.nima != null}"
+                       th:text="'NIMA: ' + ${traslado.centroProductor.nima}">NIMA</small>
+            </div>
+            <div class="panel">
+                <h4>Centro gestor</h4>
+                <p th:text="${traslado.centroGestor != null ? traslado.centroGestor.nombre : '—'}">—</p>
+                <small th:if="${traslado.centroGestor != null and traslado.centroGestor.nima != null}"
+                       th:text="'NIMA: ' + ${traslado.centroGestor.nima}">NIMA</small>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 12px;" th:if="${traslado.residuo != null or traslado.transportista != null}">
+            <div class="panel" th:if="${traslado.residuo != null}">
+                <h4>Residuo</h4>
+                <p>
+                    <strong th:text="${traslado.residuo.codigoLER ?: '—'}">—</strong>
+                    <span th:if="${traslado.residuo.descripcion != null}"
+                          th:text="' — ' + ${traslado.residuo.descripcion}"></span>
+                </p>
+                <small th:if="${traslado.residuo.cantidad != null}"
+                       th:text="'Cantidad: ' + ${traslado.residuo.cantidad} + ' ' + (${traslado.residuo.unidad} ?: 'kg')">Cantidad</small>
+            </div>
+            <div class="panel" th:if="${traslado.transportista != null}">
+                <h4>Transportista</h4>
+                <p th:text="${traslado.transportista.nombre ?: traslado.transportista.email}">—</p>
+                <small th:if="${traslado.transportista.email != null}"
+                       th:text="${traslado.transportista.email}">email</small>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${centro != null and traslado == null}">
+        <h3>Centro asociado</h3>
+        <div class="panel">
+            <p><strong th:text="${centro.nombre}">—</strong></p>
+            <small th:if="${centro.nima != null}" th:text="'NIMA: ' + ${centro.nima}">NIMA</small>
+        </div>
+    </section>
+
+    <section th:if="${doc.observaciones != null and !doc.observaciones.isEmpty()}">
+        <h3>Observaciones</h3>
+        <div class="observaciones" th:text="${doc.observaciones}">—</div>
+    </section>
+
+    <div class="firmas">
+        <div class="firma">Firma del productor</div>
+        <div class="firma">Firma del gestor / transportista</div>
+    </div>
+
+    <footer class="doc-footer">
+        <span>EcoAdmin · Documento generado automáticamente</span>
+        <span th:text="'Generado: ' + ${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}">Generado</span>
+    </footer>
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layouts/main :: layout('index', 'EcoAdmin — Dashboard', 'Panel de Control', ~{::pageContent}, ~{::pageScripts})}">
 <body>
@@ -13,9 +13,9 @@
     <!-- BARRA DE PERÍODO + EXPORTAR -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit" id="periodoBtns">
-            <button type="button" onclick="setPeriodo('hoy')"    id="pHoy"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm">Hoy</button>
+            <button type="button" onclick="setPeriodo('hoy')"    id="pHoy"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">Hoy</button>
             <button type="button" onclick="setPeriodo('semana')" id="pSemana" class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">7 días</button>
-            <button type="button" onclick="setPeriodo('mes')"    id="pMes"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">30 días</button>
+            <button type="button" onclick="setPeriodo('mes')"    id="pMes"   class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-white text-slate-800 shadow-sm">30 días</button>
             <button type="button" onclick="setPeriodo('todo')"   id="pTodo"  class="periodo-btn px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors text-slate-500 hover:text-slate-700">Todo</button>
         </div>
         <button type="button" onclick="imprimirInforme()"
@@ -90,7 +90,7 @@
                     <span class="text-xs text-slate-500">Cargando...</span>
                 </div>
             </div>
-            <a th:href="@{/public/traslados}"
+            <a th:href="@{/traslados}"
                class="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#3b82f6] text-white text-sm font-semibold hover:bg-[#2563eb] transition-colors">
                 Ver todos los traslados
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -105,7 +105,7 @@
                 <h2 class="text-base font-bold text-slate-800">Traslados recientes</h2>
                 <p class="text-xs text-slate-500 mt-0.5">Ultimos 5 registros del sistema</p>
             </div>
-            <a th:href="@{/public/traslados}" class="text-xs font-semibold text-[#3b82f6] hover:underline">Ver todos</a>
+            <a th:href="@{/traslados}" class="text-xs font-semibold text-[#3b82f6] hover:underline">Ver todos</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -138,9 +138,11 @@ var ESTADO_CONFIG = {
     COMPLETADO:  { label: 'Completado',  color: '#10b981', bg: 'bg-emerald-100', text: 'text-emerald-700' }
 };
 
-function estadoBadge(estado) {
-    var cfg = ESTADO_CONFIG[estado] || { label: estado, bg: 'bg-slate-100', text: 'text-slate-600' };
-    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ' + cfg.bg + ' ' + cfg.text + '">' + esc(cfg.label) + '</span>';
+function estadoBadgeLocal(estado) {
+    // Usa el helper global (estilo unificado) si esta disponible
+    if (typeof window.estadoBadge === 'function') return window.estadoBadge(estado);
+    var cfg = ESTADO_CONFIG[estado] || { label: estado };
+    return '<span class="estado-pill" data-estado="' + esc(estado || '') + '"><span class="dot"></span>' + esc(cfg.label) + '</span>';
 }
 
 function formatFecha(iso) {
@@ -148,7 +150,7 @@ function formatFecha(iso) {
     return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-var periodoActual = 'hoy';
+var periodoActual = 'mes';
 var chartInstance = null;
 
 function getDesdeParam(periodo) {
@@ -172,59 +174,84 @@ function setPeriodo(periodo) {
 async function cargarDatos() {
     var desde = getDesdeParam(periodoActual);
     var statsUrl = '/api/estadisticas' + (desde ? '?desde=' + desde : '');
-    var results = await Promise.all([
-        fetch(statsUrl).then(function(r) { return r.json(); }),
-        fetch('/api/traslados').then(function(r) { return r.json(); })
-    ]);
-    var stats = results[0], traslados = results[1];
+    var stats, traslados;
+    try {
+        var results = await Promise.all([
+            fetch(statsUrl).then(function(r) { if (!r.ok) throw new Error('stats ' + r.status); return r.json(); }),
+            fetch('/api/traslados').then(function(r) { if (!r.ok) throw new Error('traslados ' + r.status); return r.json(); })
+        ]);
+        stats = results[0] || {};
+        traslados = Array.isArray(results[1]) ? results[1] : [];
+    } catch (err) {
+        console.error('Error cargando dashboard:', err);
+        var det = document.getElementById('estadoDetalle');
+        if (det) det.innerHTML = '<div class="text-xs text-red-500 py-2">Error al cargar datos. Recarga la pagina.</div>';
+        var tab = document.getElementById('tablaRecientes');
+        if (tab) tab.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-red-400 text-xs">Error al cargar.</td></tr>';
+        return;
+    }
 
-    var ctx = document.getElementById('chartEstados').getContext('2d');
-    if (chartInstance) { chartInstance.destroy(); }
-    chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Pendiente', 'En transito', 'Entregado', 'Completado'],
-            datasets: [{
-                label: 'Traslados',
-                data: [stats.trasladosPendientes, stats.trasladosEnTransito, stats.trasladosEntregados, stats.trasladosCompletados],
-                backgroundColor: ['#fef3c7','#dbeafe','#ede9fe','#d1fae5'],
-                borderColor: ['#f59e0b','#3b82f6','#8b5cf6','#10b981'],
-                borderWidth: 2,
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#64748b' } },
-                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0, font: { size: 11 }, color: '#94a3b8' } }
+    // Normalizar campos numericos a 0 si vienen null/undefined
+    var pend = Number(stats.trasladosPendientes)  || 0;
+    var trns = Number(stats.trasladosEnTransito)  || 0;
+    var entr = Number(stats.trasladosEntregados)  || 0;
+    var comp = Number(stats.trasladosCompletados) || 0;
+
+    var canvas = document.getElementById('chartEstados');
+    if (canvas && typeof Chart !== 'undefined') {
+        var ctx = canvas.getContext('2d');
+        if (chartInstance) { chartInstance.destroy(); }
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pendiente', 'En transito', 'Entregado', 'Completado'],
+                datasets: [{
+                    label: 'Traslados',
+                    data: [pend, trns, entr, comp],
+                    backgroundColor: ['#fef3c7','#dbeafe','#ede9fe','#d1fae5'],
+                    borderColor: ['#f59e0b','#3b82f6','#8b5cf6','#10b981'],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#64748b' } },
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0, font: { size: 11 }, color: '#94a3b8' } }
+                }
             }
-        }
-    });
+        });
+    }
 
-    var total = stats.trasladosPendientes + stats.trasladosEnTransito + stats.trasladosEntregados + stats.trasladosCompletados;
+    var total = pend + trns + entr + comp;
     var items = [
-        { label: 'Pendiente',   value: stats.trasladosPendientes,  color: 'bg-amber-400'   },
-        { label: 'En transito', value: stats.trasladosEnTransito,  color: 'bg-blue-500'    },
-        { label: 'Entregado',   value: stats.trasladosEntregados,  color: 'bg-violet-500'  },
-        { label: 'Completado',  value: stats.trasladosCompletados, color: 'bg-emerald-500' }
+        { label: 'Pendiente',   value: pend, color: 'bg-amber-400'   },
+        { label: 'En transito', value: trns, color: 'bg-blue-500'    },
+        { label: 'Entregado',   value: entr, color: 'bg-violet-500'  },
+        { label: 'Completado',  value: comp, color: 'bg-emerald-500' }
     ];
-    document.getElementById('estadoDetalle').innerHTML = items.map(function(item) {
-        var pct = total > 0 ? Math.round(item.value * 100 / total) : 0;
-        return '<div>'
-            + '<div class="flex items-center justify-between mb-1.5">'
-            + '<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full ' + item.color + '"></div><span class="text-xs font-medium text-slate-600">' + esc(item.label) + '</span></div>'
-            + '<span class="text-xs font-bold text-slate-800">' + item.value + ' <span class="text-slate-400 font-normal">(' + pct + '%)</span></span>'
+    var detalle = document.getElementById('estadoDetalle');
+    if (detalle) {
+        detalle.innerHTML = items.map(function(item) {
+            var pct = total > 0 ? Math.round(item.value * 100 / total) : 0;
+            return '<div>'
+                + '<div class="flex items-center justify-between mb-1.5">'
+                + '<div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full ' + item.color + '"></div><span class="text-xs font-medium text-slate-600">' + esc(item.label) + '</span></div>'
+                + '<span class="text-xs font-bold text-slate-800">' + item.value + ' <span class="text-slate-400 font-normal">(' + pct + '%)</span></span>'
             + '</div>'
             + '<div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"><div class="h-full ' + item.color + ' rounded-full transition-all" style="width:' + pct + '%"></div></div>'
             + '</div>';
     }).join('');
+    }
 
-    var recientes = traslados.slice().sort(function(a, b) { return new Date(b.fechaCreacion) - new Date(a.fechaCreacion); }).slice(0, 5);
-    document.getElementById('tablaRecientes').innerHTML = recientes.length === 0
+    var tabla = document.getElementById('tablaRecientes');
+    if (tabla) {
+        var recientes = traslados.slice().sort(function(a, b) { return new Date(b.fechaCreacion) - new Date(a.fechaCreacion); }).slice(0, 5);
+        tabla.innerHTML = recientes.length === 0
         ? '<tr><td colspan="6" class="text-center py-10 text-slate-400 text-xs">Sin registros</td></tr>'
         : recientes.map(function(t) {
             return '<tr class="hover:bg-slate-50/70 transition-colors">'
@@ -232,10 +259,11 @@ async function cargarDatos() {
                 + '<td class="px-6 py-3.5 font-medium text-slate-700 text-sm">' + esc(t.centroProductor ? t.centroProductor.nombre : '\u2014') + '</td>'
                 + '<td class="px-6 py-3.5 text-slate-500 text-sm hidden md:table-cell">' + esc(t.centroGestor ? t.centroGestor.nombre : '\u2014') + '</td>'
                 + '<td class="px-6 py-3.5 text-slate-500 text-sm hidden lg:table-cell">' + esc(t.residuo ? (t.residuo.codigoLER || String(t.residuo.id)) : '\u2014') + '</td>'
-                + '<td class="px-6 py-3.5">' + estadoBadge(t.estado) + '</td>'
+                + '<td class="px-6 py-3.5">' + estadoBadgeLocal(t.estado) + '</td>'
                 + '<td class="px-6 py-3.5 text-slate-400 text-xs hidden sm:table-cell">' + formatFecha(t.fechaCreacion) + '</td>'
                 + '</tr>';
         }).join('');
+    }
 }
 
 function imprimirInforme() {

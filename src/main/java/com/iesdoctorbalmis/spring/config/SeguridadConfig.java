@@ -49,9 +49,11 @@ public class SeguridadConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+            // Permitir iframes del mismo origen (vista previa de documentos en /preview/**)
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/public/login", "/webjars/**", "/css/**",
+                    "/login", "/webjars/**", "/css/**",
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
@@ -62,19 +64,20 @@ public class SeguridadConfig {
                 .requestMatchers("/api/direcciones/**").authenticated()
                 .requestMatchers("/api/lista-ler/**").authenticated()
                 .requestMatchers("/api/estadisticas/**").authenticated()
+                .requestMatchers("/api/informes/**").hasAnyRole("ADMIN", "GESTOR")
                 .requestMatchers("/api/qr/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/public/login")
-                .loginProcessingUrl("/public/login")
-                .defaultSuccessUrl("/public/index", true)
-                .failureUrl("/public/login?error")
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/index", true)
+                .failureUrl("/login?error")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/public/login?logout")
+                .logoutSuccessUrl("/login?logout")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()

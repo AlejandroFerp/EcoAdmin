@@ -79,9 +79,7 @@
                     </div>
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Direccion *</label>
-                        <select id="fDireccion" class="form-control-eco">
-                            <option value="">Seleccionar direccion...</option>
-                        </select>
+                        <div data-combobox="fDireccion" data-placeholder="Buscar direccion (calle o ciudad)..."></div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Contacto</label>
@@ -104,8 +102,8 @@
 </th:block>
 
 <th:block th:fragment="pageScripts">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPcM=" crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 var todos = [], direcciones = [], pagina = 1, filtro = '';
 var POR_PAGINA = 15;
@@ -138,11 +136,17 @@ async function cargar() {
 }
 
 function renderDirecciones() {
-    var sel = document.getElementById('fDireccion');
-    sel.innerHTML = '<option value="">Seleccionar direccion...</option>'
-        + direcciones.map(function(d) {
-            return '<option value="' + d.id + '">' + esc(d.nombre || d.calle) + ' - ' + esc(d.ciudad) + '</option>';
-        }).join('');
+    Combobox.bind({
+        id: 'fDireccion',
+        placeholder: 'Buscar direccion (calle o ciudad)...',
+        items: direcciones.map(function(d) {
+            return {
+                value: d.id,
+                label: (d.nombre || d.calle || ('#' + d.id)),
+                sub: [d.ciudad, d.codigoPostal].filter(Boolean).join(' · ')
+            };
+        })
+    });
 }
 
 function filtrar() { filtro = document.getElementById('busqueda').value.toLowerCase(); pagina = 1; renderTabla(); }
@@ -170,7 +174,7 @@ function renderTabla() {
                 + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + c.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
             + '<td class="text-xs text-slate-400">' + c.id + '</td>'
             + '<td class="font-medium">' + esc(c.nombre || '\u2014') + '</td>'
-            + '<td><span class="badge badge-ghost badge-sm">' + esc(c.tipo || '\u2014') + '</span></td>'
+            + '<td>' + (window.tipoCentroBadge ? window.tipoCentroBadge(c.tipo) : esc(c.tipo || '\u2014')) + '</td>'
             + '<td class="text-sm text-slate-500 hidden md:table-cell">' + esc(c.direccion ? c.direccion.calle : '\u2014') + '</td>'
             + '<td class="text-sm">' + esc(c.direccion ? c.direccion.ciudad : '\u2014') + '</td>'
             + '<td class="text-xs text-slate-500 hidden lg:table-cell">' + esc(c.nima || '\u2014') + '</td>'
@@ -192,7 +196,10 @@ function abrirCrear() {
     document.getElementById('itemId').value = '';
     ['fNombre','fNima','fContacto','fTelefono','fEmail'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fTipo').value = '';
-    document.getElementById('fDireccion').value = '';
+    Combobox.clear('fDireccion');
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+    }
     mForm && mForm.show();
 }
 
@@ -202,11 +209,14 @@ async function abrirEditar(id) {
     document.getElementById('itemId').value = c.id;
     document.getElementById('fNombre').value = c.nombre || '';
     document.getElementById('fTipo').value = c.tipo || '';
-    document.getElementById('fDireccion').value = c.direccion ? c.direccion.id : '';
+    Combobox.setValue('fDireccion', c.direccion ? c.direccion.id : '');
     document.getElementById('fNima').value = c.nima || '';
     document.getElementById('fContacto').value = c.nombreContacto || '';
     document.getElementById('fTelefono').value = c.telefono || '';
     document.getElementById('fEmail').value = c.email || '';
+    if (window.refreshChoices) {
+        window.refreshChoices(document.getElementById('fTipo'));
+    }
     mForm && mForm.show();
 }
 

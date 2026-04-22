@@ -8,11 +8,11 @@ public enum EstadoTraslado {
 
     /**
      * Permite transiciones libres entre cualquier estado para facilitar rectificaciones manuales.
+     * Solo se prohibe la transicion a si mismo para evitar generar eventos vacios en el historial.
      * La trazabilidad se mantiene mediante el historial de eventos (EventoTraslado).
      */
     public boolean puedeTransicionarA(EstadoTraslado destino) {
         if (destino == null) return false;
-        // El usuario requiere libertad total para rectificar errores; el historial registra el log
         return this != destino;
     }
 }
