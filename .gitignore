@@ -38,3 +38,9 @@ build/
 ### AI tools ###
 .gga
 AGENTS.md
+### Node ###
+node_modules/
+**/node_modules/
+node/
+*.log
+
