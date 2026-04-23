@@ -44,3 +44,17 @@ node_modules/
 node/
 *.log
 
+
+### Local DB (SQLite) ###
+ecoadmin.db
+*.db-journal
+
+### Uploads (runtime-generated) ###
+uploads/
+
+### Refactor scripts (one-shot, not production) ###
+refactor-*.js
+server.log
+server.err.log
+server.pid
+
