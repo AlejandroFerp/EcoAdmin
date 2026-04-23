@@ -1,5 +1,6 @@
 package com.iesdoctorbalmis.spring.controladores;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.PerfilTransportista;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
+import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 import com.iesdoctorbalmis.spring.servicios.PerfilTransportistaService;
 import com.iesdoctorbalmis.spring.servicios.TarifaValidator;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
@@ -31,13 +33,22 @@ public class PerfilTransportistaController {
     private final PerfilTransportistaService service;
     private final TarifaValidator validator;
     private final UsuarioAutenticadoService authService;
+    private final UsuarioRepository usuarioRepo;
 
     public PerfilTransportistaController(PerfilTransportistaService service,
                                          TarifaValidator validator,
-                                         UsuarioAutenticadoService authService) {
+                                         UsuarioAutenticadoService authService,
+                                         UsuarioRepository usuarioRepo) {
         this.service = service;
         this.validator = validator;
         this.authService = authService;
+        this.usuarioRepo = usuarioRepo;
+    }
+
+    @Operation(summary = "Listar todos los usuarios con rol TRANSPORTISTA")
+    @GetMapping("/api/transportistas")
+    public List<Usuario> listarTransportistas() {
+        return usuarioRepo.findByRol(Rol.TRANSPORTISTA);
     }
 
     @Operation(summary = "Obtener perfil de transportista por ID de usuario")
@@ -66,8 +77,7 @@ public class PerfilTransportistaController {
             PerfilTransportista saved = service.guardar(id, datos);
             return ResponseEntity.ok(saved);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                .body(null);
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -75,8 +85,8 @@ public class PerfilTransportistaController {
     @GetMapping("/api/transportistas/{id}/calcular-tarifa")
     public ResponseEntity<Map<String, Object>> calcularTarifa(
             @PathVariable Long id,
-            @RequestParam double w,
-            @RequestParam double L) {
+            @RequestParam(defaultValue = "0") double w,
+            @RequestParam(defaultValue = "0") double L) {
 
         PerfilTransportista perfil = service.findByUsuarioId(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Perfil no encontrado para transportista: " + id));

@@ -1,32 +1,351 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
     th:replace="~{layouts/main :: layout('routes', 'EcoAdmin — Rutas', 'Gestión de Rutas', ~{::pageContent}, ~{::pageScripts})}">
 <body>
 
 <th:block th:fragment="pageContent">
 <main class="page-main">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">Gestión de Rutas</h1>
-            <p class="page-subtitle">Planificación y seguimiento de rutas de recogida</p>
-        </div>
-    </div>
 
-    <!-- Placeholder -->
-    <div class="card flex flex-col items-center justify-center py-24">
-        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
-            <svg class="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-            </svg>
-        </div>
-        <h2 class="text-xl font-bold text-slate-700 mb-1">Módulo de Rutas</h2>
-        <p class="text-sm text-slate-400 max-w-xs text-center">Esta funcionalidad está en desarrollo. Pronto podrás planificar y optimizar rutas de recogida.</p>
-        <span class="mt-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Próximamente</span>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Gestión de Rutas</h1>
+      <p class="page-subtitle">Planificación y seguimiento de rutas de recogida</p>
     </div>
+    <div class="page-actions" id="accionesAdmin" style="display:none">
+      <button type="button" onclick="abrirCrear()" class="btn-primary">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva ruta
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card p-4 mb-4">
+    <div class="flex flex-wrap gap-3 items-center">
+      <input type="text" id="busqueda" placeholder="Buscar por nombre o transportista..." class="form-control-eco flex-1 min-w-48" oninput="filtrar()">
+      <select id="filtroEstado" class="form-control-eco w-48" onchange="filtrar()">
+        <option value="">Todos los estados</option>
+        <option value="PLANIFICADA">Planificada</option>
+        <option value="EN_CURSO">En curso</option>
+        <option value="COMPLETADA">Completada</option>
+        <option value="CANCELADA">Cancelada</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card overflow-hidden">
+    <table class="table w-full">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Transportista</th>
+          <th>Fecha</th>
+          <th>Ruta</th>
+          <th>Dist.</th>
+          <th>Estado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaCuerpo">
+        <tr><td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+      </tbody>
+    </table>
+    <div class="px-4 py-3 flex items-center justify-between border-t border-slate-100">
+      <span id="infoReg" class="text-xs text-slate-400"></span>
+      <div id="pgBotones" class="join"></div>
+    </div>
+  </div>
+
+  <!-- Modal Crear/Editar -->
+  <div id="modalForm" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--xl">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="modalTitulo" class="modal-title">Nueva ruta</h3>
+          <button type="button" onclick="cerrarModal()" class="text-slate-400 hover:text-slate-700">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="itemId">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="label-eco">Nombre de la ruta *</label>
+              <input type="text" id="fNombre" class="form-control-eco" placeholder="Ej. Ruta Norte — Mañana">
+            </div>
+            <div id="campoTransportista">
+              <label class="label-eco">Transportista</label>
+              <select id="fTransportista" class="form-control-eco">
+                <option value="">Sin asignar</option>
+              </select>
+            </div>
+            <div>
+              <label class="label-eco">Fecha</label>
+              <input type="date" id="fFecha" class="form-control-eco">
+            </div>
+            <div>
+              <label class="label-eco">Origen</label>
+              <input type="text" id="fOrigen" class="form-control-eco" placeholder="Dirección de inicio">
+            </div>
+            <div>
+              <label class="label-eco">Destino</label>
+              <input type="text" id="fDestino" class="form-control-eco" placeholder="Dirección de fin">
+            </div>
+            <div>
+              <label class="label-eco">Distancia estimada (km)</label>
+              <input type="number" id="fDistancia" class="form-control-eco" placeholder="0" min="0" step="0.1">
+            </div>
+            <div>
+              <label class="label-eco">Estado</label>
+              <select id="fEstado" class="form-control-eco">
+                <option value="PLANIFICADA">Planificada</option>
+                <option value="EN_CURSO">En curso</option>
+                <option value="COMPLETADA">Completada</option>
+                <option value="CANCELADA">Cancelada</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="label-eco">Observaciones</label>
+              <textarea id="fObservaciones" class="form-control-eco" rows="3" placeholder="Notas sobre la ruta..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
+          <button type="button" onclick="guardar()" class="btn-primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Borrar -->
+  <div id="modalBorrar" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--sm">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 class="modal-title">Eliminar ruta</h3>
+          <button type="button" onclick="cerrarModalBorrar()" class="text-slate-400 hover:text-slate-700">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="text-slate-700">¿Eliminar la ruta <strong id="nombreBorrar" class="text-slate-900"></strong>?</p>
+          <p class="text-sm text-slate-400 mt-1">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-foot">
+          <button type="button" onclick="cerrarModalBorrar()" class="btn-secondary">Cancelar</button>
+          <button type="button" onclick="confirmarBorrar()" class="btn-danger">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 </th:block>
 
 <th:block th:fragment="pageScripts">
+<script>
+var todos = [], filtro = '', filtroEst = '', pagina = 1, POR_PAGINA = 10;
+var idBorrar = null, rolActual = null, idActual = null;
+
+var ESTADO_LABELS = { PLANIFICADA: 'Planificada', EN_CURSO: 'En curso', COMPLETADA: 'Completada', CANCELADA: 'Cancelada' };
+var ESTADO_CSS = {
+  PLANIFICADA: 'bg-slate-100 text-slate-700',
+  EN_CURSO: 'bg-blue-100 text-blue-700',
+  COMPLETADA: 'bg-emerald-100 text-emerald-700',
+  CANCELADA: 'bg-red-100 text-red-700'
+};
+
+document.addEventListener('DOMContentLoaded', function() { init(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { cerrarModal(); cerrarModalBorrar(); } });
+
+async function init() {
+  try {
+    var pr = await fetch('/api/perfil');
+    if (pr.ok) { var u = await pr.json(); rolActual = u.rol; idActual = u.id; }
+  } catch(e) {}
+  if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
+    document.getElementById('accionesAdmin').style.display = '';
+  }
+  await Promise.all([cargar(), cargarTransportistas()]);
+}
+
+async function cargar() {
+  try {
+    var res = await fetch('/api/rutas');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    todos = await res.json();
+  } catch(e) {
+    document.getElementById('tablaCuerpo').innerHTML =
+      '<tr><td colspan="7" class="text-center py-12 text-red-400">Error al cargar rutas. Recarga la página.</td></tr>';
+    return;
+  }
+  pagina = 1;
+  renderTabla();
+}
+
+async function cargarTransportistas() {
+  try {
+    var res = await fetch('/api/transportistas');
+    if (!res.ok) return;
+    var lista = await res.json();
+    var sel = document.getElementById('fTransportista');
+    lista.forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.nombre || t.email;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+function filtrar() {
+  filtro = document.getElementById('busqueda').value.toLowerCase();
+  filtroEst = document.getElementById('filtroEstado').value;
+  pagina = 1;
+  renderTabla();
+}
+
+function renderTabla() {
+  var lista = todos.filter(function(r) {
+    var txt = ((r.nombre || '') + ' ' + ((r.transportista && r.transportista.nombre) || '')).toLowerCase();
+    return txt.includes(filtro) && (!filtroEst || r.estado === filtroEst);
+  });
+  var inicio = (pagina - 1) * POR_PAGINA;
+  var slice = lista.slice(inicio, inicio + POR_PAGINA);
+  var total = lista.length;
+  var totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
+  var esAdminGestor = rolActual === 'ADMIN' || rolActual === 'GESTOR';
+
+  document.getElementById('infoReg').textContent = total === 0
+    ? 'Sin registros'
+    : 'Mostrando ' + (inicio + 1) + '–' + Math.min(inicio + POR_PAGINA, total) + ' de ' + total;
+
+  document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
+    ? '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
+    : slice.map(function(r) {
+        var esMio = r.transportista && r.transportista.id == idActual;
+        var puedeEditar = esAdminGestor || esMio;
+        var badge = '<span class="badge badge-sm ' + (ESTADO_CSS[r.estado] || '') + '">' + (ESTADO_LABELS[r.estado] || esc(r.estado || '')) + '</span>';
+        var ruta = r.origenDireccion
+          ? esc(r.origenDireccion) + (r.destinoDireccion ? ' → ' + esc(r.destinoDireccion) : '')
+          : '<span class="text-slate-300">—</span>';
+        return '<tr class="hover" ' + (puedeEditar ? 'ondblclick="abrirEditar(' + r.id + ')" ' : '') + '>'
+          + '<td class="font-medium">' + esc(r.nombre || '—') + '</td>'
+          + '<td class="text-sm text-slate-500">' + esc((r.transportista && r.transportista.nombre) || 'Sin asignar') + '</td>'
+          + '<td class="text-sm text-slate-600">' + (r.fecha || '<span class="text-slate-300">—</span>') + '</td>'
+          + '<td class="text-xs text-slate-500">' + ruta + '</td>'
+          + '<td class="text-sm">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '<span class="text-slate-300">—</span>') + '</td>'
+          + '<td>' + badge + '</td>'
+          + '<td class="text-right whitespace-nowrap">'
+          + (puedeEditar ? '<button class="btn-icon" title="Editar" onclick="abrirEditar(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>' : '')
+          + (esAdminGestor ? '<button class="btn-icon btn-icon--danger" title="Eliminar" onclick="pedirBorrar(' + r.id + ',\'' + esc(r.nombre || '') + '\')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>' : '')
+          + '</td></tr>';
+      }).join('');
+
+  document.getElementById('pgBotones').innerHTML = totalPags <= 1 ? '' : Array.from({ length: totalPags }, function(_, i) { return i + 1; })
+    .map(function(i) {
+      return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>';
+    }).join('');
+}
+
+function irPagina(n) { pagina = n; renderTabla(); }
+
+function abrirCrear() {
+  document.getElementById('modalTitulo').textContent = 'Nueva ruta';
+  document.getElementById('itemId').value = '';
+  ['fNombre','fOrigen','fDestino','fDistancia','fObservaciones'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('fTransportista').value = '';
+  document.getElementById('fFecha').value = '';
+  document.getElementById('fEstado').value = 'PLANIFICADA';
+  document.getElementById('campoTransportista').style.display = (rolActual === 'ADMIN' || rolActual === 'GESTOR') ? '' : 'none';
+  document.getElementById('modalForm').classList.remove('hidden');
+  setTimeout(function() { document.getElementById('fNombre').focus(); }, 50);
+}
+
+function abrirEditar(id) {
+  var r = todos.find(function(x) { return x.id === id; });
+  if (!r) return;
+  document.getElementById('modalTitulo').textContent = 'Editar ruta';
+  document.getElementById('itemId').value = r.id;
+  document.getElementById('fNombre').value = r.nombre || '';
+  document.getElementById('fTransportista').value = r.transportista ? r.transportista.id : '';
+  document.getElementById('fFecha').value = r.fecha || '';
+  document.getElementById('fOrigen').value = r.origenDireccion || '';
+  document.getElementById('fDestino').value = r.destinoDireccion || '';
+  document.getElementById('fDistancia').value = r.distanciaKm != null ? r.distanciaKm : '';
+  document.getElementById('fEstado').value = r.estado || 'PLANIFICADA';
+  document.getElementById('fObservaciones').value = r.observaciones || '';
+  document.getElementById('campoTransportista').style.display = (rolActual === 'ADMIN' || rolActual === 'GESTOR') ? '' : 'none';
+  document.getElementById('modalForm').classList.remove('hidden');
+  setTimeout(function() { document.getElementById('fNombre').focus(); }, 50);
+}
+
+async function guardar() {
+  var nombre = document.getElementById('fNombre').value.trim();
+  if (!nombre) {
+    if (window.Swal) Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'El nombre de la ruta es obligatorio.' });
+    else alert('El nombre de la ruta es obligatorio.');
+    return;
+  }
+  var id = document.getElementById('itemId').value;
+  var distVal = document.getElementById('fDistancia').value.trim();
+  var body = {
+    nombre: nombre,
+    transportistaId: document.getElementById('fTransportista').value ? parseInt(document.getElementById('fTransportista').value) : null,
+    fecha: document.getElementById('fFecha').value || null,
+    estado: document.getElementById('fEstado').value || 'PLANIFICADA',
+    origenDireccion: document.getElementById('fOrigen').value.trim() || null,
+    destinoDireccion: document.getElementById('fDestino').value.trim() || null,
+    distanciaKm: distVal ? parseFloat(distVal) : null,
+    observaciones: document.getElementById('fObservaciones').value.trim() || null
+  };
+  var url = id ? '/api/rutas/' + id : '/api/rutas';
+  var method = id ? 'PUT' : 'POST';
+  try {
+    var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) {
+      var msg = await res.text();
+      if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo guardar la ruta.' });
+      return;
+    }
+    cerrarModal();
+    await cargar();
+    if (window.Swal) Swal.fire({ icon: 'success', title: id ? 'Ruta actualizada' : 'Ruta creada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+  } catch(e) {
+    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+  }
+}
+
+function pedirBorrar(id, nombre) {
+  idBorrar = id;
+  document.getElementById('nombreBorrar').textContent = nombre;
+  document.getElementById('modalBorrar').classList.remove('hidden');
+}
+
+async function confirmarBorrar() {
+  if (!idBorrar) return;
+  try {
+    var res = await fetch('/api/rutas/' + idBorrar, { method: 'DELETE' });
+    cerrarModalBorrar();
+    if (!res.ok) { if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la ruta.' }); return; }
+    await cargar();
+    if (window.Swal) Swal.fire({ icon: 'success', title: 'Ruta eliminada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+  } catch(e) {
+    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+  } finally { idBorrar = null; }
+}
+
+function cerrarModal() { document.getElementById('modalForm').classList.add('hidden'); }
+function cerrarModalBorrar() { document.getElementById('modalBorrar').classList.add('hidden'); idBorrar = null; }
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
 </th:block>
 
 </body>

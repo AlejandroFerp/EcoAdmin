@@ -132,6 +132,73 @@
         </div>
     </div>
 
+        <!-- TARJETA TRANSPORTISTA (solo visible si rol == TRANSPORTISTA) -->
+        <div id="bloqueTransportistaPerfil" class="card p-6 xl:col-span-3 hidden">
+            <div class="flex items-start gap-4 mb-5">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2h8l2-2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 16V8l3 3 2 2v3h-2"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-base font-bold text-slate-800">Perfil de transportista</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Datos profesionales y tarifa de servicio</p>
+                </div>
+                <button type="button" onclick="guardarPerfilTransportista()" class="btn-primary text-sm">Guardar</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="label-eco">Matr&iacute;cula del veh&iacute;culo</label>
+                    <input type="text" id="tMatricula" class="form-control-eco" placeholder="1234 ABC">
+                </div>
+                <div>
+                    <label class="label-eco">Unidad tarifaria</label>
+                    <input type="text" id="tUnidad" class="form-control-eco" placeholder="EUR/operacion">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="label-eco">F&oacute;rmula de tarifa</label>
+                    <p class="text-xs text-slate-400 mb-1">Variables: <code class="bg-slate-100 px-1 rounded">w</code> = peso (kg), <code class="bg-slate-100 px-1 rounded">L</code> = distancia (km). Tambi&eacute;n acepta tarifa fija, ej. <code class="bg-slate-100 px-1 rounded">10</code>.</p>
+                    <input type="text" id="tFormula" class="form-control-eco font-mono" placeholder="w * 0.5 + L * 0.1">
+                    <div class="flex flex-wrap gap-1 mt-2 items-center">
+                        <div class="flex flex-wrap gap-1">
+                            <button type="button" class="btn-builder" onclick="insertarFormulaT('w')">w</button>
+                            <button type="button" class="btn-builder" onclick="insertarFormulaT('L')">L</button>
+                            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaT('+')">+</button>
+                            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaT('-')">&minus;</button>
+                            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaT('*')">&times;</button>
+                            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaT('/')">&divide;</button>
+                            <button type="button" class="btn-builder" onclick="insertarFormulaT('(')"> ( </button>
+                            <button type="button" class="btn-builder" onclick="insertarFormulaT(')')"> ) </button>
+                            <button type="button" class="btn-builder" onclick="insertarFormulaT('.')">.</button>
+                        </div>
+                        <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+                        <div class="flex flex-wrap gap-1">
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('0')">0</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('1')">1</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('2')">2</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('3')">3</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('4')">4</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('5')">5</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('6')">6</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('7')">7</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('8')">8</button>
+                            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaT('9')">9</button>
+                        </div>
+                        <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+                        <div class="flex gap-1">
+                            <button type="button" class="btn-builder btn-builder--del" onclick="borrarUltimaT()">&#9003;</button>
+                            <button type="button" class="btn-builder btn-builder--del" onclick="document.getElementById('tFormula').value=''">C</button>
+                        </div>
+                    </div>
+                    <p id="tFormulaError" class="text-xs text-red-500 mt-1 hidden"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="label-eco">Observaciones</label>
+                    <textarea id="tObservaciones" class="form-control-eco" rows="2" placeholder="Notas sobre tu servicio de transporte..."></textarea>
+                </div>
+            </div>
+        </div>
+
     <!-- MODAL CAMBIAR CONTRASEÑA -->
     <div id="modalPassword" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
         <div class="modal-shell modal-shell--md">
@@ -188,6 +255,13 @@
   /* Mascara circular sobre el cropper para el avatar */
   #modalCropFoto .cropper-view-box,
   #modalCropFoto .cropper-face { border-radius: 50%; }
+  /* Builder formula transportista */
+  .btn-builder {
+    @apply px-2 py-1 text-sm rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-mono;
+  }
+  .btn-builder--op  { @apply bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100; }
+  .btn-builder--num { @apply bg-slate-50; }
+  .btn-builder--del { @apply bg-red-50 border-red-200 text-red-600 hover:bg-red-100; }
 </style>
 <script>
 const API = '/api/perfil';
@@ -207,6 +281,10 @@ async function cargar() {
         document.getElementById('fRol').value          = u.rol || '';
         document.getElementById('fNotifEmail').checked = !!u.notificacionesEmail;
         actualizarPreview(u);
+        if (u.rol === 'TRANSPORTISTA' && u.id) {
+            document.getElementById('bloqueTransportistaPerfil').classList.remove('hidden');
+            cargarPerfilTransportista(u.id);
+        }
     } catch (err) {
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar tus datos.' });
     }
@@ -408,6 +486,71 @@ async function cambiarPassword() {
 document.addEventListener('DOMContentLoaded', function() {
     cargar();
 });
+
+// ─── Perfil Transportista ─────────────────────────────────────────────────────
+
+async function cargarPerfilTransportista(uid) {
+    try {
+        var res = await fetch('/api/usuarios/' + uid + '/perfil-transportista');
+        if (res.status === 404) return; // aun sin perfil, campos vacios
+        if (!res.ok) return;
+        var p = await res.json();
+        document.getElementById('tMatricula').value    = p.matricula || '';
+        document.getElementById('tFormula').value      = p.formulaTarifa || '';
+        document.getElementById('tUnidad').value       = p.unidadTarifa || '';
+        document.getElementById('tObservaciones').value = p.observaciones || '';
+    } catch(e) {}
+}
+
+async function guardarPerfilTransportista() {
+    var uid = document.getElementById('fId').value;
+    var formula = document.getElementById('tFormula').value.trim();
+    var errEl = document.getElementById('tFormulaError');
+    errEl.classList.add('hidden');
+    var body = {
+        matricula:     document.getElementById('tMatricula').value.trim(),
+        formulaTarifa: formula,
+        unidadTarifa:  document.getElementById('tUnidad').value.trim(),
+        observaciones: document.getElementById('tObservaciones').value.trim()
+    };
+    try {
+        var res = await fetch('/api/usuarios/' + uid + '/perfil-transportista', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) {
+            Swal.fire({ icon: 'success', title: 'Perfil guardado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } else {
+            var msg = await res.text();
+            errEl.textContent = msg || 'Formula invalida.';
+            errEl.classList.remove('hidden');
+            Swal.fire({ icon: 'error', title: 'Error al guardar', text: msg || 'Revisa la formula de tarifa.' });
+        }
+    } catch(e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+    }
+}
+
+function insertarFormulaT(val) {
+    var el = document.getElementById('tFormula');
+    var pos = el.selectionStart;
+    var before = el.value.substring(0, pos);
+    var after = el.value.substring(el.selectionEnd);
+    var sep = (before.length > 0 && !before.endsWith(' ') && val !== ')' && before.slice(-1) !== '(') ? ' ' : '';
+    el.value = before + sep + val + after;
+    el.focus();
+    el.selectionStart = el.selectionEnd = pos + sep.length + val.length;
+}
+
+function borrarUltimaT() {
+    var el = document.getElementById('tFormula');
+    var pos = el.selectionStart;
+    if (pos === 0) return;
+    el.value = el.value.substring(0, pos - 1) + el.value.substring(el.selectionEnd);
+    el.focus();
+    el.selectionStart = el.selectionEnd = pos - 1;
+}
 </script>
 </th:block>
 </body>

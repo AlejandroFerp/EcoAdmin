@@ -39,9 +39,41 @@ class TarifaValidatorTest {
 
     @Test
     void formulaMinusUnarioInicio() {
-        // Menos unario al inicio
         var r = validator.validar("-w + L");
-        // exp4j soporta menos unario: debe ser valido
+        assertThat(r.valido()).isTrue();
+    }
+
+    @Test
+    void formulaNumericaFija() {
+        // Tarifa fija sin variables: debe ser valida
+        var r = validator.validar("10");
+        assertThat(r.valido()).isTrue();
+    }
+
+    @Test
+    void formulaNumericaFijaCompleja() {
+        // Tarifa fija como expresion numerica
+        var r = validator.validar("2.5 * 4");
+        assertThat(r.valido()).isTrue();
+    }
+
+    @Test
+    void formulaMayusculaW() {
+        // W mayuscula debe normalizarse a w y ser valida
+        var r = validator.validar("W * 22");
+        assertThat(r.valido()).isTrue();
+    }
+
+    @Test
+    void formulaMinusculaL() {
+        // l minuscula debe normalizarse a L y ser valida
+        var r = validator.validar("w * 0.5 + l * 0.1");
+        assertThat(r.valido()).isTrue();
+    }
+
+    @Test
+    void formulaMayusculasAmbas() {
+        var r = validator.validar("W * 0.5 + l * 0.1");
         assertThat(r.valido()).isTrue();
     }
 
@@ -49,6 +81,12 @@ class TarifaValidatorTest {
     void calculoExacto() {
         double resultado = validator.calcular("w * 0.5 + L * 0.1", 10.0, 20.0);
         assertThat(resultado).isCloseTo(7.0, within(0.0001));
+    }
+
+    @Test
+    void calculoFormulaNumerica() {
+        double resultado = validator.calcular("10", 0.0, 0.0);
+        assertThat(resultado).isCloseTo(10.0, within(0.0001));
     }
 
     // --- Formulas invalidas ---
@@ -64,13 +102,6 @@ class TarifaValidatorTest {
     void formulaNull() {
         var r = validator.validar(null);
         assertThat(r.valido()).isFalse();
-    }
-
-    @Test
-    void formulaSinVariables() {
-        var r = validator.validar("2 + 3");
-        assertThat(r.valido()).isFalse();
-        assertThat(r.mensaje()).contains("variable");
     }
 
     @Test
@@ -113,7 +144,6 @@ class TarifaValidatorTest {
 
     @Test
     void formulaDivisionPorCero() {
-        // w / 0 produce infinito -- debe rechazarse
         var r = validator.validar("w / 0");
         assertThat(r.valido()).isFalse();
         assertThat(r.mensaje()).contains("finito");

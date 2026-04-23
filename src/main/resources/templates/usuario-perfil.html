@@ -36,33 +36,39 @@
         </div>
         <div>
           <label class="label-eco">Formula de tarifa</label>
-          <p class="text-xs text-slate-400 mb-2">Variables: <code class="bg-slate-100 px-1 rounded">w</code> = peso (kg), <code class="bg-slate-100 px-1 rounded">L</code> = distancia (km). Ejemplo: <code class="bg-slate-100 px-1 rounded">w * 0.5 + L * 0.1</code></p>
+          <p class="text-xs text-slate-400 mb-2">Variables: <code class="bg-slate-100 px-1 rounded">w</code> = peso (kg), <code class="bg-slate-100 px-1 rounded">L</code> = distancia (km). Acepta W/w y L/l indistintamente. También puedes escribir un número fijo, ej. <code class="bg-slate-100 px-1 rounded">10</code> para tarifa fija de 10 €.</p>
           <input type="text" id="fFormula" class="form-control-eco font-mono" placeholder="w * 0.5 + L * 0.1">
           <!-- Builder buttons -->
-          <div class="flex flex-wrap gap-1 mt-2">
-            <button type="button" class="btn-builder" onclick="insertarFormula('w')">w</button>
-            <button type="button" class="btn-builder" onclick="insertarFormula('L')">L</button>
-            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('+')">+</button>
-            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('-')">−</button>
-            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('*')">×</button>
-            <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('/')">÷</button>
-            <button type="button" class="btn-builder" onclick="insertarFormula('(')"> ( </button>
-            <button type="button" class="btn-builder" onclick="insertarFormula(')')"> ) </button>
-            <button type="button" class="btn-builder" onclick="insertarFormula('.')">.</button>
-            <span class="text-slate-300 self-center mx-1">|</span>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('0')">0</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('1')">1</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('2')">2</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('3')">3</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('4')">4</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('5')">5</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('6')">6</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('7')">7</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('8')">8</button>
-            <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('9')">9</button>
-            <span class="text-slate-300 self-center mx-1">|</span>
-            <button type="button" class="btn-builder btn-builder--del" onclick="borrarUltimoFormula()">&#9003;</button>
-            <button type="button" class="btn-builder btn-builder--del" onclick="limpiarFormula()">C</button>
+          <div class="flex flex-wrap gap-1 mt-2 items-center">
+            <div class="flex flex-wrap gap-1">
+              <button type="button" class="btn-builder" onclick="insertarFormula('w')">w</button>
+              <button type="button" class="btn-builder" onclick="insertarFormula('L')">L</button>
+              <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('+')">+</button>
+              <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('-')">−</button>
+              <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('*')">×</button>
+              <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormula('/')">÷</button>
+              <button type="button" class="btn-builder" onclick="insertarFormula('(')"> ( </button>
+              <button type="button" class="btn-builder" onclick="insertarFormula(')')"> ) </button>
+              <button type="button" class="btn-builder" onclick="insertarFormula('.')">.</button>
+            </div>
+            <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+            <div class="flex flex-wrap gap-1">
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('0')">0</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('1')">1</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('2')">2</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('3')">3</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('4')">4</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('5')">5</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('6')">6</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('7')">7</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('8')">8</button>
+              <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormula('9')">9</button>
+            </div>
+            <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+            <div class="flex gap-1">
+              <button type="button" class="btn-builder btn-builder--del" onclick="borrarUltimoFormula()">&#9003;</button>
+              <button type="button" class="btn-builder btn-builder--del" onclick="limpiarFormula()">C</button>
+            </div>
           </div>
           <p id="formulaError" class="text-xs text-red-500 mt-1 hidden"></p>
         </div>
@@ -173,46 +179,34 @@ async function cargarPerfil() {
 
 async function guardarPerfil() {
   var formula = document.getElementById('fFormula').value.trim();
-  if (formula) {
-    var ok = await validarFormula(formula);
-    if (!ok) return;
-  }
+  var errEl = document.getElementById('formulaError');
+  errEl.classList.add('hidden');
   var body = {
     matricula: document.getElementById('fMatricula').value.trim(),
     formulaTarifa: formula,
     unidadTarifa: document.getElementById('fUnidad').value.trim(),
     observaciones: document.getElementById('fObservaciones').value.trim()
   };
-  var res = await fetch('/api/usuarios/' + usuarioId + '/perfil-transportista', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (res.ok) {
-    perfilActual = await res.json();
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Guardado', timer: 1500, showConfirmButton: false });
-  } else if (res.status === 403) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Sin permiso', text: 'No tiene permiso para editar este perfil.' });
-  } else {
-    var err = await res.text();
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el perfil.' });
+  try {
+    var res = await fetch('/api/usuarios/' + usuarioId + '/perfil-transportista', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      perfilActual = await res.json();
+      if (window.Swal) Swal.fire({ icon: 'success', title: 'Guardado', timer: 1500, showConfirmButton: false });
+    } else if (res.status === 403) {
+      if (window.Swal) Swal.fire({ icon: 'error', title: 'Sin permiso', text: 'No tiene permiso para editar este perfil.' });
+    } else {
+      var msg = await res.text();
+      errEl.textContent = msg || 'Formula invalida.';
+      errEl.classList.remove('hidden');
+      if (window.Swal) Swal.fire({ icon: 'error', title: 'Error al guardar', text: msg || 'Revisa la formula de tarifa.' });
+    }
+  } catch(e) {
+    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
   }
-}
-
-async function validarFormula(f) {
-  var errEl = document.getElementById('formulaError');
-  var res = await fetch('/api/usuarios/' + usuarioId + '/perfil-transportista', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ matricula: '', formulaTarifa: f, unidadTarifa: '', observaciones: '' })
-  });
-  if (!res.ok) {
-    errEl.textContent = 'Formula invalida. Revisa los operadores y variables.';
-    errEl.classList.remove('hidden');
-    return false;
-  }
-  errEl.classList.add('hidden');
-  return true;
 }
 
 function insertarFormula(val) {
@@ -243,33 +237,40 @@ function limpiarFormula() {
 function calcularPreview() {
   clearTimeout(calcTimer);
   calcTimer = setTimeout(async function() {
-    var w = parseFloat(document.getElementById('cPeso').value);
-    var L = parseFloat(document.getElementById('cDistancia').value);
     var el = document.getElementById('resultadoCalculo');
-    if (isNaN(w) || isNaN(L)) {
-      el.innerHTML = '<span class="text-slate-400">Introduce peso y distancia para calcular.</span>';
-      return;
-    }
     var formula = document.getElementById('fFormula').value.trim();
     if (!formula) {
       el.innerHTML = '<span class="text-slate-400">Define primero una formula de tarifa.</span>';
       return;
     }
+    var formulaNorm = formula.replace(/W/g,'w').replace(/l/g,'L');
+    var usaVariables = formulaNorm.includes('w') || formulaNorm.includes('L');
+    var wVal = parseFloat(document.getElementById('cPeso').value);
+    var LVal = parseFloat(document.getElementById('cDistancia').value);
+    if (usaVariables && (isNaN(wVal) || isNaN(LVal))) {
+      el.innerHTML = '<span class="text-slate-400">Introduce peso y distancia para calcular.</span>';
+      return;
+    }
+    var w = isNaN(wVal) ? 0 : wVal;
+    var L = isNaN(LVal) ? 0 : LVal;
     try {
       var res = await fetch('/api/transportistas/' + usuarioId + '/calcular-tarifa?w=' + w + '&L=' + L);
       if (!res.ok) {
-        var e = await res.json();
+        var e = await res.json().catch(function() { return {}; });
         el.innerHTML = '<span class="text-red-500">' + esc(e.error || 'Error al calcular') + '</span>';
         return;
       }
       var data = await res.json();
-      el.innerHTML = '<span class="text-slate-600">Formula: <code class="font-mono bg-slate-100 px-1 rounded">' + esc(data.formula) + '</code></span><br>' +
+      var detalle = usaVariables
+        ? '<span class="text-slate-400 text-xs ml-2">con w=' + data.w + ' kg, L=' + data.L + ' km</span>'
+        : '<span class="text-slate-400 text-xs ml-2">tarifa fija</span>';
+      el.innerHTML = '<span class="text-slate-600 text-xs">Formula: <code class="font-mono bg-slate-100 px-1 rounded">' + esc(data.formula) + '</code></span><br>' +
         '<span class="text-2xl font-bold text-emerald-600">' + data.resultado + ' ' + data.moneda + '</span>' +
-        '<span class="text-slate-400 text-xs ml-2">con w=' + data.w + 'kg, L=' + data.L + 'km</span>';
+        detalle;
     } catch(err) {
       el.innerHTML = '<span class="text-red-400">Error de conexion</span>';
     }
-  }, 500);
+  }, 150);
 }
 
 function mostrarError(msg) {

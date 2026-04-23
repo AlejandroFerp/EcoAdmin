@@ -49,7 +49,6 @@ public class SeguridadConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-            // Permitir iframes del mismo origen (vista previa de documentos en /preview/**)
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
@@ -61,10 +60,10 @@ public class SeguridadConfig {
                 .requestMatchers("/api/perfil/**").authenticated()
                 .requestMatchers("/api/empresa/**").authenticated()
                 .requestMatchers("/api/almacen/**").authenticated()
-                // perfil-transportista is accessible by the owner (TRANSPORTISTA) or ADMIN; fine-grained check in controller
                 .requestMatchers("/api/usuarios/*/perfil-transportista").authenticated()
-                .requestMatchers("/api/transportistas/**").authenticated()
+                .requestMatchers("/api/transportistas", "/api/transportistas/**").authenticated()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                .requestMatchers("/api/rutas/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA")
                 .requestMatchers("/api/traslados/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
                 .requestMatchers("/api/recogidas/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
                 .requestMatchers("/api/centros/**").hasAnyRole("ADMIN", "GESTOR", "PRODUCTOR")
