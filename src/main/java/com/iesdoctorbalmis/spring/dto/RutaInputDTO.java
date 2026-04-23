@@ -11,5 +11,7 @@ public record RutaInputDTO(
     String origenDireccion,
     String destinoDireccion,
     Double distanciaKm,
-    String observaciones
+    String observaciones,
+    String formulaTarifa,
+    String unidadTarifa
 ) {}

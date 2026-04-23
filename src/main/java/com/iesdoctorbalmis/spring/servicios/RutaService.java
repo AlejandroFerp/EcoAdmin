@@ -12,16 +12,19 @@ import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.RutaRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.servicios.TarifaValidator;
 
 @Service
 public class RutaService {
 
     private final RutaRepository rutaRepo;
     private final UsuarioRepository usuarioRepo;
+    private final TarifaValidator tarifaValidator;
 
-    public RutaService(RutaRepository rutaRepo, UsuarioRepository usuarioRepo) {
+    public RutaService(RutaRepository rutaRepo, UsuarioRepository usuarioRepo, TarifaValidator tarifaValidator) {
         this.rutaRepo = rutaRepo;
         this.usuarioRepo = usuarioRepo;
+        this.tarifaValidator = tarifaValidator;
     }
 
     public List<Ruta> findAll() { return rutaRepo.findAll(); }
@@ -34,6 +37,7 @@ public class RutaService {
     public Ruta crear(Ruta datos, Long transportistaId) {
         if (datos.getNombre() == null || datos.getNombre().isBlank())
             throw new IllegalArgumentException("El nombre de la ruta es obligatorio.");
+        validarFormula(datos.getFormulaTarifa());
         datos.setTransportista(resolverTransportista(transportistaId));
         return rutaRepo.save(datos);
     }
@@ -51,8 +55,17 @@ public class RutaService {
         existente.setDestinoDireccion(datos.getDestinoDireccion());
         existente.setDistanciaKm(datos.getDistanciaKm());
         existente.setObservaciones(datos.getObservaciones());
+        validarFormula(datos.getFormulaTarifa());
+        existente.setFormulaTarifa(datos.getFormulaTarifa());
+        existente.setUnidadTarifa(datos.getUnidadTarifa());
         existente.setTransportista(resolverTransportista(transportistaId));
         return rutaRepo.save(existente);
+    }
+
+    private void validarFormula(String formula) {
+        if (formula == null || formula.isBlank()) return;
+        TarifaValidator.ResultadoValidacion rv = tarifaValidator.validar(formula);
+        if (!rv.valido()) throw new IllegalArgumentException(rv.mensaje());
     }
 
     @Transactional

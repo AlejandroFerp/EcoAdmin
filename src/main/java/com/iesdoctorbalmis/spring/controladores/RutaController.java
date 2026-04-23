@@ -1,6 +1,7 @@
 package com.iesdoctorbalmis.spring.controladores;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iesdoctorbalmis.spring.dto.RutaInputDTO;
@@ -19,6 +21,7 @@ import com.iesdoctorbalmis.spring.modelo.Ruta;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.servicios.RutaService;
+import com.iesdoctorbalmis.spring.servicios.TarifaValidator;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,18 +34,23 @@ public class RutaController {
 
     private final RutaService rutaService;
     private final UsuarioAutenticadoService authService;
+    private final TarifaValidator validator;
 
-    public RutaController(RutaService rutaService, UsuarioAutenticadoService authService) {
+    public RutaController(RutaService rutaService, UsuarioAutenticadoService authService, TarifaValidator validator) {
         this.rutaService = rutaService;
         this.authService = authService;
+        this.validator = validator;
     }
 
-    @Operation(summary = "Listar rutas (admin/gestor: todas; transportista: las suyas)")
+    @Operation(summary = "Listar rutas (admin/gestor: todas o filtradas; transportista: las suyas)")
     @GetMapping
-    public List<Ruta> listar() {
+    public List<Ruta> listar(@RequestParam(required = false) Long transportistaId) {
         Usuario actual = authService.obtenerUsuarioActual();
         if (actual != null && actual.getRol() == Rol.TRANSPORTISTA) {
             return rutaService.findByTransportistaId(actual.getId());
+        }
+        if (transportistaId != null) {
+            return rutaService.findByTransportistaId(transportistaId);
         }
         return rutaService.findAll();
     }
@@ -61,6 +69,8 @@ public class RutaController {
         r.setDestinoDireccion(dto.destinoDireccion());
         r.setDistanciaKm(dto.distanciaKm());
         r.setObservaciones(dto.observaciones());
+        r.setFormulaTarifa(dto.formulaTarifa());
+        r.setUnidadTarifa(dto.unidadTarifa());
         return ResponseEntity.ok(rutaService.crear(r, dto.transportistaId()));
     }
 
@@ -84,9 +94,37 @@ public class RutaController {
         r.setDestinoDireccion(dto.destinoDireccion() != null ? dto.destinoDireccion() : existente.getDestinoDireccion());
         r.setDistanciaKm(dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm());
         r.setObservaciones(dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones());
+        r.setFormulaTarifa(dto.formulaTarifa());
+        r.setUnidadTarifa(dto.unidadTarifa());
         Long tId = esAdminGestor ? dto.transportistaId()
                    : (existente.getTransportista() != null ? existente.getTransportista().getId() : null);
         return ResponseEntity.ok(rutaService.actualizar(id, r, tId));
+    }
+
+    @Operation(summary = "Calcular tarifa de una ruta especifica")
+    @GetMapping("/{id}/calcular")
+    public ResponseEntity<?> calcular(@PathVariable Long id,
+                                       @RequestParam(defaultValue = "0") double w,
+                                       @RequestParam(defaultValue = "0") double L) {
+        Ruta ruta = rutaService.findById(id)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
+        if (ruta.getFormulaTarifa() == null || ruta.getFormulaTarifa().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Esta ruta no tiene formula de tarifa definida."));
+        }
+        try {
+            double resultado = validator.calcular(ruta.getFormulaTarifa(), w, L);
+            if (!Double.isFinite(resultado)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "La formula produce un resultado no finito."));
+            }
+            return ResponseEntity.ok(Map.of(
+                "formula", ruta.getFormulaTarifa(),
+                "w", w, "L", L,
+                "resultado", Math.round(resultado * 100.0) / 100.0,
+                "moneda", ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error en la formula: " + e.getMessage()));
+        }
     }
 
     @Operation(summary = "Eliminar ruta (admin/gestor)")

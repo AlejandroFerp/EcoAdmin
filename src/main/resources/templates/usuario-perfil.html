@@ -103,6 +103,40 @@
         Introduce peso y distancia para calcular.
       </div>
     </div>
+
+    <!-- Rutas asignadas -->
+    <div class="card p-6 mt-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-semibold text-slate-700">Rutas asignadas</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Cada ruta puede tener su propia f&oacute;rmula de tarifa</p>
+        </div>
+        <button type="button" onclick="abrirNuevaRuta()" class="btn-primary text-sm">+ Nueva ruta</button>
+      </div>
+      <div id="rutasLoading" class="text-slate-400 text-sm py-6 text-center">Cargando rutas...</div>
+      <div id="rutasEmpty" class="hidden py-8 text-center">
+        <svg class="w-10 h-10 mx-auto mb-2 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+        </svg>
+        <p class="text-slate-400 text-sm">Sin rutas asignadas. Usa <strong>+ Nueva ruta</strong> para agregar una.</p>
+      </div>
+      <div id="rutasTablaWrap" class="hidden overflow-x-auto -mx-2">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100">
+              <th class="text-left py-2 px-3 font-medium text-slate-500">Nombre</th>
+              <th class="text-left py-2 px-3 font-medium text-slate-500">Origen &rarr; Destino</th>
+              <th class="text-right py-2 px-3 font-medium text-slate-500">km</th>
+              <th class="text-left py-2 px-3 font-medium text-slate-500">F&oacute;rmula tarifa</th>
+              <th class="text-left py-2 px-3 font-medium text-slate-500 whitespace-nowrap">Calcular</th>
+              <th class="text-left py-2 px-3 font-medium text-slate-500">Estado</th>
+              <th class="py-2 px-3"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyRutas" class="divide-y divide-slate-50"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- No es transportista -->
@@ -111,6 +145,120 @@
       <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       <p>Este usuario no tiene rol <strong>TRANSPORTISTA</strong>.</p>
       <p class="text-xs mt-1">El perfil de transportista solo esta disponible para usuarios con ese rol.</p>
+    </div>
+  </div>
+
+  <!-- MODAL: Nueva / Editar ruta -->
+  <div id="modalRuta" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--xl">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="modalRutaTitulo" class="modal-title">Nueva ruta</h3>
+          <button type="button" data-modal-close="modalRuta" aria-label="Cerrar"
+                  class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
+          </button>
+        </div>
+        <div class="modal-body grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="md:col-span-2">
+            <label class="label-eco">Nombre de la ruta *</label>
+            <input type="text" id="rNombre" class="form-control-eco" placeholder="Ruta Centro-Norte">
+          </div>
+          <div>
+            <label class="label-eco">Origen</label>
+            <input type="text" id="rOrigen" class="form-control-eco" placeholder="Calle Mayor 1, Madrid">
+          </div>
+          <div>
+            <label class="label-eco">Destino</label>
+            <input type="text" id="rDestino" class="form-control-eco" placeholder="Pol&iacute;gono Industrial Norte, Valencia">
+          </div>
+          <div>
+            <label class="label-eco">Distancia (km)</label>
+            <input type="number" id="rKm" class="form-control-eco" placeholder="350" min="0" step="0.1">
+          </div>
+          <div>
+            <label class="label-eco">Fecha</label>
+            <input type="date" id="rFecha" class="form-control-eco">
+          </div>
+          <div>
+            <label class="label-eco">Estado</label>
+            <select id="rEstado" class="form-control-eco">
+              <option value="PLANIFICADA">Planificada</option>
+              <option value="EN_CURSO">En curso</option>
+              <option value="COMPLETADA">Completada</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select>
+          </div>
+          <div>
+            <label class="label-eco">Unidad tarifaria</label>
+            <input type="text" id="rUnidad" class="form-control-eco" placeholder="EUR/operacion">
+          </div>
+          <div class="md:col-span-2">
+            <label class="label-eco">F&oacute;rmula de tarifa</label>
+            <p class="text-xs text-slate-400 mb-1">Variables: <code class="bg-slate-100 px-1 rounded">w</code> = peso (kg), <code class="bg-slate-100 px-1 rounded">L</code> = distancia (km). Tambi&eacute;n acepta tarifa fija, ej. <code class="bg-slate-100 px-1 rounded">10</code>.</p>
+            <input type="text" id="rFormula" class="form-control-eco font-mono" placeholder="w * 0.5 + L * 0.1">
+            <div class="flex flex-wrap gap-1 mt-2 items-center">
+              <div class="flex flex-wrap gap-1">
+                <button type="button" class="btn-builder" onclick="insertarFormulaR('w')">w</button>
+                <button type="button" class="btn-builder" onclick="insertarFormulaR('L')">L</button>
+                <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaR('+')">+</button>
+                <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaR('-')">&minus;</button>
+                <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaR('*')">&times;</button>
+                <button type="button" class="btn-builder btn-builder--op" onclick="insertarFormulaR('/')">&divide;</button>
+                <button type="button" class="btn-builder" onclick="insertarFormulaR('(')">(</button>
+                <button type="button" class="btn-builder" onclick="insertarFormulaR(')'))">)</button>
+                <button type="button" class="btn-builder" onclick="insertarFormulaR('.')">.</button>
+              </div>
+              <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+              <div class="flex flex-wrap gap-1">
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('0')">0</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('1')">1</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('2')">2</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('3')">3</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('4')">4</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('5')">5</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('6')">6</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('7')">7</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('8')">8</button>
+                <button type="button" class="btn-builder btn-builder--num" onclick="insertarFormulaR('9')">9</button>
+              </div>
+              <div class="w-px h-5 bg-slate-200 self-center mx-1"></div>
+              <div class="flex gap-1">
+                <button type="button" class="btn-builder btn-builder--del" onclick="borrarUltimaR()">&#9003;</button>
+                <button type="button" class="btn-builder btn-builder--del" onclick="document.getElementById('rFormula').value=''">C</button>
+              </div>
+            </div>
+            <p id="rFormulaError" class="text-xs text-red-500 mt-1 hidden"></p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="label-eco">Observaciones</label>
+            <textarea id="rObservaciones" class="form-control-eco" rows="2" placeholder="Notas sobre esta ruta..."></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" data-modal-close="modalRuta" class="btn-ghost-eco">Cancelar</button>
+          <button type="button" onclick="guardarRuta()" class="btn-primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Mapa de ruta -->
+  <div id="modalMapa" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+    <div class="modal-shell modal-shell--xl">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="modalMapaTitulo" class="modal-title">Mapa de ruta</h3>
+          <button type="button" onclick="cerrarModalMapa()" data-modal-close="modalMapa" aria-label="Cerrar"
+                  class="text-slate-400 hover:text-slate-700 rounded-lg p-1.5 hover:bg-slate-100">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
+          </button>
+        </div>
+        <div class="modal-body p-0 overflow-hidden">
+          <div id="mapaRuta" style="height:460px;width:100%;"></div>
+          <div id="mapaInfo" class="px-4 py-2 text-xs text-slate-500 bg-slate-50 border-t border-slate-100">Cargando...</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -144,6 +292,7 @@ async function init() {
       document.getElementById('bloqueTransportista').classList.remove('hidden');
       document.getElementById('bloqueNoTransportista').classList.add('hidden');
       await cargarPerfil();
+      cargarRutas();
     } else {
       document.getElementById('bloqueTransportista').classList.add('hidden');
       document.getElementById('bloqueNoTransportista').classList.remove('hidden');
@@ -279,6 +428,328 @@ function mostrarError(msg) {
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── RUTAS ─────────────────────────────────────────────────────────────────────────
+var rutasData = [];
+var rutaEditId = null;
+var mapaLeaflet = null;
+var leafletCargado = false;
+
+async function cargarRutas() {
+  document.getElementById('rutasLoading').classList.remove('hidden');
+  document.getElementById('rutasTablaWrap').classList.add('hidden');
+  document.getElementById('rutasEmpty').classList.add('hidden');
+  try {
+    var res = await fetch('/api/rutas?transportistaId=' + usuarioId);
+    if (!res.ok) throw new Error(res.status);
+    rutasData = await res.json();
+    renderRutas();
+  } catch(e) {
+    document.getElementById('rutasLoading').textContent = 'Error al cargar rutas.';
+  }
+}
+
+function renderRutas() {
+  document.getElementById('rutasLoading').classList.add('hidden');
+  if (!rutasData.length) {
+    document.getElementById('rutasEmpty').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('rutasTablaWrap').classList.remove('hidden');
+  var tbody = document.getElementById('tbodyRutas');
+  tbody.innerHTML = rutasData.map(function(r) {
+    var formula = r.formulaTarifa
+      ? '<code class="font-mono text-xs bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">' + esc(r.formulaTarifa) + '</code>'
+      : '<span class="text-slate-300 text-xs italic">—</span>';
+    return '<tr class="hover:bg-slate-50/50" data-id="' + r.id + '">' +
+      '<td class="py-2.5 px-3 font-medium text-slate-700">' + esc(r.nombre) + '</td>' +
+      '<td class="py-2.5 px-3 text-xs">' +
+        '<span class="text-slate-600">' + esc(r.origenDireccion || '—') + '</span>' +
+        ' <span class="text-slate-300">→</span> ' +
+        '<span class="text-slate-600">' + esc(r.destinoDireccion || '—') + '</span>' +
+      '</td>' +
+      '<td class="py-2.5 px-3 text-right text-slate-600">' + (r.distanciaKm != null ? r.distanciaKm : '—') + '</td>' +
+      '<td class="py-2.5 px-3">' + formula + '</td>' +
+      '<td class="py-2.5 px-3">' +
+        '<div class="flex items-center gap-1">' +
+          '<input type="number" id="rw-' + r.id + '" placeholder="kg" step="0.1" min="0" ' +
+            'class="w-16 text-xs border border-slate-200 rounded px-1.5 py-1 focus:outline-none focus:border-blue-300">' +
+          '<input type="number" id="rL-' + r.id + '" placeholder="km" step="0.1" min="0" ' +
+            'class="w-16 text-xs border border-slate-200 rounded px-1.5 py-1 focus:outline-none focus:border-blue-300">' +
+          '<button onclick="calcularRuta(' + r.id + ')" title="Calcular tarifa" ' +
+            'class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 rounded px-2 py-1 hover:bg-emerald-100">=</button>' +
+          '<span id="rres-' + r.id + '" class="text-xs font-semibold text-emerald-700 min-w-[52px]">—</span>' +
+        '</div>' +
+      '</td>' +
+      '<td class="py-2.5 px-3">' + estadoRutaBadge(r.estado) + '</td>' +
+      '<td class="py-2.5 px-3 text-right whitespace-nowrap">' +
+        '<button onclick="verMapa(' + r.id + ')" title="Ver mapa" class="text-blue-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 inline-flex">' +
+          '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>' +
+        '</button>' +
+        '<button onclick="editarRuta(' + r.id + ')" title="Editar" class="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 inline-flex">' +
+          '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+        '</button>' +
+        '<button onclick="borrarRuta(' + r.id + ')" title="Eliminar" class="text-red-300 hover:text-red-500 p-1 rounded hover:bg-red-50 inline-flex">' +
+          '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+        '</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function estadoRutaBadge(e) {
+  var m = { PLANIFICADA: 'bg-blue-50 text-blue-600', EN_CURSO: 'bg-amber-50 text-amber-600', COMPLETADA: 'bg-emerald-50 text-emerald-600', CANCELADA: 'bg-red-50 text-red-500' };
+  return '<span class="text-xs px-2 py-0.5 rounded-full ' + (m[e] || 'bg-slate-50 text-slate-500') + '">' + esc(e || '—') + '</span>';
+}
+
+async function calcularRuta(id) {
+  var ruta = rutasData.find(function(r) { return r.id === id; });
+  var resEl = document.getElementById('rres-' + id);
+  if (!ruta || !ruta.formulaTarifa) { resEl.textContent = 'Sin fórmula'; return; }
+  var w = parseFloat(document.getElementById('rw-' + id).value) || 0;
+  var L = parseFloat(document.getElementById('rL-' + id).value) || 0;
+  resEl.textContent = '...';
+  try {
+    var res = await fetch('/api/rutas/' + id + '/calcular?w=' + w + '&L=' + L);
+    var data = await res.json();
+    if (res.ok) { resEl.textContent = data.resultado + ' ' + (data.moneda || 'EUR'); }
+    else { resEl.textContent = 'Error'; resEl.title = data.error || 'Error al calcular'; }
+  } catch(e) { resEl.textContent = 'Error'; }
+}
+
+function abrirNuevaRuta() {
+  rutaEditId = null;
+  limpiarModalRuta();
+  document.getElementById('modalRutaTitulo').textContent = 'Nueva ruta';
+  document.getElementById('modalRuta').classList.remove('hidden');
+}
+
+function editarRuta(id) {
+  var r = rutasData.find(function(x) { return x.id === id; });
+  if (!r) return;
+  rutaEditId = id;
+  document.getElementById('modalRutaTitulo').textContent = 'Editar ruta';
+  document.getElementById('rNombre').value        = r.nombre || '';
+  document.getElementById('rOrigen').value        = r.origenDireccion || '';
+  document.getElementById('rDestino').value       = r.destinoDireccion || '';
+  document.getElementById('rKm').value            = r.distanciaKm != null ? r.distanciaKm : '';
+  document.getElementById('rFecha').value         = r.fecha || '';
+  document.getElementById('rEstado').value        = r.estado || 'PLANIFICADA';
+  document.getElementById('rFormula').value       = r.formulaTarifa || '';
+  document.getElementById('rUnidad').value        = r.unidadTarifa || '';
+  document.getElementById('rObservaciones').value = r.observaciones || '';
+  document.getElementById('rFormulaError').classList.add('hidden');
+  document.getElementById('modalRuta').classList.remove('hidden');
+}
+
+function limpiarModalRuta() {
+  ['rNombre','rOrigen','rDestino','rKm','rFecha','rFormula','rUnidad','rObservaciones'].forEach(function(i) {
+    document.getElementById(i).value = '';
+  });
+  document.getElementById('rEstado').value = 'PLANIFICADA';
+  document.getElementById('rFormulaError').classList.add('hidden');
+}
+
+async function guardarRuta() {
+  var nombre = document.getElementById('rNombre').value.trim();
+  if (!nombre) {
+    Swal.fire({ icon: 'warning', title: 'El nombre es obligatorio', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+    return;
+  }
+  var errEl = document.getElementById('rFormulaError');
+  errEl.classList.add('hidden');
+  var km = document.getElementById('rKm').value;
+  var body = {
+    nombre:           nombre,
+    transportistaId:  parseInt(usuarioId),
+    origenDireccion:  document.getElementById('rOrigen').value.trim() || null,
+    destinoDireccion: document.getElementById('rDestino').value.trim() || null,
+    distanciaKm:      km ? parseFloat(km) : null,
+    fecha:            document.getElementById('rFecha').value || null,
+    estado:           document.getElementById('rEstado').value,
+    formulaTarifa:    document.getElementById('rFormula').value.trim() || null,
+    unidadTarifa:     document.getElementById('rUnidad').value.trim() || null,
+    observaciones:    document.getElementById('rObservaciones').value.trim() || null
+  };
+  var url    = rutaEditId ? '/api/rutas/' + rutaEditId : '/api/rutas';
+  var method = rutaEditId ? 'PUT' : 'POST';
+  try {
+    var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.ok) {
+      document.getElementById('modalRuta').classList.add('hidden');
+      Swal.fire({ icon: 'success', title: rutaEditId ? 'Ruta actualizada' : 'Ruta creada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+      cargarRutas();
+    } else {
+      var msg = await res.text();
+      errEl.textContent = msg || 'Error al guardar la ruta.';
+      errEl.classList.remove('hidden');
+      Swal.fire({ icon: 'error', title: 'Error al guardar', text: msg || 'Revisa los datos.' });
+    }
+  } catch(e) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+  }
+}
+
+async function borrarRuta(id) {
+  var r = rutasData.find(function(x) { return x.id === id; });
+  var confirm = await Swal.fire({
+    icon: 'warning', title: '¿Eliminar ruta?',
+    text: 'Se eliminará "' + (r ? r.nombre : 'esta ruta') + '" de forma permanente.',
+    showCancelButton: true, confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#ef4444'
+  });
+  if (!confirm.isConfirmed) return;
+  try {
+    var res = await fetch('/api/rutas/' + id, { method: 'DELETE' });
+    if (res.ok) {
+      Swal.fire({ icon: 'success', title: 'Ruta eliminada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+      cargarRutas();
+    } else {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la ruta.' });
+    }
+  } catch(e) {
+    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+  }
+}
+
+function insertarFormulaR(val) {
+  var el = document.getElementById('rFormula');
+  var pos = el.selectionStart;
+  var before = el.value.substring(0, pos);
+  var after  = el.value.substring(el.selectionEnd);
+  var sep = (before.length > 0 && !before.endsWith(' ') && val !== ')' && before.slice(-1) !== '(') ? ' ' : '';
+  el.value = before + sep + val + after;
+  el.focus();
+  el.selectionStart = el.selectionEnd = pos + sep.length + val.length;
+}
+
+function borrarUltimaR() {
+  var el = document.getElementById('rFormula');
+  var pos = el.selectionStart;
+  if (pos === 0) return;
+  el.value = el.value.substring(0, pos - 1) + el.value.substring(el.selectionEnd);
+  el.focus();
+  el.selectionStart = el.selectionEnd = pos - 1;
+}
+
+// ─── MAPA LEAFLET ────────────────────────────────────────────────────────────────
+async function cargarLeaflet() {
+  if (leafletCargado) return;
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  link.crossOrigin = '';
+  document.head.appendChild(link);
+  await new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.crossOrigin = '';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  leafletCargado = true;
+}
+
+function destruirMapa() {
+  if (mapaLeaflet) { mapaLeaflet.remove(); mapaLeaflet = null; }
+}
+
+function cerrarModalMapa() {
+  destruirMapa();
+  document.getElementById('modalMapa').classList.add('hidden');
+}
+
+async function verMapa(id) {
+  var r = rutasData.find(function(x) { return x.id === id; });
+  if (!r) return;
+  document.getElementById('modalMapaTitulo').textContent = r.nombre || 'Mapa de ruta';
+  document.getElementById('mapaInfo').textContent = 'Cargando mapa...';
+  document.getElementById('modalMapa').classList.remove('hidden');
+  destruirMapa();
+  try {
+    await cargarLeaflet();
+  } catch(e) {
+    document.getElementById('mapaInfo').textContent = 'No se pudo cargar Leaflet. Revisa la conexión.';
+    return;
+  }
+  mapaLeaflet = window.L.map('mapaRuta').setView([40.4, -3.7], 6);
+  window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(mapaLeaflet);
+
+  var origen  = r.origenDireccion;
+  var destino = r.destinoDireccion;
+  if (!origen && !destino) {
+    document.getElementById('mapaInfo').textContent = 'Esta ruta no tiene origen ni destino definidos.';
+    return;
+  }
+  // Solo un extremo
+  if (!origen || !destino) {
+    var dir = origen || destino;
+    var label = origen ? 'Origen' : 'Destino';
+    document.getElementById('mapaInfo').textContent = 'Geocodificando...';
+    var geo = await geocodificar(dir);
+    if (!geo) { document.getElementById('mapaInfo').textContent = 'No se encontró la dirección: ' + dir; return; }
+    window.L.marker([parseFloat(geo.lat), parseFloat(geo.lon)])
+      .addTo(mapaLeaflet).bindPopup('<b>' + label + '</b><br>' + esc(dir)).openPopup();
+    mapaLeaflet.setView([parseFloat(geo.lat), parseFloat(geo.lon)], 13);
+    document.getElementById('mapaInfo').textContent = esc(dir);
+    return;
+  }
+  // Ambos extremos: geocodificar y trazar ruta
+  document.getElementById('mapaInfo').textContent = 'Geocodificando direcciones...';
+  try {
+    var geos = await Promise.all([geocodificar(origen), geocodificar(destino)]);
+    var gO = geos[0], gD = geos[1];
+    if (!gO) { document.getElementById('mapaInfo').textContent = 'No se encontró el origen: ' + origen; return; }
+    if (!gD) { document.getElementById('mapaInfo').textContent = 'No se encontró el destino: ' + destino; return; }
+    var latO = parseFloat(gO.lat), lonO = parseFloat(gO.lon);
+    var latD = parseFloat(gD.lat), lonD = parseFloat(gD.lon);
+    window.L.marker([latO, lonO]).addTo(mapaLeaflet)
+      .bindPopup('<b>Origen</b><br>' + esc(origen));
+    window.L.marker([latD, lonD]).addTo(mapaLeaflet)
+      .bindPopup('<b>Destino</b><br>' + esc(destino));
+    // Ruta con OSRM
+    document.getElementById('mapaInfo').textContent = 'Calculando ruta...';
+    var osrmRes = await fetch(
+      'https://router.project-osrm.org/route/v1/driving/' +
+      lonO + ',' + latO + ';' + lonD + ',' + latD +
+      '?overview=full&geometries=geojson'
+    );
+    var osrmData = await osrmRes.json();
+    if (osrmData.code === 'Ok' && osrmData.routes.length > 0) {
+      var route = osrmData.routes[0];
+      var layer = window.L.geoJSON(route.geometry, {
+        style: { color: '#2563eb', weight: 4, opacity: 0.85 }
+      }).addTo(mapaLeaflet);
+      mapaLeaflet.fitBounds(layer.getBounds(), { padding: [40, 40] });
+      var km   = (route.distance / 1000).toFixed(1);
+      var mins = Math.round(route.duration / 60);
+      document.getElementById('mapaInfo').textContent = km + ' km • ' + mins + ' min (estimado por OSRM)';
+    } else {
+      window.L.polyline([[latO, lonO], [latD, lonD]], {
+        color: '#94a3b8', weight: 2, dashArray: '5,5'
+      }).addTo(mapaLeaflet);
+      mapaLeaflet.fitBounds([[latO, lonO], [latD, lonD]], { padding: [60, 60] });
+      document.getElementById('mapaInfo').textContent = 'Línea directa (sin datos de ruta disponibles)';
+    }
+  } catch(e) {
+    document.getElementById('mapaInfo').textContent = 'Error al cargar el mapa: ' + e.message;
+  }
+}
+
+async function geocodificar(dir) {
+  try {
+    var res = await fetch(
+      'https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=es&q=' +
+      encodeURIComponent(dir)
+    );
+    var data = await res.json();
+    return data.length > 0 ? data[0] : null;
+  } catch(e) { return null; }
 }
 </script>
 </th:block>

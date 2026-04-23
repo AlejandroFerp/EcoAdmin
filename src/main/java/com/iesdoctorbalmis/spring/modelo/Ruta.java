@@ -51,6 +51,9 @@ public class Ruta {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
+    private String formulaTarifa;
+    private String unidadTarifa;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime fechaCreacion;
@@ -72,5 +75,9 @@ public class Ruta {
     public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+    public String getFormulaTarifa() { return formulaTarifa; }
+    public void setFormulaTarifa(String f) { this.formulaTarifa = f; }
+    public String getUnidadTarifa() { return unidadTarifa; }
+    public void setUnidadTarifa(String u) { this.unidadTarifa = u; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
 }
