@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>25</java.version>
+		<java.version>21</java.version>
 	</properties>
 	<dependencies>
 
@@ -160,20 +160,20 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<nodeVersion>v20.11.1</nodeVersion>
-							<npmVersion>10.2.4</npmVersion>
+							<nodeVersion>v22.13.0</nodeVersion>
+							<npmVersion>10.9.2</npmVersion>
 						</configuration>
 					</execution>
 					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<arguments>install</arguments>
-						</configuration>
-					</execution>
+<id>npm ci</id>
+<goals>
+<goal>npm</goal>
+</goals>
+<phase>generate-resources</phase>
+<configuration>
+<arguments>ci</arguments>
+</configuration>
+</execution>
 					<execution>
 						<id>npm run css:build</id>
 						<goals>
@@ -186,6 +186,30 @@
 					</execution>
 				</executions>
 			</plugin>
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+<artifactId>maven-enforcer-plugin</artifactId>
+<version>3.5.0</version>
+<executions>
+<execution>
+<id>enforce-jdk</id>
+<goals>
+<goal>enforce</goal>
+</goals>
+<configuration>
+<rules>
+<requireJavaVersion>
+<version>[21,)</version>
+<message>EcoAdmin requiere JDK 21 o superior. Apunta JAVA_HOME a un JDK 21+ y vuelve a ejecutar.</message>
+</requireJavaVersion>
+<requireMavenVersion>
+<version>[3.9.0,)</version>
+</requireMavenVersion>
+</rules>
+</configuration>
+</execution>
+</executions>
+</plugin>
 		</plugins>
 	</build>
 
