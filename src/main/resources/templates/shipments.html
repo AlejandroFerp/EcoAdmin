@@ -177,7 +177,7 @@
             <div class="modal-shell modal-shell--md">
                 <div class="modal-card">
                     <div class="modal-head">
-                        <h3 id="modalTitulo" class="modal-title">Nuevo Traslado</h3>
+                        <h3 id="modalFormTitulo" class="modal-title">Nuevo Traslado</h3>
                         <button th:replace="~{layouts/fragments :: modalCloseBtn('modalForm')}"></button>
                     </div>
                     <div class="modal-body">
@@ -860,7 +860,7 @@
             }
 
             function abrirCrear() {
-                document.getElementById('modalTitulo').textContent = 'Nuevo Traslado';
+                document.getElementById('modalFormTitulo').textContent = 'Nuevo Traslado';
                 document.getElementById('itemId').value = '';
                 document.getElementById('fObservaciones').value = '';
                 document.getElementById('fFechaProgramadaInicio').value = '';
@@ -871,7 +871,7 @@
 
             async function abrirEditar(id) {
                 var t = await fetch('/api/traslados/' + id).then(function (r) { return r.json(); });
-                document.getElementById('modalTitulo').textContent = 'Editar Traslado';
+                document.getElementById('modalFormTitulo').textContent = 'Editar Traslado';
                 document.getElementById('itemId').value = t.id;
                 Combobox.setValue('fProductor', t.centroProductor ? t.centroProductor.id : '');
                 Combobox.setValue('fGestor', t.centroGestor ? t.centroGestor.id : '');

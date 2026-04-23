@@ -136,7 +136,7 @@ function renderTabla() {
 function irPagina(n) { pagina = n; renderTabla(); }
 
 function abrirCrear() {
-    document.getElementById('modalTitulo').textContent = 'Crear Usuario';
+    document.getElementById('modalFormTitulo').textContent = 'Crear Usuario';
     document.getElementById('itemId').value = '';
     ['fNombre','fEmail','fPassword'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fRol').value = 'PRODUCTOR';
@@ -147,7 +147,7 @@ function abrirCrear() {
 
 async function abrirEditar(id) {
     var u = await fetch('/api/usuarios/' + id).then(function(r) { return r.json(); });
-    document.getElementById('modalTitulo').textContent = 'Editar Usuario';
+    document.getElementById('modalFormTitulo').textContent = 'Editar Usuario';
     document.getElementById('itemId').value = u.id;
     document.getElementById('fNombre').value = u.nombre || '';
     document.getElementById('fEmail').value = u.email || '';

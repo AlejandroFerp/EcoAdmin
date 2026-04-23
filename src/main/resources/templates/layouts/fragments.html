@@ -58,18 +58,27 @@
 
 <!-- ===================================================================
      CRUD MODAL WRAPPER
-     Uso: <div th:replace="~{layouts/fragments :: crudModal('modalForm', 'sm', 'Titulo', 'guardar', ~{::modalBody})}"></div>
+     Uso basico (heredado, layout vertical space-y-4):
+       <div th:replace="~{layouts/fragments :: crudModal('modalForm', 'sm', 'Titulo', 'guardar', ~{::modalBody})}"></div>
+     Uso extendido (saveLabel y bodyClass personalizables):
+       <div th:replace="~{layouts/fragments :: crudModalEx('modalForm', 'md', 'Crear Direccion', 'guardar', 'Guardar', 'grid grid-cols-2 gap-4', ~{::modalBody})}"></div>
+     ID del titulo: th:id=${id}+'Titulo' (p.ej. modalFormTitulo) para evitar colisiones de id si hay varios crudModal en una vista.
      =================================================================== -->
-<div th:fragment="crudModal(id, size, title, saveAction, bodyFragment)" th:id="${id}" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+<div th:fragment="crudModal(id, size, title, saveAction, bodyFragment)"
+     th:replace="~{layouts/fragments :: crudModalEx(${id}, ${size}, ${title}, ${saveAction}, 'Guardar', 'space-y-4', ${bodyFragment})}">
+</div>
+
+<div th:fragment="crudModalEx(id, size, title, saveAction, saveLabel, bodyClass, bodyFragment)"
+     th:id="${id}" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
     <div th:class="'modal-shell modal-shell--' + ${size}">
         <div class="modal-card">
             <div class="modal-head">
-                <h3 class="modal-title" id="modalTitulo" th:text="${title}"></h3>
+                <h3 class="modal-title" th:id="${id} + 'Titulo'" th:text="${title}"></h3>
                 <button th:replace="~{layouts/fragments :: modalCloseBtn(${id})}"></button>
             </div>
-            <div class="modal-body space-y-4" th:insert="${bodyFragment}">
+            <div th:class="'modal-body ' + ${bodyClass}" th:insert="${bodyFragment}">
             </div>
-            <div th:replace="~{layouts/fragments :: modalFooter(${id}, 'Guardar', ${saveAction})}"></div>
+            <div th:replace="~{layouts/fragments :: modalFooter(${id}, ${saveLabel}, ${saveAction})}"></div>
         </div>
     </div>
 </div>

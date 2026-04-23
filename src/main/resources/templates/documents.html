@@ -65,7 +65,7 @@
 </main>
 
 <!-- MODAL FORM -->
-<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'md', 'Nuevo Documento', 'guardar', ~{::modalBody})}">
+<div th:replace="~{layouts/fragments :: crudModalEx('modalForm', 'md', 'Nuevo Documento', 'guardar', 'Guardar', 'grid grid-cols-2 gap-4', ~{::modalBody})}">
     <th:block th:fragment="modalBody">
         <input type="hidden" id="itemId">
                 <div class="col-span-2">
@@ -305,7 +305,7 @@ function irPagina(delta) {
 
 function abrirCrear() {
     document.getElementById('itemId').value = '';
-    document.getElementById('modalTitulo').textContent = 'Nuevo Documento';
+    document.getElementById('modalFormTitulo').textContent = 'Nuevo Documento';
     document.getElementById('fTipo').value = 'DOCUMENTO_IDENTIFICACION';
     document.getElementById('fReferencia').value = '';
     document.getElementById('fEstado').value = 'BORRADOR';
@@ -324,7 +324,7 @@ async function abrirEditar(id) {
     const d = todos.find(x => x.id === id);
     if (!d) return;
     document.getElementById('itemId').value = d.id;
-    document.getElementById('modalTitulo').textContent = 'Editar Documento';
+    document.getElementById('modalFormTitulo').textContent = 'Editar Documento';
     document.getElementById('fTipo').value = d.tipo;
     document.getElementById('fReferencia').value = d.numeroReferencia || '';
     document.getElementById('fEstado').value = d.estado;

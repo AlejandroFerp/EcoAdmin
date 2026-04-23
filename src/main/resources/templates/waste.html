@@ -60,7 +60,7 @@
 </div>
 
 <!-- MODAL FORM -->
-<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'md', 'Crear Residuo', 'guardar', ~{::modalBody})}">
+<div th:replace="~{layouts/fragments :: crudModalEx('modalForm', 'md', 'Crear Residuo', 'guardar', 'Guardar', 'grid grid-cols-2 gap-4', ~{::modalBody})}">
     <th:block th:fragment="modalBody">
         <input type="hidden" id="itemId">
                 <div>
@@ -276,7 +276,7 @@ function renderTabla() {
 function irPagina(n) { pagina = n; renderTabla(); }
 
 function abrirCrear() {
-    document.getElementById('modalTitulo').textContent = 'Crear Residuo';
+    document.getElementById('modalFormTitulo').textContent = 'Crear Residuo';
     document.getElementById('itemId').value = '';
     ['fCantidad','fUnidad'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fCodigoLER').value = '';
@@ -292,7 +292,7 @@ function abrirCrear() {
 
 async function abrirEditar(id) {
     var r = await fetch('/api/residuos/' + id).then(function(res) { return res.json(); });
-    document.getElementById('modalTitulo').textContent = 'Editar Residuo';
+    document.getElementById('modalFormTitulo').textContent = 'Editar Residuo';
     document.getElementById('itemId').value = r.id;
     document.getElementById('fCantidad').value = r.cantidad != null ? r.cantidad : '';
     document.getElementById('fUnidad').value = r.unidad || '';

@@ -52,7 +52,7 @@
 </main>
 
 <!-- MODAL FORM -->
-<div th:replace="~{layouts/fragments :: crudModal('modalForm', 'md', 'Crear Direccion', 'guardar', ~{::modalBody})}">
+<div th:replace="~{layouts/fragments :: crudModalEx('modalForm', 'md', 'Crear Direccion', 'guardar', 'Guardar', 'grid grid-cols-2 gap-4', ~{::modalBody})}">
     <th:block th:fragment="modalBody">
         <input type="hidden" id="itemId">
                 <div class="col-span-2">
@@ -175,7 +175,7 @@ function renderTabla() {
 function irPagina(n) { pagina = n; renderTabla(); }
 
 function abrirCrear() {
-    document.getElementById('modalTitulo').textContent = 'Crear Direccion';
+    document.getElementById('modalFormTitulo').textContent = 'Crear Direccion';
     document.getElementById('itemId').value = '';
     ['fNombre','fCalle','fCiudad','fCP','fProvincia','fLat','fLon'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('fPais').value = 'Espana';
@@ -185,7 +185,7 @@ function abrirCrear() {
 
 async function abrirEditar(id) {
     var d = await fetch('/api/direcciones/' + id).then(function(r) { return r.json(); });
-    document.getElementById('modalTitulo').textContent = 'Editar Direccion';
+    document.getElementById('modalFormTitulo').textContent = 'Editar Direccion';
     document.getElementById('itemId').value = d.id;
     document.getElementById('fNombre').value = d.nombre || '';
     document.getElementById('fCalle').value = d.calle || '';
