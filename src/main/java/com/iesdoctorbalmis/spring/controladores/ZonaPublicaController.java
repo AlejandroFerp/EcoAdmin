@@ -10,6 +10,8 @@ import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 @Controller
 public class ZonaPublicaController {
@@ -102,4 +104,13 @@ public class ZonaPublicaController {
 
     @GetMapping("/informes")
     public String legacyReports() { return "redirect:/reports"; }
+
+
+
+    @GetMapping("/usuarios/{id}")
+    public String usuarioPerfil(@PathVariable Long id, org.springframework.ui.Model model) {
+        model.addAttribute("usuarioId", id);
+        return "usuario-perfil";
+    }
+
 }

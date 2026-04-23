@@ -61,6 +61,9 @@ public class SeguridadConfig {
                 .requestMatchers("/api/perfil/**").authenticated()
                 .requestMatchers("/api/empresa/**").authenticated()
                 .requestMatchers("/api/almacen/**").authenticated()
+                // perfil-transportista is accessible by the owner (TRANSPORTISTA) or ADMIN; fine-grained check in controller
+                .requestMatchers("/api/usuarios/*/perfil-transportista").authenticated()
+                .requestMatchers("/api/transportistas/**").authenticated()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                 .requestMatchers("/api/traslados/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
                 .requestMatchers("/api/recogidas/**").hasAnyRole("ADMIN", "GESTOR", "TRANSPORTISTA", "PRODUCTOR")
