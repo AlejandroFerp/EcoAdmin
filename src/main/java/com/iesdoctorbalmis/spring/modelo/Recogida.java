@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -29,6 +30,17 @@ public class Recogida {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, length = 20)
+    private String codigo;
+
+    @PrePersist
+    private void asignarCodigo() {
+        if (this.codigo == null) {
+            this.codigo = com.iesdoctorbalmis.spring.config.SpringContextHolder
+                .getBean(com.iesdoctorbalmis.spring.servicios.CodigoService.class).generar("REC");
+        }
+    }
 
     @ManyToOne
     @JoinColumn(name = "residuo_id")
@@ -67,6 +79,8 @@ public class Recogida {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
     public Residuo getResiduo() { return residuo; }
     public void setResiduo(Residuo residuo) { this.residuo = residuo; }
     public Centro getCentroOrigen() { return centroOrigen; }

@@ -2,6 +2,7 @@ package com.iesdoctorbalmis.spring.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -34,4 +35,6 @@ public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
     List<Traslado> findByCentroGestorUsuario(Usuario usuario);
 
     boolean existsByResiduo(Residuo residuo);
+
+    Optional<Traslado> findByCodigo(String codigo);
 }

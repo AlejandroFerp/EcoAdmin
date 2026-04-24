@@ -1,6 +1,7 @@
 package com.iesdoctorbalmis.spring.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,4 +16,6 @@ public interface CentroRepository extends JpaRepository<Centro, Long> {
     boolean existsByDireccion(Direccion direccion);
 
     List<Centro> findByDireccion(Direccion direccion);
+
+    Optional<Centro> findByCodigo(String codigo);
 }

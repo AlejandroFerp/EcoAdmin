@@ -1,6 +1,7 @@
 package com.iesdoctorbalmis.spring.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -14,4 +15,6 @@ public interface ResiduoRepository extends JpaRepository<Residuo, Long> {
     List<Residuo> findByCentroIn(List<Centro> centros);
 
     boolean existsByCentro(Centro centro);
+
+    Optional<Residuo> findByCodigo(String codigo);
 }

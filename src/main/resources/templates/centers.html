@@ -165,7 +165,7 @@ function renderTabla() {
         : slice.map(function(c) {
             return '<tr class="hover" ondblclick="abrirEditar(' + c.id + ')">'
                 + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + c.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
-            + '<td class="text-xs text-slate-400">' + c.id + '</td>'
+            + '<td class="text-xs font-mono text-slate-500 whitespace-nowrap">' + (c.codigo || ('#' + c.id)) + '</td>'
             + '<td class="font-medium">' + esc(c.nombre || '\u2014') + '</td>'
             + '<td>' + (window.tipoCentroBadge ? window.tipoCentroBadge(c.tipo) : esc(c.tipo || '\u2014')) + '</td>'
             + '<td class="text-sm text-slate-500 hidden md:table-cell">' + esc(c.direccion ? c.direccion.calle : '\u2014') + '</td>'

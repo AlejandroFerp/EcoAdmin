@@ -119,7 +119,7 @@ function renderTabla() {
         : slice.map(function(u) {
             return '<tr class="hover" ondblclick="abrirEditar(' + u.id + ')">'
                 + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + u.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
-                + '<td class="text-xs text-slate-400">' + u.id + '</td>'
+                + '<td class="text-xs font-mono text-slate-500 whitespace-nowrap">' + (u.codigo || ('#' + u.id)) + '</td>'
                 + '<td class="font-medium">' + esc(u.nombre || '\u2014') + '</td>'
                 + '<td class="text-sm text-slate-500">' + esc(u.email || '\u2014') + '</td>'
                 + '<td>' + (window.rolBadge ? window.rolBadge(u.rol) : esc(u.rol || '—')) + '</td>'

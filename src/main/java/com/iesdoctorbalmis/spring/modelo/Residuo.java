@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,6 +20,17 @@ public class Residuo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, length = 20)
+    private String codigo;
+
+    @PrePersist
+    private void asignarCodigo() {
+        if (this.codigo == null) {
+            this.codigo = com.iesdoctorbalmis.spring.config.SpringContextHolder
+                .getBean(com.iesdoctorbalmis.spring.servicios.CodigoService.class).generar("RES");
+        }
+    }
 
     private double cantidad;
     private String unidad;
@@ -52,6 +64,8 @@ public class Residuo {
     }
 
     public Long getId() { return id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
     public void setId(Long id) { this.id = id; }
     public Centro getCentro() { return centro; }
     public void setCentro(Centro centro) { this.centro = centro; }

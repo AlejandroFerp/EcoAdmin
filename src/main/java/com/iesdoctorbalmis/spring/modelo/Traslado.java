@@ -22,6 +22,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
@@ -32,6 +33,17 @@ public class Traslado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, length = 20)
+    private String codigo;
+
+    @PrePersist
+    private void asignarCodigo() {
+        if (this.codigo == null) {
+            this.codigo = com.iesdoctorbalmis.spring.config.SpringContextHolder
+                .getBean(com.iesdoctorbalmis.spring.servicios.CodigoService.class).generar("TRA");
+        }
+    }
 
     @ManyToOne
     @JoinColumn(name = "centro_productor_id", nullable = false)
@@ -90,6 +102,8 @@ public class Traslado {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
     public Centro getCentroProductor() { return centroProductor; }
     public void setCentroProductor(Centro centroProductor) { this.centroProductor = centroProductor; }
     public Centro getCentroGestor() { return centroGestor; }
