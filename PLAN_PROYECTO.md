@@ -833,6 +833,425 @@ ADMIN/GESTOR crea traslado
 
 ---
 
+### FASE 27 — Registro de usuarios, notificaciones y gestion de solicitudes
+
+**Objetivo:** Implementar el flujo completo de alta de nuevos usuarios:
+un visitante solicita registrarse, el admin recibe notificacion, revisa, aprueba o rechaza,
+y establece la contrasena del nuevo usuario. Ampliar la gestion de usuarios del admin para
+que pueda ver perfiles y cambiar contrasenas de cualquier usuario.
+
+**Flujo de registro:**
+```
+Visitante (no autenticado)
+       │
+       ├── En /login pulsa "Registrarse"
+       │       ↓
+       ├── /registro — selecciona rol: Productor / Gestor / Transportista
+       │       ↓
+       ├── Formulario dinamico (campos segun rol seleccionado):
+       │     Comunes:     nombre, email, telefono, DNI
+       │     Productor:   empresa, NIMA, centro principal
+       │     Gestor:      empresa, autorizacion gestor, NIMA
+       │     Transportista: matricula, certificado ADR
+       │       ↓
+       └── Enviar solicitud → se guarda en tabla SolicitudRegistro (estado=PENDIENTE)
+                ↓
+       Sistema genera Notificacion para ADMIN ("Nueva solicitud de registro")
+                ↓
+       ADMIN ve campanita con contador en header
+                ↓
+       ADMIN abre /solicitudes → lista de solicitudes pendientes
+                ↓
+       ADMIN revisa datos → Acepta (crea Usuario + establece contrasena) o Rechaza
+```
+
+**Modelo de datos nuevo:**
+
+```java
+// Nueva entidad — solicitud de registro pendiente de aprobacion
+SolicitudRegistro {
+  Long id;
+  String nombre;
+  String email;
+  String telefono;
+  String dni;
+  Rol rolSolicitado;           // PRODUCTOR, GESTOR, TRANSPORTISTA (nunca ADMIN)
+  // Campos especificos segun rol (todos nullable)
+  String empresa;              // nombre de empresa (Productor/Gestor)
+  String nima;                 // NIMA (Productor/Gestor)
+  String autorizacionGestor;   // ref autorizacion (Gestor)
+  String matricula;            // matricula vehiculo (Transportista)
+  String certificadoAdr;       // ref certificado ADR (Transportista)
+  String centroPrincipal;      // nombre centro (Productor)
+  EstadoSolicitud estado;      // PENDIENTE, APROBADA, RECHAZADA
+  String motivoRechazo;        // texto libre si se rechaza
+  LocalDateTime fechaSolicitud;
+  LocalDateTime fechaResolucion;
+  Usuario resueltoPor;         // FK al admin que resolvio
+}
+
+enum EstadoSolicitud {
+  PENDIENTE, APROBADA, RECHAZADA
+}
+
+// Nueva entidad — notificaciones genericas
+Notificacion {
+  Long id;
+  Usuario destinatario;        // FK al usuario que la recibe
+  String titulo;               // ej: "Nueva solicitud de registro"
+  String mensaje;              // ej: "Juan Perez solicita registrarse como Productor"
+  String enlace;               // ej: "/solicitudes/5"
+  Boolean leida;               // false por defecto
+  LocalDateTime fecha;
+}
+```
+
+**Tareas:**
+
+- [ ] 27.1 Crear entidad `SolicitudRegistro` + `EstadoSolicitud` (enum) + repositorio + servicio
+- [ ] 27.2 Crear entidad `Notificacion` + repositorio + servicio
+- [ ] 27.3 Pagina `/registro` (publica, sin autenticar):
+       - Selector de rol (3 tarjetas: Productor / Gestor / Transportista)
+       - Formulario dinamico: campos comunes siempre visibles, campos por rol aparecen/ocultan con JS
+       - Validacion frontend (campos obligatorios) + backend (email unico, DNI formato)
+       - Boton "Enviar solicitud" → POST /api/solicitudes-registro
+       - Mensaje de confirmacion: "Tu solicitud ha sido enviada. Un administrador la revisara."
+- [ ] 27.4 Enlace "Registrarse" en pagina de login
+- [ ] 27.5 Campanita de notificaciones en header del layout:
+       - Icono campana con badge numerico (notificaciones no leidas)
+       - Dropdown al hacer clic: lista de notificaciones recientes
+       - Clic en notificacion → navega al enlace y marca como leida
+       - Endpoint: `GET /api/notificaciones` (del usuario autenticado)
+       - Endpoint: `PATCH /api/notificaciones/{id}/leer`
+- [ ] 27.6 Pagina `/solicitudes` (solo ADMIN):
+       - Tabla: nombre, email, rol solicitado, fecha, estado
+       - Filtro por estado (Pendiente / Aprobada / Rechazada)
+       - Clic en fila → detalle con todos los campos del formulario
+- [ ] 27.7 Flujo de aprobacion (ADMIN):
+       - Boton "Aprobar" → formulario con campo contrasena (que el admin establece)
+       - Al aprobar: crea Usuario con datos de la solicitud, encripta contrasena, asigna rol
+       - Si rol=TRANSPORTISTA: crea tambien PerfilTransportista con matricula
+       - Cambia estado solicitud a APROBADA
+       - Genera notificacion (futuro: email al solicitante informando que fue aprobado)
+- [ ] 27.8 Flujo de rechazo (ADMIN):
+       - Boton "Rechazar" → campo texto para motivo
+       - Cambia estado solicitud a RECHAZADA
+- [ ] 27.9 Ampliar gestion de usuarios (ADMIN):
+       - Ver perfil completo de cualquier usuario (no solo lista)
+       - Cambiar contrasena de cualquier usuario (formulario en su perfil)
+       - Asignar/cambiar rol de un usuario existente
+- [ ] 27.10 Seguridad:
+       - `/registro` y `POST /api/solicitudes-registro` son publicos (como /login)
+       - `/solicitudes` y endpoints de aprobacion/rechazo requieren ROLE_ADMIN
+       - Notificaciones: cada usuario solo ve las suyas
+       - Rate limiting basico en registro (evitar spam de solicitudes)
+- [ ] 27.11 API endpoints:
+       - `POST /api/solicitudes-registro` (publico — crea solicitud)
+       - `GET /api/solicitudes-registro` (ADMIN — lista con filtros)
+       - `GET /api/solicitudes-registro/{id}` (ADMIN — detalle)
+       - `POST /api/solicitudes-registro/{id}/aprobar` (ADMIN — aprueba y crea usuario)
+       - `POST /api/solicitudes-registro/{id}/rechazar` (ADMIN — rechaza con motivo)
+       - `GET /api/notificaciones` (autenticado — mis notificaciones)
+       - `PATCH /api/notificaciones/{id}/leer` (autenticado — marcar leida)
+       - `GET /api/notificaciones/no-leidas` (autenticado — contador para badge)
+- [ ] 27.12 Tests: registro, aprobacion, rechazo, notificaciones, seguridad endpoints publicos
+
+**Diagramas de casos de uso:** Ver archivos separados por actor:
+- `uc-visitante.puml` — flujo de registro
+- `uc-admin.puml` — notificaciones + solicitudes + gestion usuarios ampliada
+- `uc-productor.puml`
+- `uc-gestor.puml`
+- `uc-transportista.puml`
+
+**Dependencias:** Ninguna estricta. Puede ejecutarse en paralelo con fases 20+.
+Si FASE 23 (PerfilTransportista) esta completada, al aprobar un transportista se crea
+automaticamente el perfil. Si no, se crea el usuario sin perfil y se completa despues.
+
+---
+
+### FASE 28 — Permisos por propiedad (ownership) y filtrado de datos por rol
+
+**Objetivo:** Cada usuario solo ve y opera sobre los datos que le corresponden. El Admin ve
+todo, pero Gestor, Productor y Transportista trabajan en un universo restringido a sus centros,
+residuos, traslados y recogidas. Esto se implementa con tablas de relacion M:N de ownership
+y filtrado en servicios, sin framework externo (Spring Security ACL anade complejidad
+innecesaria para este caso; la solucion custom con JPA Specifications es mas simple, legible
+y mantenible).
+
+**Principio general:** si un dato no pertenece al usuario, no existe para el. No aparece en
+selects, no se incluye en estadisticas, no se puede modificar ni consultar por URL directa.
+
+**Modelo de ownership por rol:**
+
+| Rol | Owns | Ve | Opera |
+|-----|------|----|-------|
+| **Admin** | Todo | Todo | Todo |
+| **Gestor** | Centros asignados via `GestorCentro` | Centros propios + sus residuos, traslados, recogidas, documentos, estadisticas | CRUD completo en su ambito. Puede enviar recogidas A cualquier centro (centroDestino), pero solo crear recogidas DESDE sus centros (centroOrigen) |
+| **Productor** | Centros via `Centro.usuario` (ya existe) | Sus centros + sus residuos + recogidas de sus centros | Gestiona almacen (cantidades, entradas/salidas). Decide si se puede recoger o no y que cantidad. Ve traslados de sus centros como solo lectura. NO cambia estados de traslados. Su gestion termina al aceptar/rechazar la recogida |
+| **Transportista** | Rutas/traslados asignados via `RutaTransportista` (ya existe) + campo `transportista` en Traslado/Recogida | Traslados y recogidas donde es transportista asignado. Rutas propias | Maximo poder sobre transporte: CRUD completo de rutas propias (trayecto completo, no solo inicio/fin), precios/tarifas, estados de traslado. Puede postergar fecha de recogida (solo a fecha posterior, nunca anterior). Ve centros SOLO en contexto de sus operaciones, no como listado general |
+
+**Tecnologia elegida: Ownership Service + JPA Specifications (custom)**
+
+Justificacion frente a alternativas:
+- **Spring Security ACL**: potente pero pesado — requiere 4 tablas propias, configuracion
+  compleja, curva de aprendizaje alta. Sobredimensionado para este caso donde el modelo
+  de permisos es "ves lo tuyo y punto".
+- **Row-Level Security (PostgreSQL)**: buena en produccion pero no funciona con H2 en
+  desarrollo/tests. Acopla la logica de negocio a la base de datos.
+- **Custom OwnershipService + Specifications** ✅: una capa de servicio que, dado el usuario
+  actual y su rol, devuelve las Specifications JPA para filtrar queries. Simple, testeable,
+  funciona con cualquier base de datos, y aprovecha lo que Spring Data JPA ya ofrece.
+
+**Tecnologia elegida para UI dinamica: @JsonView + FieldPermissionService**
+
+El sistema de permisos NO se limita a filtrar filas (que registros ves). Tambien controla
+CAMPOS (que datos ves dentro de un registro) y ACCIONES (que botones/formularios tienes).
+Principio: si no es para ti, no existe en tu pantalla. Nada de errores 403, tablas vacias
+ni campos deshabilitados sin sentido — directamente no se renderizan.
+
+Opciones evaluadas para campo-level y UI dinamica:
+- **DTOs por rol** (TrasladoAdminDTO, TrasladoProductorDTO...): seguro pero explosion de
+  clases. 4 roles × N entidades = mantenimiento insostenible. Descartado.
+- **GraphQL**: el cliente pide exactamente lo que necesita. Elegante, pero cambio de
+  paradigma completo (dejar REST + Thymeleaf). Sobredimensionado para este proyecto.
+- **@JsonView (Jackson)** ✅ para API: anotaciones en los campos del modelo que definen
+  grupos de visibilidad (Views.Admin, Views.Gestor, Views.Productor, Views.Transportista).
+  El controlador selecciona la vista segun el rol del usuario autenticado. Sin clases extra.
+  Spring lo soporta nativamente con `@JsonView` en `@GetMapping`.
+- **FieldPermissionService** ✅ para Thymeleaf: servicio que devuelve un mapa
+  `Map<String, FieldPermission>` por entidad+rol+contexto. Cada campo tiene un estado:
+  VISIBLE (lectura), EDITABLE (lectura+escritura), HIDDEN (no se renderiza).
+  Thymeleaf lo consume via un objeto `permisos` en el modelo y fragmentos condicionales.
+  Centralizado en un solo punto — NO disperso en decenas de `th:if="hasRole(...)"`
+
+Capas del sistema de permisos (de abajo a arriba):
+1. **Data-level**: JPA Specifications filtran queries → no ves registros ajenos
+2. **Field-level**: @JsonView (API) + FieldPermissionService (Thymeleaf) → no ves campos ajenos
+3. **Action-level**: OwnershipService valida escrituras + @PreAuthorize → no operas fuera de tu ambito
+4. **UI-level**: formularios/modales/menus se renderizan segun FieldPermissionService → experiencia limpia
+5. **Report-level**: cada rol tiene lista de informes permitidos → menu solo muestra los suyos
+
+**Flujo de negociacion de fecha de recogida (validacion mutua):**
+
+Una recogida no se ejecuta sin acuerdo entre las partes. Estados de confirmacion:
+
+```
+PROPUESTA → CONTRAPROPUESTA → CONFIRMADA_PRODUCTOR/CONFIRMADA_TRANSPORTISTA → ACORDADA
+```
+
+1. Productor o Gestor propone fecha de recogida (`fechaPropuesta`)
+2. Transportista puede ACEPTAR o CONTRAPROPONER una fecha posterior (nunca anterior)
+   - Si contrapropone, se guarda `fechaContrapropuesta` y el estado pasa a CONTRAPROPUESTA
+3. Productor confirma la fecha final → `confirmacionProductor = true`
+4. Transportista confirma → `confirmacionTransportista = true`
+5. Cuando ambas confirmaciones son true → estado = ACORDADA, la recogida se puede ejecutar
+6. El Gestor puede manipular/editar la recogida, pero si Productor o Transportista
+   no dan su visto bueno, la recogida NO pasa a ACORDADA y no se ejecuta ese dia
+
+Nuevos campos en `Recogida`:
+- `fechaPropuesta` (LocalDate) — fecha original propuesta
+- `fechaContrapropuesta` (LocalDate, nullable) — fecha alternativa del transportista
+- `confirmacionProductor` (boolean, default false)
+- `confirmacionTransportista` (boolean, default false)
+- `estadoAcuerdo` (enum: PROPUESTA, CONTRAPROPUESTA, ACORDADA, RECHAZADA)
+
+**Capas adicionales de filtrado del Gestor:**
+
+Los gestores no solo estan limitados por centros. Tambien pueden tener:
+- **Licencias por tipo de residuo**: un gestor solo trabaja con ciertos codigos LER.
+  Necesita tabla `GestorLicencia` (gestor_id, codigoLER). Los residuos que no estan en
+  sus licencias no aparecen en sus vistas ni en sus operaciones.
+- **Empresas/productores asociados**: esto se resuelve de forma natural — si un gestor
+  solo gestiona ciertos centros, y los centros pertenecen a productores especificos,
+  el gestor solo ve las operaciones de esos productores. No necesita tabla extra.
+
+**Tareas:**
+
+- [ ] 28.1 Entidad `GestorCentro` (tabla M:N):
+       - `gestor_id` (FK → Usuario, solo rol GESTOR)
+       - `centro_id` (FK → Centro)
+       - `fechaAsignacion` (audit)
+       - Unique constraint: `(gestor_id, centro_id)`
+       - Un centro puede tener multiples gestores; un gestor puede gestionar multiples centros
+       - NOTA: Para Productor se reutiliza `Centro.usuario` (1:N existente, un productor
+         es dueno de sus centros). Para Transportista se reutiliza `RutaTransportista` (ya M:N)
+         y los campos `transportista` en Traslado/Recogida
+
+- [ ] 28.2 Servicio `OwnershipService`:
+       - `getCentrosPermitidos(usuario)` → segun rol:
+         - ADMIN: todos
+         - GESTOR: via GestorCentroRepository
+         - PRODUCTOR: via CentroRepository.findByUsuario
+         - TRANSPORTISTA: centros de sus traslados/recogidas asignados (no listado libre)
+       - `canAccessCentro(usuario, centroId)` → booleano
+       - `canCreateRecogidaDesde(usuario, centroOrigenId)` → GESTOR solo si es su centro;
+         PRODUCTOR solo si es su centro; TRANSPORTISTA no crea recogidas
+       - `canSendRecogidaA(usuario, centroDestinoId)` → GESTOR siempre true (puede enviar
+         a cualquier centro); PRODUCTOR no envia
+       - `getTrasladosPermitidos(usuario)` → filtrados por centros propios o asignacion directa
+       - `getRecogidaPermitidas(usuario)` → idem
+
+- [ ] 28.3 JPA Specifications para filtrado:
+       - `CentroSpecifications.deUsuario(usuario)` → filtra por ownership segun rol
+       - `ResiduoSpecifications.deUsuario(usuario)` → residuos de centros permitidos
+       - `TrasladoSpecifications.deUsuario(usuario)` → traslados de centros permitidos O asignacion directa
+       - `RecogidaSpecifications.deUsuario(usuario)` → recogidas de centros permitidos O asignacion directa
+       - `DocumentoSpecifications.deUsuario(usuario)` → documentos de traslados/centros permitidos
+       - Todos los Repositories deben extender `JpaSpecificationExecutor<T>`
+
+- [ ] 28.4 Refactor de servicios existentes para usar Specifications:
+       - `CentroService`: todas las queries filtran por ownership (listados, selects, busquedas)
+       - `ResiduoService`: filtrar por centros del usuario
+       - `TrasladoService`: filtrar por centros del usuario + asignacion como transportista
+       - `RecogidaService`: filtrar por centros del usuario + asignacion como transportista
+       - `DocumentoService`: filtrar por traslados/centros accesibles
+       - `EstadisticaService` / Dashboard: SOLO datos de centros propios del usuario
+       - Cada servicio inyecta `OwnershipService` y aplica Specification en el findAll
+
+- [ ] 28.5 Restricciones de operacion por rol del Productor:
+       - Traslados: SOLO lectura. Ve los traslados donde `centroProductor` es suyo.
+         No puede crear, editar ni cambiar estado de traslados
+       - Recogidas: puede ACEPTAR o RECHAZAR recogidas programadas para sus centros.
+         Puede indicar cantidad disponible para recogida. No crea recogidas nuevas
+       - Residuos: CRUD completo de residuos en sus centros (es su almacen).
+         Gestiona cantidades, fechas de entrada/salida, alertas FIFO
+       - Centros: ve y edita SOLO sus propios centros
+       - Documentos: lectura de documentos asociados a sus traslados
+       - Estadisticas: solo de sus centros (residuos en almacen, recogidas pendientes,
+         traslados salientes)
+
+- [ ] 28.6 Restricciones de operacion por rol del Transportista:
+       - Traslados: ve SOLO los que tiene asignados. Cambia estados de transporte
+         (es quien mas sabe de lo que pasa en el transporte: EN_TRANSITO, ENTREGADO, incidencias)
+       - Recogidas: ve SOLO las que tiene asignadas. Puede postergar fecha de recogida
+         (solo a fecha posterior, nunca anterior). Confirma recogida realizada
+       - Rutas: CRUD COMPLETO de sus rutas propias — no solo inicio/fin, tambien trayecto
+         intermedio (waypoints), tiempos estimados. No ve rutas de otros transportistas
+       - Precios/tarifas: gestiona sus tarifas y costes de transporte
+       - Centros: NO accede al listado general. Ve datos del centro solo en contexto
+         de un traslado/recogida (direccion, contacto, para la logistica)
+       - Residuos: NO accede directamente. Ve info del residuo dentro del traslado
+       - Documentos: lectura de documentos de sus traslados asignados
+       - Estadisticas: sus traslados realizados, tarifas acumuladas, rutas completadas
+
+- [ ] 28.7 Restricciones de operacion por rol del Gestor:
+       - Centros: CRUD de centros asignados via `GestorCentro`. No ve ni sabe que existen
+         centros que no gestiona
+       - Residuos: CRUD de residuos en sus centros asignados
+       - Traslados: CRUD completo donde centroGestor o centroProductor sea de sus centros
+       - Recogidas: puede crear recogidas DESDE sus centros (centroOrigen). Puede enviar
+         recogidas A cualquier centro (centroDestino libre en el select)
+       - Documentos: CRUD de documentos en traslados/centros de su ambito
+       - Rutas: ve y asigna rutas (no limitado por ownership de rutas)
+       - Estadisticas: solo datos de sus centros gestionados
+       - Informes: generados solo con datos de su ambito
+
+- [ ] 28.8 Filtrado en UI (selects y dropdowns):
+       - Select de centros: solo muestra centros del usuario (segun ownership)
+       - Select de centro destino en recogida (Gestor): muestra TODOS los centros
+         (excepcion: puede enviar a cualquier centro)
+       - Select de residuos: solo residuos de centros propios
+       - Select de transportistas: sin restriccion (Gestor/Admin eligen transportista)
+       - Dashboard widgets: datos solo del ambito del usuario
+       - Tablas de listado: pre-filtradas por ownership, sin opcion de ver "todos"
+
+- [ ] 28.9 Validacion en backend (defensa en profundidad):
+       - Cada endpoint de escritura (POST, PUT, PATCH, DELETE) valida ownership
+         ANTES de ejecutar la operacion. No basta con filtrar el listado
+       - `@PreAuthorize` con SpEL para verificaciones rapidas de rol
+       - Verificacion explicita en el servicio: `ownershipService.canAccessCentro(...)`
+         lanza `AccessDeniedException` si no tiene permiso
+       - Los endpoints GET de detalle (`/api/centros/{id}`) tambien verifican ownership
+       - Los ID recibidos por URL no se confian: se valida que el recurso pertenece al usuario
+
+- [ ] 28.10 Admin: gestion de asignaciones:
+       - Pantalla para asignar/desasignar centros a gestores (CRUD de GestorCentro)
+       - Vista de "que gestiona cada gestor" y "quien gestiona cada centro"
+       - Al crear un centro, opcion de asignar gestor inmediatamente
+       - Al desasignar un gestor de un centro, los traslados/recogidas en curso
+         siguen visibles para el hasta completarse (no se corta el acceso en medio)
+
+- [ ] 28.11 Migracion de datos existentes:
+       - Script SQL / DataLoader que para cada Centro con `usuario` de rol GESTOR,
+         crea la entrada correspondiente en `GestorCentro`
+       - Verificar que Productores siguen funcionando con `Centro.usuario` sin cambios
+       - Verificar que Transportistas siguen viendo traslados por campo `transportista`
+
+- [ ] 28.12 Tests:
+       - Test unitario de `OwnershipService` con cada rol
+       - Test de Specifications: que los filtros devuelven solo datos propios
+       - Test de integracion: Gestor A no ve centros de Gestor B
+       - Test de integracion: Productor solo ve sus centros y residuos
+       - Test de integracion: Productor NO puede cambiar estado de traslado (403)
+       - Test de integracion: Transportista solo ve traslados asignados
+       - Test de integracion: Gestor puede crear recogida a centro ajeno (centroDestino)
+       - Test de seguridad: acceso directo por URL a recurso ajeno devuelve 403
+       - Test de UI: selects solo muestran opciones permitidas
+
+- [ ] 28.13 Entidad `GestorLicencia` (tabla M:N):
+       - `gestor_id` (FK → Usuario, solo rol GESTOR)
+       - `codigoLER` (String, codigo LER autorizado)
+       - Unique constraint: `(gestor_id, codigoLER)`
+       - El OwnershipService filtra residuos no solo por centro sino tambien por
+         licencia LER del gestor. Si un gestor no tiene licencia para un LER,
+         los residuos con ese codigo no aparecen en sus vistas
+
+- [ ] 28.14 Flujo de negociacion de fecha de recogida:
+       - Nuevos campos en Recogida: fechaPropuesta, fechaContrapropuesta,
+         confirmacionProductor, confirmacionTransportista, estadoAcuerdo
+       - Enum `EstadoAcuerdo`: PROPUESTA, CONTRAPROPUESTA, ACORDADA, RECHAZADA
+       - Endpoint: `PATCH /api/recogidas/{id}/contraproponer` (TRANSPORTISTA — nueva fecha)
+       - Endpoint: `PATCH /api/recogidas/{id}/confirmar` (PRODUCTOR o TRANSPORTISTA)
+       - Validacion: contrapropuesta solo acepta fecha >= fechaPropuesta
+       - Validacion: recogida no pasa a ACORDADA sin ambas confirmaciones
+       - El Gestor puede editar la recogida pero no fuerza el estado ACORDADA
+         sin visto bueno de las partes
+       - Notificacion al cambiar estado de acuerdo (via sistema de notificaciones FASE 27)
+
+- [ ] 28.15 FieldPermissionService (visibilidad de campos por rol):
+       - Servicio central que dado (entidad, rol, contexto) devuelve
+         `Map<String, FieldPermission>` donde FieldPermission = VISIBLE | EDITABLE | HIDDEN
+       - Configuracion declarativa (no codigo disperso): un enum o mapa estatico define
+         la matriz entidad × rol × campo → permiso
+       - Ejemplo: campo `observacionesInternas` en Traslado → HIDDEN para Productor,
+         VISIBLE para Transportista, EDITABLE para Gestor/Admin
+       - El controlador anade `permisos` al Model de Thymeleaf
+       - Fragmentos Thymeleaf reutilizables: `field-wrapper` que consulta el mapa
+         y renderiza el campo como input, como texto read-only, o no lo renderiza
+
+- [ ] 28.16 @JsonView para API REST:
+       - Definir interfaces de vista: Views.Admin, Views.Gestor, Views.Productor,
+         Views.Transportista, Views.Public
+       - Anotar campos de las entidades/DTOs con las vistas correspondientes
+       - En controladores REST: `@JsonView(Views.xxx.class)` segun rol del usuario
+       - Resolver la vista dinamicamente con un `ViewResolverAdvice` que detecta
+         el rol del usuario autenticado y aplica la vista correcta automaticamente
+
+- [ ] 28.17 Informes filtrados por rol:
+       - Definir lista de informes permitidos por rol (config declarativa)
+       - ADMIN: todos los informes
+       - GESTOR: informes de centros gestionados, inventario propio, trazabilidad propia
+       - PRODUCTOR: informe de almacen, recogidas pendientes, traslados salientes
+       - TRANSPORTISTA: informe de rutas, tarifas acumuladas, traslados realizados
+       - Menu lateral de informes solo muestra los del rol del usuario
+       - Los datos de cada informe se filtran por ownership (Specifications)
+
+- [ ] 28.18 Tests adicionales UI dinamica:
+       - Test: Productor no ve campo `observacionesInternas` en detalle de traslado
+       - Test: Transportista ve boton "Postergar fecha" en recogida asignada
+       - Test: flujo completo de negociacion de fecha (propuesta → contrapropuesta → acuerdo)
+       - Test: Gestor sin licencia LER X no ve residuos con codigo LER X
+       - Test: menu de informes del Productor solo muestra 3 opciones
+       - Test: FieldPermissionService devuelve HIDDEN para campo no autorizado
+
+**Dependencias:** Requiere que las entidades base existan (Centro, Traslado, Recogida,
+Residuo, Documento). Idealmente ejecutar despues de FASE 18 (Recogida) y FASE 19 (Documento).
+Compatible con cualquier fase de UI ya completada (los selects se refactorizan in-place).
+FASE 23 (PerfilTransportista) y FASE 24 (Rutas) deben estar completas para el ownership
+del transportista.
+
+---
+
 ### Orden de ejecucion (Bloque II)
 
 | Prioridad | Fase | Justificacion |
@@ -846,6 +1265,8 @@ ADMIN/GESTOR crea traslado
 | 7 | 23 (transportista + tarifas) | Requiere 22 (codigo en entidades). |
 | 8 | 24 (rutas + mapa) | Requiere 22 + 23 (PerfilTransportista existe). |
 | 9 | 25 (QR funcional) | Requiere 22 (codigo en traslados). Cierre de trazabilidad. |
+| 10 | 27 (registro + notificaciones) | Sin dependencias estrictas. Puede avanzar en paralelo desde fase 17+. |
+| 11 | 28 (ownership + permisos datos) | Requiere 18, 19, 23, 24. Cross-cutting: afecta a todos los servicios. Ultima fase funcional. |
 
 ### Dependencias Bloque II
 
@@ -859,6 +1280,8 @@ ADMIN/GESTOR crea traslado
 23 (transportista) → requiere 22
 24 (rutas) → requiere 22 + 23
 25 (QR) → requiere 22
+27 (registro + notificaciones) → independiente, paralelo desde 17+. Si 23 existe, crea perfil transportista al aprobar.
+28 (ownership + permisos datos) → requiere 18 + 19 + 23 + 24. Refactoriza TODOS los servicios. Ejecutar al final del bloque.
 ```
 
 ---
@@ -876,6 +1299,15 @@ ADMIN/GESTOR crea traslado
 | Campos en `Residuo` | 18 | `fechaEntradaAlmacen`, `fechaSalidaAlmacen`, `diasMaximoAlmacenamiento` |
 | Campo `ruta` en `Traslado` | 24 | FK nullable a `Ruta` |
 | Campo `codigo` en todas | 22 | Codigo legible unico (`TRA26-000001`) sustituyendo ID en UI |
+| `SolicitudRegistro` | 27 | Solicitud de registro pendiente de aprobacion admin |
+| `EstadoSolicitud` | 27 | Enum: PENDIENTE, APROBADA, RECHAZADA |
+| `Notificacion` | 27 | Notificacion generica por usuario (titulo, enlace, leida) |
+| `GestorCentro` | 28 | Relacion M:N entre Gestor y Centro (ownership de gestion) |
+| `GestorLicencia` | 28 | Relacion M:N entre Gestor y codigoLER (licencias de residuo autorizadas) |
+| `EstadoAcuerdo` | 28 | Enum: PROPUESTA, CONTRAPROPUESTA, ACORDADA, RECHAZADA |
+| Campos en `Recogida` | 28 | fechaPropuesta, fechaContrapropuesta, confirmacionProductor, confirmacionTransportista |
+| Specifications JPA | 28 | Filtros dinamicos por ownership en cada entidad principal |
+| `FieldPermissionService` | 28 | Servicio central de visibilidad de campos por rol y contexto |
 
 ---
 

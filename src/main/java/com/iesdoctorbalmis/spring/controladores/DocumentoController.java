@@ -80,14 +80,17 @@ public class DocumentoController {
 
     @PostMapping
     public ResponseEntity<Documento> crear(@RequestBody Documento d) {
+        d.setArchivoUrl(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(d));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Documento> editar(@PathVariable Long id, @RequestBody Documento d) {
-        if (service.findById(id) == null)
+        Documento existing = service.findById(id);
+        if (existing == null)
             throw new RecursoNoEncontradoException("Documento no encontrado: " + id);
         d.setId(id);
+        d.setArchivoUrl(existing.getArchivoUrl());
         return ResponseEntity.ok(service.save(d));
     }
 
@@ -124,7 +127,6 @@ public class DocumentoController {
                 .body(pdf);
     }
 
-    /** Sube un PDF y lo asocia al documento (sustituye el anterior si existia). */
     @PostMapping("/{id}/upload")
     public ResponseEntity<Documento> subirPdf(@PathVariable Long id,
                                               @RequestParam("archivo") MultipartFile archivo) throws IOException {
@@ -150,15 +152,16 @@ public class DocumentoController {
         return ResponseEntity.ok(service.save(d));
     }
 
-    /** Descarga el PDF subido (no el generado) si existe. */
     @GetMapping("/{id}/archivo")
     public ResponseEntity<Resource> descargarArchivo(@PathVariable Long id) throws IOException {
         Documento d = service.findById(id);
         if (d == null || d.getArchivoUrl() == null)
             return ResponseEntity.notFound().build();
         String nombre = d.getArchivoUrl().substring(d.getArchivoUrl().lastIndexOf('/') + 1);
-        Path archivo = Paths.get(directorioUploads).toAbsolutePath().resolve(nombre);
-        if (!Files.exists(archivo)) return ResponseEntity.notFound().build();
+        Path dir = Paths.get(directorioUploads).toAbsolutePath().normalize();
+        Path archivo = dir.resolve(nombre).normalize();
+        if (!archivo.startsWith(dir) || !Files.exists(archivo))
+            return ResponseEntity.notFound().build();
         Resource resource = new UrlResource(archivo.toUri());
         String ref = d.getNumeroReferencia() != null ? d.getNumeroReferencia() : ("doc-" + id);
         return ResponseEntity.ok()
@@ -167,10 +170,6 @@ public class DocumentoController {
                 .body(resource);
     }
 
-    /**
-     * Recogidas con fechaProgramadaInicio en los proximos 10 dias
-     * que NO tengan Notificacion Previa emitida (para alertar en dashboard).
-     */
     @GetMapping("/alertas/notificacion-previa")
     public List<Map<String, Object>> alertasNotificacionPrevia() {
         java.time.LocalDateTime ahora = java.time.LocalDateTime.now();

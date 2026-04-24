@@ -1,0 +1,106 @@
+﻿@startuml UC_Transportista
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 11
+
+actor "Transportista" as TRANS #FFD700
+
+rectangle "EcoAdmin" {
+
+  package "Autenticacion" #F0F0F0 {
+    usecase "Iniciar / cerrar sesion" as UC01
+  }
+
+  package "Perfil" #F5F5DC {
+    usecase "Editar mi perfil\ny contrasena" as UC02
+    usecase "Editar perfil transportista\n(matricula, ADR)" as UC03
+    usecase "Ver datos empresa\n(solo lectura)" as UC04
+  }
+
+  package "Mis traslados (solo asignados)" #E3F2FD {
+    usecase "Ver listado de\ntraslados asignados a mi" as UC05
+    usecase "Cambiar estado de transporte\n(EN_TRANSITO, ENTREGADO,\nincidencia)" as UC06
+    usecase "Ver detalle de traslado\n(centro origen/destino,\nresiduo, observaciones)" as UC07
+    usecase "Descargar QR / PDF\nde mis traslados" as UC08
+    usecase "Ver historial\nde eventos" as UC09
+  }
+
+  package "Mis recogidas (solo asignadas)" #E3F2FD {
+    usecase "Ver listado de\nrecogidas asignadas" as UC10
+    usecase "Postergar fecha recogida\n(solo a fecha posterior)" as UC11
+    usecase "Confirmar fecha acordada\n(visto bueno transportista)" as UC12
+    usecase "Marcar recogida\ncomo realizada" as UC13
+  }
+
+  package "Mis rutas (gestion completa)" #FFF3E0 {
+    usecase "Crear nueva ruta\n(origen, destino, waypoints)" as UC14
+    usecase "Editar trayecto completo\n(puntos intermedios,\ntiempos estimados)" as UC15
+    usecase "Eliminar ruta propia" as UC16
+    usecase "Definir / editar\nmis tarifas y precios" as UC17
+    usecase "Calculadora de\nprecios en ruta" as UC18
+  }
+
+  package "Documentos (de mis traslados)" #F3E5F5 {
+    usecase "Ver documentos de\nmis traslados" as UC19
+    usecase "Descargar PDF" as UC20
+  }
+
+  package "Consultas (solo mis datos)" #E0F7FA {
+    usecase "Ver dashboard:\ntraslados activos,\nrutas del dia" as UC21
+    usecase "Escanear / confirmar QR" as UC22
+    usecase "Consultar Lista LER" as UC23
+  }
+
+  package "Informes (solo mis datos)" #FCE4EC {
+    usecase "Informe de\ntraslados realizados" as UC24
+    usecase "Informe de tarifas\nacumuladas" as UC25
+    usecase "Informe de rutas\ncompletadas" as UC26
+  }
+
+  note right of UC11
+    Solo puede mover la fecha
+    hacia adelante, nunca a
+    una fecha anterior.
+    Requiere confirmacion
+    mutua con productor
+  end note
+
+  note right of UC14
+    Maximo poder sobre rutas:
+    define no solo inicio y fin
+    sino el trayecto completo
+    con waypoints intermedios
+  end note
+}
+
+TRANS -[#FFD700]-> UC01
+TRANS -[#FFD700]-> UC02
+TRANS -[#FFD700]-> UC03
+TRANS -[#FFD700]-> UC04
+TRANS -[#FFD700]-> UC05
+TRANS -[#FFD700]-> UC06
+TRANS -[#FFD700]-> UC07
+TRANS -[#FFD700]-> UC08
+TRANS -[#FFD700]-> UC09
+TRANS -[#FFD700]-> UC10
+TRANS -[#FFD700]-> UC11
+TRANS -[#FFD700]-> UC12
+TRANS -[#FFD700]-> UC13
+TRANS -[#FFD700]-> UC14
+TRANS -[#FFD700]-> UC15
+TRANS -[#FFD700]-> UC16
+TRANS -[#FFD700]-> UC17
+TRANS -[#FFD700]-> UC18
+TRANS -[#FFD700]-> UC19
+TRANS -[#FFD700]-> UC20
+TRANS -[#FFD700]-> UC21
+TRANS -[#FFD700]-> UC22
+TRANS -[#FFD700]-> UC23
+TRANS -[#FFD700]-> UC24
+TRANS -[#FFD700]-> UC25
+TRANS -[#FFD700]-> UC26
+
+@enduml

@@ -80,7 +80,20 @@ public class TrasladoController {
 
     @GetMapping("/por-estado/{estado}")
     public List<Traslado> porEstado(@PathVariable EstadoTraslado estado) {
-        return service.findByEstado(estado);
+        Usuario usuario = authService.obtenerUsuarioActual();
+        if (usuario == null) return List.of();
+        List<Traslado> todos = service.findByEstado(estado);
+        return switch (usuario.getRol()) {
+            case ADMIN, GESTOR -> todos;
+            case PRODUCTOR -> todos.stream()
+                .filter(t -> t.getCentroProductor() != null && t.getCentroProductor().getUsuario() != null
+                        && t.getCentroProductor().getUsuario().getId().equals(usuario.getId()))
+                .toList();
+            case TRANSPORTISTA -> todos.stream()
+                .filter(t -> t.getTransportista() != null
+                        && t.getTransportista().getId().equals(usuario.getId()))
+                .toList();
+        };
     }
 
     @GetMapping("/{id}/historial")
@@ -95,6 +108,9 @@ public class TrasladoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
     public ResponseEntity<Traslado> crear(@RequestBody Traslado t) {
+        t.setEstado(EstadoTraslado.PENDIENTE);
+        t.setFechaInicioTransporte(null);
+        t.setFechaEntrega(null);
         Traslado saved = service.save(t);
         emailService.notificarNuevoTraslado(saved);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -130,7 +146,6 @@ public class TrasladoController {
         Traslado actualizado = service.cambiarEstado(id, estado, comentario, usuario);
         emailService.notificarCambioEstado(actualizado);
 
-        // Al completar el traslado, enviar el certificado de recepcion al productor
         if (actualizado.getEstado() == EstadoTraslado.COMPLETADO) {
             enviarCertificadoAlProductor(actualizado);
         }

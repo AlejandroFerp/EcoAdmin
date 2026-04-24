@@ -37,10 +37,11 @@ public class AlmacenController {
      */
     @GetMapping
     public List<Map<String, Object>> listarAlmacen() {
+        LocalDateTime ahora = LocalDateTime.now();
         return residuosVisibles().stream()
                 .filter(r -> r.getFechaEntradaAlmacen() != null && r.getFechaSalidaAlmacen() == null)
                 .sorted(Comparator.comparing(Residuo::getFechaEntradaAlmacen))
-                .map(AlmacenController::toItem)
+                .map(r -> toItem(r, ahora))
                 .toList();
     }
 
@@ -54,7 +55,7 @@ public class AlmacenController {
                 .filter(r -> r.getFechaEntradaAlmacen() != null && r.getFechaSalidaAlmacen() == null)
                 .filter(r -> diasEnAlmacen(r, ahora) > maximo(r))
                 .sorted(Comparator.comparing(Residuo::getFechaEntradaAlmacen))
-                .map(AlmacenController::toItem)
+                .map(r -> toItem(r, ahora))
                 .toList();
     }
 
@@ -75,8 +76,8 @@ public class AlmacenController {
         return r.getDiasMaximoAlmacenamiento() == null ? 180 : r.getDiasMaximoAlmacenamiento();
     }
 
-    private static Map<String, Object> toItem(Residuo r) {
-        long dias = diasEnAlmacen(r, LocalDateTime.now());
+    private static Map<String, Object> toItem(Residuo r, LocalDateTime ahora) {
+        long dias = diasEnAlmacen(r, ahora);
         int max = maximo(r);
         String severidad;
         if (dias > max) severidad = "CRITICO";

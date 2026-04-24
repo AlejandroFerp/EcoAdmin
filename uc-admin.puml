@@ -1,0 +1,109 @@
+﻿@startuml UC_Administrador
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 11
+
+actor "Administrador" as ADMIN #FF6B6B
+
+rectangle "EcoAdmin" {
+
+  package "Autenticacion" #F0F0F0 {
+    usecase "Iniciar / cerrar sesion" as UC01
+  }
+
+  package "Notificaciones" #FFCDD2 {
+    usecase "Ver campanita\ncon contador" as UC02
+    usecase "Ver lista de\nnotificaciones" as UC03
+    usecase "Navegar a solicitud\npendiente" as UC04
+
+    UC02 ..> UC03 : <<include>>
+    UC03 ..> UC04 : <<extend>>
+  }
+
+  package "Solicitudes de registro" #FFCDD2 {
+    usecase "Listar solicitudes\npendientes" as UC05
+    usecase "Revisar datos\ndel solicitante" as UC06
+    usecase "Aprobar solicitud\n(crea usuario + password)" as UC07
+    usecase "Rechazar solicitud\ncon motivo" as UC08
+  }
+
+  package "Gestion de usuarios" #FFE0B2 {
+    usecase "Crear / editar /\neliminar usuarios" as UC10
+    usecase "Ver perfil completo\nde cualquier usuario" as UC11
+    usecase "Cambiar contrasena\nde otro usuario" as UC12
+    usecase "Asignar / cambiar rol" as UC13
+  }
+
+  package "Asignaciones de ownership" #FFE0B2 {
+    usecase "Asignar centros\na gestores" as UC28
+    usecase "Desasignar centros\nde gestores" as UC29
+    usecase "Ver que gestiona\ncada gestor" as UC30
+    usecase "Asignar licencias LER\na gestores" as UC31
+  }
+
+  package "Perfil & Empresa" #F5F5DC {
+    usecase "Editar mi perfil\ny contrasena" as UC14
+    usecase "Editar datos empresa" as UC15
+  }
+
+  package "Operaciones (acceso total, sin filtro)" #E3F2FD {
+    usecase "Crear / editar / eliminar\ncentros de cualquier usuario" as UC16
+    usecase "Crear / editar / eliminar\nresiduos de cualquier centro" as UC17
+    usecase "Crear / editar / eliminar\ntraslados (cambiar estado,\nasignar ruta y transportista)" as UC18
+    usecase "Crear / editar / eliminar\nrecogidas (forzar fecha,\nasignar transportista)" as UC19
+    usecase "Crear / editar / eliminar\nrutas (asignar transportistas,\ndefinir trayecto y tarifa)" as UC20
+    usecase "Crear / subir / eliminar\ndocumentos (PDF, alertas NP)" as UC21
+    usecase "Crear / editar / eliminar\ndirecciones" as UC22
+  }
+
+  package "Consultas (sin filtro)" #E0F7FA {
+    usecase "Ver dashboard global\ny estadisticas de todos" as UC23
+    usecase "Ver almacen completo\ny alertas FIFO" as UC24
+    usecase "Escanear / confirmar QR" as UC25
+    usecase "Consultar Lista LER" as UC26
+  }
+
+  package "Informes (todos)" #FCE4EC {
+    usecase "Generar cualquier informe\n(CSV, PDF, inventario,\ntrazabilidad, auditoria)" as UC27
+  }
+
+  note right of UC28
+    Solo Admin gestiona
+    la tabla GestorCentro
+    y GestorLicencia
+  end note
+}
+
+ADMIN -[#FF6B6B]-> UC01
+ADMIN -[#FF6B6B]-> UC02
+ADMIN -[#FF6B6B]-> UC05
+ADMIN -[#FF6B6B]-> UC06
+ADMIN -[#FF6B6B]-> UC07
+ADMIN -[#FF6B6B]-> UC08
+ADMIN -[#FF6B6B]-> UC10
+ADMIN -[#FF6B6B]-> UC11
+ADMIN -[#FF6B6B]-> UC12
+ADMIN -[#FF6B6B]-> UC13
+ADMIN -[#FF6B6B]-> UC14
+ADMIN -[#FF6B6B]-> UC15
+ADMIN -[#FF6B6B]-> UC16
+ADMIN -[#FF6B6B]-> UC17
+ADMIN -[#FF6B6B]-> UC18
+ADMIN -[#FF6B6B]-> UC19
+ADMIN -[#FF6B6B]-> UC20
+ADMIN -[#FF6B6B]-> UC21
+ADMIN -[#FF6B6B]-> UC22
+ADMIN -[#FF6B6B]-> UC23
+ADMIN -[#FF6B6B]-> UC24
+ADMIN -[#FF6B6B]-> UC25
+ADMIN -[#FF6B6B]-> UC26
+ADMIN -[#FF6B6B]-> UC27
+ADMIN -[#FF6B6B]-> UC28
+ADMIN -[#FF6B6B]-> UC29
+ADMIN -[#FF6B6B]-> UC30
+ADMIN -[#FF6B6B]-> UC31
+
+@enduml

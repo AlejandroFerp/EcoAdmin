@@ -36,7 +36,7 @@ class CodigoServiceTest {
         int anio = Year.now().getValue() % 100;
         assertTrue(codigo.startsWith("TRA" + String.format("%02d", anio) + "-"),
                 "Debe empezar por TRA{AA}-");
-        assertEquals(10, codigo.length(), "Longitud esperada: TTRAAA-000001 = 10 chars");
+        assertEquals(12, codigo.length(), "Longitud esperada: TRA26-000001 = 12 chars");
         assertTrue(codigo.matches("[A-Z]{3}\\d{2}-\\d{6}"), "Formato incorrecto: " + codigo);
     }
 

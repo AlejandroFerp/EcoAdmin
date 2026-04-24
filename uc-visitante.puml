@@ -1,0 +1,40 @@
+﻿@startuml UC_Visitante
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 12
+
+actor "Visitante\n(no autenticado)" as VISIT #BBBBBB
+
+rectangle "EcoAdmin" {
+
+  package "Acceso publico" #F0F0F0 {
+    usecase "Iniciar sesion" as UC01
+  }
+
+  package "Registro (NUEVO)" #FFCDD2 {
+    usecase "Acceder a pagina\nde registro" as UC02
+    usecase "Seleccionar rol:\nProductor / Gestor /\nTransportista" as UC03
+    usecase "Rellenar formulario\n(campos dinamicos segun rol)" as UC04
+    usecase "Enviar solicitud\nde registro" as UC05
+
+    UC02 ..> UC03 : <<include>>
+    UC03 ..> UC04 : <<include>>
+    UC04 ..> UC05 : <<include>>
+  }
+
+  note right of UC04
+    **Campos segun rol:**
+    Comunes: nombre, email, telefono, DNI
+    Productor: empresa, NIMA, centro
+    Gestor: empresa, autorizacion, NIMA
+    Transportista: matricula, ADR
+  end note
+}
+
+VISIT -[#BBBBBB]-> UC01
+VISIT -[#BBBBBB]-> UC02
+
+@enduml

@@ -48,7 +48,8 @@ class RecogidaServiceTest {
     @Test
     void save_sinEstado_asignaPROGRAMADA() {
         Recogida r = new Recogida();
-        assertNull(r.getEstado());
+        // Recogida ya tiene default PROGRAMADA en la entidad
+        assertEquals(EstadoRecogida.PROGRAMADA, r.getEstado());
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
         Recogida saved = service.save(r);

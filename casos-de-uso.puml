@@ -1,0 +1,210 @@
+﻿@startuml Casos_de_Uso_EcoAdmin
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 10
+
+' ══ Actores IZQUIERDA ══
+actor "Administrador" as ADMIN #FF6B6B
+actor "Gestor" as GEST #87CEEB
+
+rectangle "EcoAdmin - Gestion de Residuos" {
+
+  package "Usuarios & Ownership" #FFEBEE {
+    usecase "Crear / editar / eliminar\nusuarios, cambiar rol" as UC_USR
+    usecase "Asignar centros y\nlicencias LER a gestores" as UC_OWN
+  }
+
+  package "Solicitudes & Notificaciones" #FFCDD2 {
+    usecase "Aprobar / rechazar\nsolicitudes de registro" as UC_SOL
+    usecase "Ver notificaciones" as UC_NOTIF
+  }
+
+  package "Informes" #FCE4EC {
+    usecase "Generar informes\n(inventario, trazabilidad,\nauditoria, CSV)" as UC_INF
+    usecase "Informe de almacen\ny recogidas" as UC_INF_PROD
+    usecase "Informe de rutas\ny tarifas" as UC_INF_TRANS
+  }
+
+  package "Centros" #E8F5E9 {
+    usecase "Crear / editar / eliminar\ncentros (todos o asignados)" as UC_CENT
+    usecase "Ver / editar\nmis centros propios" as UC_CENT_PROD
+  }
+
+  package "Residuos & Almacen" #E8F5E9 {
+    usecase "Crear / editar / eliminar\nresiduos (filtrado por LER)" as UC_RES
+    usecase "Gestionar almacen:\nentradas, salidas, alertas FIFO" as UC_ALM
+    usecase "Consultar Lista LER" as UC_LER
+  }
+
+  package "Rutas" #FFF3E0 {
+    usecase "Asignar rutas\na traslados" as UC_RUTAS_ASIG
+    usecase "Crear / editar / eliminar\nrutas propias (trayecto\ncompleto + waypoints)" as UC_RUTAS_TRANS
+    usecase "Definir / editar\ntarifas y precios" as UC_TARIFAS
+  }
+
+  package "Autenticacion" #F0F0F0 {
+    usecase "Iniciar / cerrar sesion" as UC_AUTH
+  }
+
+  package "Perfil & Empresa" #F5F5DC {
+    usecase "Editar mi perfil\ny contrasena" as UC_PERFIL
+    usecase "Ver / editar empresa" as UC_EMPRESA
+    usecase "Editar perfil\ntransportista" as UC_PTRANS
+  }
+
+  package "Traslados" #E3F2FD {
+    usecase "Crear / editar traslados\n(asignar ruta, transportista)" as UC_TRASL
+    usecase "Cambiar estado\nde transporte" as UC_TRASL_EST
+    usecase "Ver traslados de\nmis centros (solo lectura)" as UC_TRASL_RO
+    usecase "Generar / descargar\nQR y PDF (DI, NT)" as UC_QR_PDF
+    usecase "Ver historial eventos" as UC_HIST
+  }
+
+  package "Recogidas & Negociacion" #E3F2FD {
+    usecase "Crear recogida desde\nmis centros + asignar\ntransportista" as UC_RECOG
+    usecase "Aceptar / rechazar\nrecogida e indicar cantidad" as UC_RECOG_PROD
+    usecase "Postergar fecha\n(solo a posterior)" as UC_RECOG_POST
+    usecase "Confirmar fecha\nacordada (visto bueno)" as UC_RECOG_CONF
+  }
+
+  package "Documentos" #F3E5F5 {
+    usecase "Crear / subir / eliminar\ndocumentos (PDF, alertas NP)" as UC_DOCS
+    usecase "Ver / descargar documentos\nde mis traslados" as UC_DOCS_RO
+  }
+
+  package "Dashboard & QR" #E0F7FA {
+    usecase "Ver dashboard y estadisticas\n(filtrado por ambito propio)" as UC_STATS
+    usecase "Crear / editar\ndirecciones" as UC_DIR
+    usecase "Escanear / confirmar QR" as UC_QR
+  }
+}
+
+' ══ Actores DERECHA ══
+actor "Transportista" as TRANS #FFD700
+actor "Productor" as PROD #90EE90
+
+' ══════════════════════════════════
+'  SOLO ADMIN
+' ══════════════════════════════════
+ADMIN -[#FF6B6B]-> UC_USR
+ADMIN -[#FF6B6B]-> UC_OWN
+ADMIN -[#FF6B6B]-> UC_SOL
+
+' ══════════════════════════════════
+'  ADMIN + GESTOR
+' ══════════════════════════════════
+ADMIN -[#FF6B6B]-> UC_INF
+GEST  -[#87CEEB]-> UC_INF
+
+ADMIN -[#FF6B6B]-> UC_CENT
+GEST  -[#87CEEB]-> UC_CENT
+
+ADMIN -[#FF6B6B]-> UC_RES
+GEST  -[#87CEEB]-> UC_RES
+
+ADMIN -[#FF6B6B]-> UC_TRASL
+GEST  -[#87CEEB]-> UC_TRASL
+
+ADMIN -[#FF6B6B]-> UC_RECOG
+GEST  -[#87CEEB]-> UC_RECOG
+
+ADMIN -[#FF6B6B]-> UC_DOCS
+GEST  -[#87CEEB]-> UC_DOCS
+
+ADMIN -[#FF6B6B]-> UC_RUTAS_ASIG
+GEST  -[#87CEEB]-> UC_RUTAS_ASIG
+
+' ══════════════════════════════════
+'  ADMIN + GESTOR + PRODUCTOR (almacen)
+' ══════════════════════════════════
+ADMIN -[#FF6B6B]-> UC_ALM
+GEST  -[#87CEEB]-> UC_ALM
+UC_ALM <-[#90EE90]- PROD
+
+' ══════════════════════════════════
+'  SOLO PRODUCTOR
+' ══════════════════════════════════
+UC_CENT_PROD <-[#90EE90]- PROD
+UC_TRASL_RO  <-[#90EE90]- PROD
+UC_RECOG_PROD <-[#90EE90]- PROD
+UC_INF_PROD  <-[#90EE90]- PROD
+
+' ══════════════════════════════════
+'  SOLO TRANSPORTISTA
+' ══════════════════════════════════
+UC_RUTAS_TRANS <-[#FFD700]- TRANS
+UC_TARIFAS     <-[#FFD700]- TRANS
+UC_TRASL_EST   <-[#FFD700]- TRANS
+UC_RECOG_POST  <-[#FFD700]- TRANS
+UC_PTRANS      <-[#FFD700]- TRANS
+UC_INF_TRANS   <-[#FFD700]- TRANS
+
+' ══════════════════════════════════
+'  PRODUCTOR + TRANSPORTISTA (negociacion)
+' ══════════════════════════════════
+UC_RECOG_CONF <-[#FFD700]- TRANS
+UC_RECOG_CONF <-[#90EE90]- PROD
+
+' ══════════════════════════════════
+'  PRODUCTOR + TRANSPORTISTA (docs solo lectura)
+' ══════════════════════════════════
+UC_DOCS_RO <-[#FFD700]- TRANS
+UC_DOCS_RO <-[#90EE90]- PROD
+
+' ══════════════════════════════════
+'  TODOS
+' ══════════════════════════════════
+ADMIN -[#FF6B6B]-> UC_AUTH
+GEST  -[#87CEEB]-> UC_AUTH
+UC_AUTH <-[#FFD700]- TRANS
+UC_AUTH <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_PERFIL
+GEST  -[#87CEEB]-> UC_PERFIL
+UC_PERFIL <-[#FFD700]- TRANS
+UC_PERFIL <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_EMPRESA
+GEST  -[#87CEEB]-> UC_EMPRESA
+UC_EMPRESA <-[#FFD700]- TRANS
+UC_EMPRESA <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_QR_PDF
+GEST  -[#87CEEB]-> UC_QR_PDF
+UC_QR_PDF <-[#FFD700]- TRANS
+UC_QR_PDF <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_HIST
+GEST  -[#87CEEB]-> UC_HIST
+UC_HIST <-[#FFD700]- TRANS
+UC_HIST <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_STATS
+GEST  -[#87CEEB]-> UC_STATS
+UC_STATS <-[#FFD700]- TRANS
+UC_STATS <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_LER
+GEST  -[#87CEEB]-> UC_LER
+UC_LER <-[#FFD700]- TRANS
+UC_LER <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_DIR
+GEST  -[#87CEEB]-> UC_DIR
+UC_DIR <-[#FFD700]- TRANS
+UC_DIR <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_QR
+GEST  -[#87CEEB]-> UC_QR
+UC_QR <-[#FFD700]- TRANS
+UC_QR <-[#90EE90]- PROD
+
+ADMIN -[#FF6B6B]-> UC_NOTIF
+GEST  -[#87CEEB]-> UC_NOTIF
+UC_NOTIF <-[#FFD700]- TRANS
+UC_NOTIF <-[#90EE90]- PROD
+
+@enduml

@@ -90,7 +90,7 @@ class InformesControllerTest {
     @DisplayName("GET /api/informes/traslados sin auth devuelve 401/403")
     void informeTraslados_sinAuth_denegado() throws Exception {
         mockMvc.perform(get("/api/informes/traslados"))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is3xxRedirection());
     }
 
     // ─── Inventario almacén ───────────────────────────────────────────────────

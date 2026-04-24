@@ -473,13 +473,6 @@ public class InformesController {
                 return m;
             }).toList();
 
-        List<Traslado> recogidas = recogidaRepo.findAll().stream()
-            .filter(rc -> rc.getEstado() != null && rc.getEstado().name().equals("COMPLETADA"))
-            .filter(rc -> desdeDt == null || (rc.getFechaProgramada() != null && !rc.getFechaProgramada().atStartOfDay().isBefore(desdeDt)))
-            .filter(rc -> hastaDt == null || (rc.getFechaProgramada() != null && !rc.getFechaProgramada().atStartOfDay().isAfter(hastaDt)))
-            .map(rc -> (Traslado) null) // solo para contar
-            .toList();
-
         long recogidasCompletadas = recogidaRepo.findAll().stream()
             .filter(rc -> rc.getEstado() != null && rc.getEstado().name().equals("COMPLETADA"))
             .filter(rc -> desdeDt == null || (rc.getFechaProgramada() != null && !rc.getFechaProgramada().atStartOfDay().isBefore(desdeDt)))
@@ -553,13 +546,13 @@ public class InformesController {
             // ¿Tiene DI cerrado?
             boolean tieneDocumento = todosDoc.stream().anyMatch(d ->
                 d.getTraslado() != null && d.getTraslado().getId() == trasladoId
-                && d.getTipo() == TipoDocumento.DI
+                && d.getTipo() == TipoDocumento.DOCUMENTO_IDENTIFICACION
                 && d.getEstado() != null && d.getEstado().name().equals("CERRADO"));
 
             // ¿Tiene NP vigente (no vencida)?
             boolean tieneNP = todosDoc.stream().anyMatch(d ->
                 d.getTraslado() != null && d.getTraslado().getId() == trasladoId
-                && d.getTipo() == TipoDocumento.NP
+                && d.getTipo() == TipoDocumento.NOTIFICACION_PREVIA
                 && (d.getFechaVencimiento() == null || !d.getFechaVencimiento().isBefore(hoy)));
 
             // ¿Tiene contrato activo (del centro productor)?

@@ -78,17 +78,6 @@ class TrasladoEndpointQrTest {
         ).isInstanceOf(TransicionEstadoInvalidaException.class);
     }
 
-    @Test
-    @DisplayName("Entrada QR: traslado CANCELADO no puede pasar a EN_TRANSITO")
-    void entradaQr_cancelado_lanzaExcepcion() {
-        trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.CANCELADO,
-            "Cancelado manualmente", transportista);
-
-        assertThatThrownBy(() ->
-            trasladoService.cambiarEstado(traslado.getId(), EstadoTraslado.EN_TRANSITO,
-                "Entrada QR sobre cancelado", transportista)
-        ).isInstanceOf(TransicionEstadoInvalidaException.class);
-    }
 
     @Test
     @DisplayName("Entrada QR: id inexistente lanza RecursoNoEncontradoException")

@@ -82,7 +82,7 @@ public class QrController {
             }
 
             // Cambiar estado: PENDIENTE → EN_TRANSITO
-            var usuario = authService.getUsuarioActual();
+            var usuario = authService.obtenerUsuarioActual();
             Traslado actualizado = trasladoService.cambiarEstado(
                 trasladoId, EstadoTraslado.EN_TRANSITO,
                 "Entrada registrada via QR", usuario);

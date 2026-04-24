@@ -1,0 +1,121 @@
+﻿@startuml UC_Gestor
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 11
+
+actor "Gestor" as GEST #87CEEB
+
+rectangle "EcoAdmin" {
+
+  package "Autenticacion" #F0F0F0 {
+    usecase "Iniciar / cerrar sesion" as UC01
+  }
+
+  package "Perfil & Empresa" #F5F5DC {
+    usecase "Editar mi perfil\ny contrasena" as UC02
+    usecase "Ver / editar empresa" as UC03
+  }
+
+  package "Centros (solo asignados)" #E8F5E9 {
+    usecase "Ver listado de\nmis centros asignados" as UC04
+    usecase "Editar datos de\nmis centros" as UC05
+    usecase "Crear nuevo centro\n(se autoasigna)" as UC06
+  }
+
+  package "Residuos (de mis centros, filtrado por licencia LER)" #E8F5E9 {
+    usecase "Ver residuos de\nmis centros" as UC07
+    usecase "Crear / editar / eliminar\nresiduos en mis centros" as UC08
+    usecase "Consultar Lista LER" as UC09
+  }
+
+  package "Traslados (de mis centros)" #E3F2FD {
+    usecase "Crear traslado desde\nmis centros" as UC10
+    usecase "Editar traslado\nen mi ambito" as UC11
+    usecase "Cambiar estado\nde traslado" as UC12
+    usecase "Asignar transportista\ny ruta a traslado" as UC13
+    usecase "Generar QR / PDF\n(DI, NT)" as UC14
+    usecase "Ver historial\nde eventos" as UC15
+  }
+
+  package "Recogidas" #E3F2FD {
+    usecase "Crear recogida DESDE\nmis centros (origen)" as UC16
+    usecase "Enviar recogida A\ncualquier centro (destino)" as UC17
+    usecase "Editar / cancelar\nrecogidas de mi ambito" as UC18
+    usecase "Asignar transportista\na recogida" as UC19
+    usecase "Editar fecha recogida\n(requiere visto bueno\nde partes)" as UC20
+  }
+
+  package "Rutas" #FFF3E0 {
+    usecase "Ver todas las rutas" as UC21
+    usecase "Asignar rutas\na traslados" as UC22
+  }
+
+  package "Documentos (de mi ambito)" #F3E5F5 {
+    usecase "Crear / subir documento\nen mis traslados/centros" as UC23
+    usecase "Descargar / ver PDF" as UC24
+    usecase "Eliminar documento" as UC25
+  }
+
+  package "Consultas (solo mis datos)" #E0F7FA {
+    usecase "Ver dashboard con\nestadisticas de mis centros" as UC26
+    usecase "Ver almacen de mis centros\ny alertas FIFO" as UC27
+    usecase "Crear / editar\ndirecciones" as UC28
+    usecase "Escanear / confirmar QR" as UC29
+  }
+
+  package "Informes (solo mi ambito)" #FCE4EC {
+    usecase "Generar informe de\ninventario propio" as UC30
+    usecase "Generar informe de\ntrazabilidad propia" as UC31
+    usecase "Exportar CSV de\nmis centros" as UC32
+  }
+
+  note right of UC17
+    Excepcion: el destino puede
+    ser cualquier centro, incluso
+    uno que no gestiona
+  end note
+
+  note right of UC07
+    Solo ve residuos cuyo
+    codigoLER esta en sus
+    licencias (GestorLicencia)
+  end note
+}
+
+GEST -[#87CEEB]-> UC01
+GEST -[#87CEEB]-> UC02
+GEST -[#87CEEB]-> UC03
+GEST -[#87CEEB]-> UC04
+GEST -[#87CEEB]-> UC05
+GEST -[#87CEEB]-> UC06
+GEST -[#87CEEB]-> UC07
+GEST -[#87CEEB]-> UC08
+GEST -[#87CEEB]-> UC09
+GEST -[#87CEEB]-> UC10
+GEST -[#87CEEB]-> UC11
+GEST -[#87CEEB]-> UC12
+GEST -[#87CEEB]-> UC13
+GEST -[#87CEEB]-> UC14
+GEST -[#87CEEB]-> UC15
+GEST -[#87CEEB]-> UC16
+GEST -[#87CEEB]-> UC17
+GEST -[#87CEEB]-> UC18
+GEST -[#87CEEB]-> UC19
+GEST -[#87CEEB]-> UC20
+GEST -[#87CEEB]-> UC21
+GEST -[#87CEEB]-> UC22
+GEST -[#87CEEB]-> UC23
+GEST -[#87CEEB]-> UC24
+GEST -[#87CEEB]-> UC25
+GEST -[#87CEEB]-> UC26
+GEST -[#87CEEB]-> UC27
+GEST -[#87CEEB]-> UC28
+GEST -[#87CEEB]-> UC29
+GEST -[#87CEEB]-> UC30
+GEST -[#87CEEB]-> UC31
+GEST -[#87CEEB]-> UC32
+
+@enduml

@@ -1,0 +1,107 @@
+﻿@startuml UC_Productor
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam actorStyle awesome
+skinparam usecaseFontSize 11
+
+actor "Productor" as PROD #90EE90
+
+rectangle "EcoAdmin" {
+
+  package "Autenticacion" #F0F0F0 {
+    usecase "Iniciar / cerrar sesion" as UC01
+  }
+
+  package "Perfil & Empresa" #F5F5DC {
+    usecase "Editar mi perfil\ny contrasena" as UC02
+    usecase "Ver datos empresa\n(solo lectura)" as UC03
+  }
+
+  package "Mis centros" #E8F5E9 {
+    usecase "Ver listado de\nmis centros" as UC04
+    usecase "Editar datos de\nmis centros" as UC05
+  }
+
+  package "Mi almacen (gestion completa)" #E8F5E9 {
+    usecase "Crear / editar / eliminar\nresiduos en mis centros" as UC06
+    usecase "Registrar entrada\nde residuo al almacen" as UC07
+    usecase "Registrar salida\nde residuo del almacen" as UC08
+    usecase "Ver alertas FIFO\n(dias max almacenamiento)" as UC09
+    usecase "Consultar Lista LER" as UC10
+  }
+
+  package "Traslados (solo lectura)" #E3F2FD {
+    usecase "Ver traslados salientes\nde mis centros" as UC11
+    usecase "Ver estado y\nhistorial de traslado" as UC12
+    usecase "Descargar QR / PDF\nde mis traslados" as UC13
+  }
+
+  package "Recogidas (aceptar / rechazar)" #E3F2FD {
+    usecase "Ver recogidas programadas\npara mis centros" as UC14
+    usecase "Aceptar recogida\ne indicar cantidad" as UC15
+    usecase "Rechazar recogida" as UC16
+    usecase "Proponer fecha\nde recogida" as UC17
+    usecase "Confirmar fecha\nacordada" as UC18
+  }
+
+  package "Documentos (solo lectura)" #F3E5F5 {
+    usecase "Ver documentos\nde mis traslados" as UC19
+    usecase "Descargar PDF" as UC20
+  }
+
+  package "Consultas (solo mis datos)" #E0F7FA {
+    usecase "Ver dashboard:\nresiduos en almacen,\nrecogidas pendientes" as UC21
+    usecase "Crear / editar\nmis direcciones" as UC22
+    usecase "Escanear QR" as UC23
+  }
+
+  package "Informes (solo mis datos)" #FCE4EC {
+    usecase "Informe de almacen\n(stock actual)" as UC24
+    usecase "Informe de recogidas\npendientes / realizadas" as UC25
+    usecase "Informe de traslados\nsalientes" as UC26
+  }
+
+  note right of UC11
+    NO puede crear, editar
+    ni cambiar estado de
+    traslados. Solo consulta
+  end note
+
+  note right of UC15
+    Su gestion termina al
+    decidir sobre la recogida.
+    Lo que pasa despues no
+    le compete
+  end note
+}
+
+PROD -[#90EE90]-> UC01
+PROD -[#90EE90]-> UC02
+PROD -[#90EE90]-> UC03
+PROD -[#90EE90]-> UC04
+PROD -[#90EE90]-> UC05
+PROD -[#90EE90]-> UC06
+PROD -[#90EE90]-> UC07
+PROD -[#90EE90]-> UC08
+PROD -[#90EE90]-> UC09
+PROD -[#90EE90]-> UC10
+PROD -[#90EE90]-> UC11
+PROD -[#90EE90]-> UC12
+PROD -[#90EE90]-> UC13
+PROD -[#90EE90]-> UC14
+PROD -[#90EE90]-> UC15
+PROD -[#90EE90]-> UC16
+PROD -[#90EE90]-> UC17
+PROD -[#90EE90]-> UC18
+PROD -[#90EE90]-> UC19
+PROD -[#90EE90]-> UC20
+PROD -[#90EE90]-> UC21
+PROD -[#90EE90]-> UC22
+PROD -[#90EE90]-> UC23
+PROD -[#90EE90]-> UC24
+PROD -[#90EE90]-> UC25
+PROD -[#90EE90]-> UC26
+
+@enduml
