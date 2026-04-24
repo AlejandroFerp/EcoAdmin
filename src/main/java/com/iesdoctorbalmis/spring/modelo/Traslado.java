@@ -49,6 +49,10 @@ public class Traslado {
     @JoinColumn(name = "transportista_id")
     private Usuario transportista;
 
+    @ManyToOne
+    @JoinColumn(name = "ruta_id")
+    private Ruta ruta;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoTraslado estado = EstadoTraslado.PENDIENTE;
@@ -94,6 +98,8 @@ public class Traslado {
     public void setResiduo(Residuo residuo) { this.residuo = residuo; }
     public Usuario getTransportista() { return transportista; }
     public void setTransportista(Usuario transportista) { this.transportista = transportista; }
+    public Ruta getRuta() { return ruta; }
+    public void setRuta(Ruta ruta) { this.ruta = ruta; }
     public EstadoTraslado getEstado() { return estado; }
     public void setEstado(EstadoTraslado estado) { this.estado = estado; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }

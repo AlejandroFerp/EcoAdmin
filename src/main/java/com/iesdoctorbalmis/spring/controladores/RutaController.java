@@ -3,6 +3,7 @@ package com.iesdoctorbalmis.spring.controladores;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +16,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iesdoctorbalmis.spring.dto.RutaInputDTO;
+import com.iesdoctorbalmis.spring.dto.RutaTransportistaInputDTO;
+import com.iesdoctorbalmis.spring.dto.RutaTransportistaViewDTO;
 import com.iesdoctorbalmis.spring.excepciones.AccesoDenegadoException;
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.modelo.Ruta;
+import com.iesdoctorbalmis.spring.modelo.RutaTransportista;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.servicios.RutaService;
+import com.iesdoctorbalmis.spring.servicios.RutaTransportistaService;
 import com.iesdoctorbalmis.spring.servicios.TarifaValidator;
 import com.iesdoctorbalmis.spring.servicios.UsuarioAutenticadoService;
 
@@ -35,11 +41,14 @@ public class RutaController {
     private final RutaService rutaService;
     private final UsuarioAutenticadoService authService;
     private final TarifaValidator validator;
+    private final RutaTransportistaService rtService;
 
-    public RutaController(RutaService rutaService, UsuarioAutenticadoService authService, TarifaValidator validator) {
+    public RutaController(RutaService rutaService, UsuarioAutenticadoService authService,
+                          TarifaValidator validator, RutaTransportistaService rtService) {
         this.rutaService = rutaService;
         this.authService = authService;
         this.validator = validator;
+        this.rtService = rtService;
     }
 
     @Operation(summary = "Listar rutas (admin/gestor: todas o filtradas; transportista: las suyas)")
@@ -47,12 +56,23 @@ public class RutaController {
     public List<Ruta> listar(@RequestParam(required = false) Long transportistaId) {
         Usuario actual = authService.obtenerUsuarioActual();
         if (actual != null && actual.getRol() == Rol.TRANSPORTISTA) {
-            return rutaService.findByTransportistaId(actual.getId());
+            // Rutas donde el transportista está activamente asignado (modelo M:N)
+            return rtService.getRutasPorTransportista(actual.getId());
         }
         if (transportistaId != null) {
             return rutaService.findByTransportistaId(transportistaId);
         }
         return rutaService.findAll();
+    }
+
+    @Operation(summary = "Rutas activas (PLANIFICADA + EN_CURSO) para el mapa")
+    @GetMapping("/activas")
+    public List<Ruta> activas() {
+        List<Ruta> planificadas = rutaService.findByEstado(EstadoRuta.PLANIFICADA);
+        List<Ruta> enCurso = rutaService.findByEstado(EstadoRuta.EN_CURSO);
+        java.util.List<Ruta> todas = new java.util.ArrayList<>(planificadas);
+        todas.addAll(enCurso);
+        return todas;
     }
 
     @Operation(summary = "Crear nueva ruta (admin/gestor)")
@@ -68,6 +88,10 @@ public class RutaController {
         r.setOrigenDireccion(dto.origenDireccion());
         r.setDestinoDireccion(dto.destinoDireccion());
         r.setDistanciaKm(dto.distanciaKm());
+        r.setOrigenLat(dto.origenLat());
+        r.setOrigenLon(dto.origenLon());
+        r.setDestinoLat(dto.destinoLat());
+        r.setDestinoLon(dto.destinoLon());
         r.setObservaciones(dto.observaciones());
         r.setFormulaTarifa(dto.formulaTarifa());
         r.setUnidadTarifa(dto.unidadTarifa());
@@ -93,6 +117,10 @@ public class RutaController {
         r.setOrigenDireccion(dto.origenDireccion() != null ? dto.origenDireccion() : existente.getOrigenDireccion());
         r.setDestinoDireccion(dto.destinoDireccion() != null ? dto.destinoDireccion() : existente.getDestinoDireccion());
         r.setDistanciaKm(dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm());
+        r.setOrigenLat(dto.origenLat() != null ? dto.origenLat() : existente.getOrigenLat());
+        r.setOrigenLon(dto.origenLon() != null ? dto.origenLon() : existente.getOrigenLon());
+        r.setDestinoLat(dto.destinoLat() != null ? dto.destinoLat() : existente.getDestinoLat());
+        r.setDestinoLon(dto.destinoLon() != null ? dto.destinoLon() : existente.getDestinoLon());
         r.setObservaciones(dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones());
         r.setFormulaTarifa(dto.formulaTarifa());
         r.setUnidadTarifa(dto.unidadTarifa());
@@ -135,5 +163,60 @@ public class RutaController {
             throw new AccesoDenegadoException("Solo ADMIN o GESTOR pueden eliminar rutas.");
         rutaService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ============================================================
+    // Transportistas por ruta (M:N)
+    // ============================================================
+
+    @Operation(summary = "Lista transportistas activos de una ruta con tarifa y precio de ejemplo")
+    @GetMapping("/{id}/transportistas")
+    public List<RutaTransportistaViewDTO> listarTransportistas(@PathVariable Long id) {
+        return rtService.listarConPrecio(id);
+    }
+
+    @Operation(summary = "Asignar transportista a una ruta con su fórmula de tarifa (admin/gestor)")
+    @PostMapping("/{id}/transportistas")
+    public ResponseEntity<RutaTransportista> asignarTransportista(
+            @PathVariable Long id, @RequestBody RutaTransportistaInputDTO dto) {
+        requireAdminGestor();
+        RutaTransportista rt = rtService.asignar(id, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(rt);
+    }
+
+    @Operation(summary = "Actualizar fórmula/moneda del transportista en la ruta (admin/gestor)")
+    @PutMapping("/{id}/transportistas/{transId}")
+    public ResponseEntity<RutaTransportista> actualizarTransportista(
+            @PathVariable Long id, @PathVariable Long transId,
+            @RequestBody RutaTransportistaInputDTO dto) {
+        requireAdminGestor();
+        return ResponseEntity.ok(rtService.actualizar(id, transId, dto));
+    }
+
+    @Operation(summary = "Desasignar transportista de una ruta (admin/gestor)")
+    @DeleteMapping("/{id}/transportistas/{transId}")
+    public ResponseEntity<Void> desasignarTransportista(
+            @PathVariable Long id, @PathVariable Long transId) {
+        requireAdminGestor();
+        rtService.desasignar(id, transId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Calcular precio para transportista en ruta dado el peso del residuo")
+    @GetMapping("/{id}/calcular/{transId}")
+    public ResponseEntity<?> calcularPorTransportista(
+            @PathVariable Long id, @PathVariable Long transId,
+            @RequestParam(defaultValue = "0") double w) {
+        Map<String, Object> resultado = rtService.calcularPrecio(id, transId, w);
+        if (resultado.containsKey("error")) {
+            return ResponseEntity.badRequest().body(resultado);
+        }
+        return ResponseEntity.ok(resultado);
+    }
+
+    private void requireAdminGestor() {
+        Usuario actual = authService.obtenerUsuarioActual();
+        if (actual == null || (actual.getRol() != Rol.ADMIN && actual.getRol() != Rol.GESTOR))
+            throw new AccesoDenegadoException("Solo ADMIN o GESTOR pueden gestionar transportistas de rutas.");
     }
 }

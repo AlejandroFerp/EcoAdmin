@@ -29,7 +29,7 @@ public class QrService {
     private static final int TAMANO_PX = 300;
 
     public byte[] generarQrTraslado(Long idTraslado, String baseUrl) {
-        String contenido = baseUrl + "/api/traslados/" + idTraslado;
+        String contenido = baseUrl + "/qr/entrada?id=" + idTraslado;
         return generarQr(contenido);
     }
 

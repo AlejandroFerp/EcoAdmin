@@ -28,4 +28,6 @@ public interface TrasladoService {
     List<Traslado> findByGestor(Usuario usuario);
 
     List<Traslado> findByTransportista(Usuario usuario);
+
+    Traslado asignarRuta(Long trasladoId, Long rutaId);
 }

@@ -137,6 +137,15 @@ public class TrasladoController {
         return ResponseEntity.ok(actualizado);
     }
 
+    @Operation(summary = "Asignar o desasignar ruta a un traslado")
+    @PatchMapping("/{id}/ruta")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
+    public ResponseEntity<Traslado> asignarRuta(@PathVariable Long id,
+                                                 @RequestParam(required = false) Long rutaId) {
+        Traslado resultado = service.asignarRuta(id, rutaId);
+        return ResponseEntity.ok(resultado);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {

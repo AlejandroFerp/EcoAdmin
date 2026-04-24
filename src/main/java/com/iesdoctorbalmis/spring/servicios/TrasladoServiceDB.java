@@ -10,6 +10,7 @@ import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException;
 import com.iesdoctorbalmis.spring.modelo.Documento;
 import com.iesdoctorbalmis.spring.modelo.EventoTraslado;
+import com.iesdoctorbalmis.spring.modelo.Ruta;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento;
@@ -19,6 +20,8 @@ import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
 import com.iesdoctorbalmis.spring.repository.EventoTrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
+import com.iesdoctorbalmis.spring.repository.RutaRepository;
+import com.iesdoctorbalmis.spring.repository.RutaTransportistaRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 
@@ -31,6 +34,8 @@ public class TrasladoServiceDB implements TrasladoService {
     private final ResiduoRepository residuoRepo;
     private final UsuarioRepository usuarioRepo;
     private final DocumentoRepository documentoRepo;
+    private final RutaRepository rutaRepo;
+    private final RutaTransportistaRepository rtRepo;
 
     /**
      * Lock de proceso para serializar la generacion de referencias DI.
@@ -44,13 +49,17 @@ public class TrasladoServiceDB implements TrasladoService {
                              CentroRepository centroRepo,
                              ResiduoRepository residuoRepo,
                              UsuarioRepository usuarioRepo,
-                             DocumentoRepository documentoRepo) {
+                             DocumentoRepository documentoRepo,
+                             RutaRepository rutaRepo,
+                             RutaTransportistaRepository rtRepo) {
         this.trasladoRepo = trasladoRepo;
         this.eventoRepo = eventoRepo;
         this.centroRepo = centroRepo;
         this.residuoRepo = residuoRepo;
         this.usuarioRepo = usuarioRepo;
         this.documentoRepo = documentoRepo;
+        this.rutaRepo = rutaRepo;
+        this.rtRepo = rtRepo;
     }
 
     @Override
@@ -78,6 +87,20 @@ public class TrasladoServiceDB implements TrasladoService {
         if (t.getTransportista() != null && t.getTransportista().getId() != null)
             t.setTransportista(usuarioRepo.findById(t.getTransportista().getId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Transportista no encontrado")));
+        if (t.getRuta() != null && t.getRuta().getId() != null)
+            t.setRuta(rutaRepo.findById(t.getRuta().getId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada")));
+        // Regla de negocio: si el traslado tiene ruta Y transportista asignados, el transportista
+        // debe estar activamente asignado a esa ruta.
+        if (t.getRuta() != null && t.getTransportista() != null) {
+            if (!rtRepo.existsByRutaIdAndTransportistaIdAndActivoTrue(
+                    t.getRuta().getId(), t.getTransportista().getId())) {
+                throw new IllegalArgumentException(
+                    "El transportista '" + t.getTransportista().getNombre()
+                    + "' no est\u00e1 asignado a la ruta '" + t.getRuta().getNombre()
+                    + "'. Asigna primero el transportista a la ruta en el m\u00f3dulo Rutas.");
+            }
+        }
         return trasladoRepo.save(t);
     }
 
@@ -207,5 +230,20 @@ public class TrasladoServiceDB implements TrasladoService {
     @Override
     public List<Traslado> findByTransportista(Usuario usuario) {
         return trasladoRepo.findByTransportista(usuario);
+    }
+
+    @Override
+    @Transactional
+    public Traslado asignarRuta(Long trasladoId, Long rutaId) {
+        Traslado traslado = trasladoRepo.findById(trasladoId)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Traslado no encontrado: " + trasladoId));
+        if (rutaId == null) {
+            traslado.setRuta(null);
+        } else {
+            Ruta ruta = rutaRepo.findById(rutaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
+            traslado.setRuta(ruta);
+        }
+        return trasladoRepo.save(traslado);
     }
 }

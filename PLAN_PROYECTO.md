@@ -672,20 +672,20 @@ TAB "Rutas y Tarifas"
 ```
 
 **Tareas:**
-- [ ] 24.1 Crear entidad `Ruta` con repositorio y servicio (`RutaService`)
-- [ ] 24.2 Anadir FK `ruta` a entidad `Traslado` (nullable, `@ManyToOne`)
-- [ ] 24.3 `RutaController`: CRUD + endpoint `GET /api/rutas/activas` (rutas de traslados activos)
-- [ ] 24.4 Integrar Leaflet Routing Machine via CDN en la vista `/rutas`
+- [x] 24.1 Crear entidad `Ruta` con repositorio y servicio (`RutaService`)
+- [x] 24.2 Anadir FK `ruta` a entidad `Traslado` (nullable, `@ManyToOne`)
+- [x] 24.3 `RutaController`: CRUD + endpoint `GET /api/rutas/activas` (rutas de traslados activos)
+- [x] 24.4 Integrar Leaflet Routing Machine via CDN en la vista `/rutas`
        ```html
        <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"/>
        <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
        ```
-- [ ] 24.5 JavaScript: para cada ruta activa, crear `L.Routing.control` con origen/destino (lat/lon de `Direccion`)
+- [x] 24.5 JavaScript: para cada ruta activa, crear `L.Routing.control` con origen/destino (lat/lon de `Direccion`)
        usando OSRM: `router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' })`
-- [ ] 24.6 Buscador y filtros de fecha → `GET /api/rutas/activas?desde=&hasta=&q=` (filtra por transportista, nombre, codigo traslado)
-- [ ] 24.7 Tab "Rutas y Tarifas": tabla + calculadora lateral con calculo en tiempo real
-- [ ] 24.8 Asignar ruta a traslado desde la calculadora (HTMX PATCH)
-- [ ] 24.9 En vista de traslado (detalle): mostrar ruta asignada con mini-mapa embebido
+- [x] 24.6 Buscador y filtros de fecha → `GET /api/rutas/activas?desde=&hasta=&q=` (filtra por transportista, nombre, codigo traslado)
+- [x] 24.7 Tab "Rutas y Tarifas": tabla + calculadora lateral con calculo en tiempo real
+- [x] 24.8 Asignar ruta a traslado desde la calculadora (HTMX PATCH)
+- [x] 24.9 En vista de traslado (detalle): mostrar ruta asignada con mini-mapa embebido
 - [ ] 24.10 Tests: `RutaService`, calculo de tarifa en ruta
 
 ---
@@ -716,18 +716,120 @@ Respuesta JSON: { "ok": true, "traslado": "TRA26-000001", "nuevoEstado": "EN_TRA
 - (Antes contenia solo el ID numerico — actualizar para usar `codigo`)
 
 **Tareas:**
-- [ ] 25.1 Actualizar `QrController`: generar QR con URL `{host}/qr/entrada?codigo={codigo}`
-- [ ] 25.2 Endpoint `POST /qr/entrada?codigo=TRA26-000001`:
+- [x] 25.1 Actualizar `QrController`: generar QR con URL `{host}/qr/entrada?id={id}` (id numerico; codigo alfanumerico pendiente de FASE 22)
+- [x] 25.2 Endpoint `GET /qr/entrada?id={id}`:
        - Valida existencia y estado del traslado
-       - Cambia estado a `EN_TRANSITO` (o siguiente estado logico)
-       - Crea `EventoTraslado` con origen "QR_SCAN"
-       - Devuelve JSON + vista HTML de confirmacion (para escaner web)
-- [ ] 25.3 Vista `/qr/confirmacion`: pagina simple responsive (se abre en movil tras escanear)
-       - Muestra: codigo traslado, origen, destino, transportista, nuevo estado
-       - Boton "Ver detalle" → redirige al traslado completo
-- [ ] 25.4 Pagina `/qr/scanner` con camara (WebRTC + libreria `html5-qrcode` CDN) para
-       escaner desde navegador de escritorio (util para testing sin app movil)
-- [ ] 25.5 Tests: entrada via QR (estado valido, estado invalido, codigo inexistente)
+       - Cambia estado a `EN_TRANSITO` (si estaba PENDIENTE)
+       - Crea `EventoTraslado` con comentario "Entrada registrada via QR"
+       - Renderiza vista HTML de confirmacion o error
+- [x] 25.3 Vista `/qr/confirmacion`: pagina responsive, muestra traslado, estado, botones
+- [x] 25.4 Pagina `/qr/scanner` con camara (WebRTC + html5-qrcode CDN), autoarranque
+- [x] 25.5 Tests: entrada con PENDIENTE (exito), EN_TRANSITO (excepcion), CANCELADO (excepcion), id inexistente
+
+---
+
+---
+
+### FASE 26 — Tarifa por transportista en ruta (modelo real M:N)
+
+**Objetivo:** Modelar correctamente la realidad del negocio: una ruta puede ser cubierta por
+varios transportistas, cada uno con su propia tarifa. Un traslado ocurre en una ruta concreta,
+y solo pueden asignarse transportistas que cubran esa ruta. El precio final se calcula con
+la formula del transportista para esa ruta + el peso del residuo del traslado.
+
+**Problema con el modelo actual:**
+La entidad `Ruta` tiene un campo `transportista` (ManyToOne) → solo admite un transportista
+por ruta. Esto es incorrecto. La relacion real es M:N con atributos propios (la tarifa), lo
+que requiere una entidad join explícita.
+
+**Nuevo modelo de datos:**
+
+```
+Ruta ──────────────────────────────────── RutaTransportista ─────────────────── Usuario (TRANSPORTISTA)
+ id, nombre, origen, destino,              id                                     id, nombre, email
+ distanciaKm, estado, coords              ruta       @ManyToOne → Ruta
+ formulaTarifaBase (opcional,             transportista @ManyToOne → Usuario
+   fallback si el transportista           formulaTarifa  TEXT  (ej: "w * 0.4 + L * 0.08")
+   no tiene formula propia)              unidadTarifa   VARCHAR (EUR)
+                                          activo         BOOLEAN
+                                          UNIQUE(ruta_id, transportista_id)
+```
+
+Cambios en `Ruta`:
+- El campo `transportista` (FK unica) pasa a ser `responsable` (opcional, solo administrativo)
+  o se elimina. Los transportistas reales se gestionan via `RutaTransportista`.
+- Se añade relacion `@OneToMany(mappedBy="ruta") List<RutaTransportista> asignaciones`
+- `formulaTarifa` se convierte en tarifa base (fallback cuando el transportista no tiene formula propia)
+
+Cambios en `Traslado`:
+- Validacion: si `ruta` no es null, el `transportista` asignado DEBE existir en `RutaTransportista`
+  para esa ruta. Error 400 si no cumple.
+
+**Reglas de negocio:**
+1. Solo ADMIN/GESTOR pueden asignar o quitar transportistas de una ruta.
+2. Un transportista puede ver en su perfil las rutas que opera y sus tarifas.
+3. Al crear un traslado con ruta asignada, el selector de transportistas muestra solo los
+   de esa ruta (con su tarifa indicada como ayuda visual).
+4. El precio estimado de un traslado se calcula como:
+   `formula_transportista_ruta(w=residuo.cantidad, L=ruta.distanciaKm)`
+   Si el transportista no tiene formula propia en esa ruta: usar `ruta.formulaTarifaBase`.
+5. Si no hay formula en ningún nivel: mostrar "Sin tarifa definida".
+
+**API nueva:**
+
+| Metodo | Ruta                                            | Acceso          | Descripcion                                      |
+|--------|-------------------------------------------------|-----------------|--------------------------------------------------|
+| GET    | /api/rutas/{id}/transportistas                  | AUTH            | Lista transportistas de la ruta con su tarifa    |
+| POST   | /api/rutas/{id}/transportistas                  | ADMIN/GESTOR    | Asigna transportista a ruta con su formula       |
+| PUT    | /api/rutas/{id}/transportistas/{transId}        | ADMIN/GESTOR    | Actualiza formula/moneda del transportista       |
+| DELETE | /api/rutas/{id}/transportistas/{transId}        | ADMIN/GESTOR    | Desvincula transportista de la ruta              |
+| GET    | /api/rutas/{id}/calcular/{transId}?w=           | AUTH            | Precio para transportista especifico + peso      |
+| GET    | /api/traslados/transportistas-por-ruta?rutaId=  | AUTH            | Transportistas elegibles para un traslado        |
+
+**Frontend — cambios en `/routes`:**
+- Tab "Transportistas" en la pagina de rutas (o panel lateral al seleccionar una ruta en tab Lista):
+  - Tabla: Nombre transportista | Formula | Moneda | Precio estimado (con w=100 kg por defecto)
+  - Boton "Añadir transportista" (ADMIN/GESTOR) → mini-modal con selector + formula
+  - Boton "Quitar" por fila (ADMIN/GESTOR)
+  - Formula editable inline (ADMIN/GESTOR)
+
+**Frontend — cambios en formulario de traslados (`shipments.html`):**
+- Al seleccionar/cambiar una ruta en el formulario de traslado:
+  - Selector de transportista se recarga via `GET /api/traslados/transportistas-por-ruta?rutaId=X`
+  - Cada opcion muestra el nombre + tarifa estimada calculada en tiempo real
+  - Si no hay transportistas en la ruta: aviso "Esta ruta aun no tiene transportistas asignados"
+
+**Tareas:**
+- [x] 26.1 Entidad `RutaTransportista` con repositorio y constraint UNIQUE(ruta_id, transportista_id)
+- [x] 26.2 Modificar `Ruta`: añadir `@OneToMany asignaciones`, mantener `formulaTarifaBase` como fallback
+- [x] 26.3 `RutaTransportista` service + endpoints CRUD (`/api/rutas/{id}/transportistas`)
+- [x] 26.4 Endpoint `GET /api/rutas/{id}/calcular/{transId}?w=`: usa formula del transportista,
+       cae al fallback de la ruta si no tiene formula propia
+- [x] 26.5 Endpoint `GET /api/rutas/{id}/transportistas`: lista elegibles para el formulario de traslado
+- [x] 26.6 Validacion en `TrasladoService`: al asignar transportista + ruta, verificar que
+       el transportista pertenece a esa ruta (lanza 400 si no)
+- [x] 26.7 Frontend `/routes` — tab o panel "Transportistas por ruta":
+       tabla de asignaciones, formulario de alta/baja, precio estimado en tiempo real
+- [x] 26.8 Frontend formulario traslado: selector de transportistas filtrado por ruta,
+       precio estimado del traslado mostrado mientras se introduce el formulario
+- [x] 26.9 Tests: `RutaTransportista` CRUD, calculo con formula propia vs fallback,
+       validacion de transportista en traslado
+
+**Diagrama de flujo (creacion de traslado con ruta):**
+```
+ADMIN/GESTOR crea traslado
+       ├── Selecciona ruta
+       │       ↓
+       │   API devuelve transportistas asignados a esa ruta (con tarifa)
+       │       ↓
+       ├── Selecciona transportista (del subconjunto filtrado)
+       │       ↓
+       │   UI muestra: "Precio estimado: 87.50 EUR (formula: w*0.4 + L*0.08, w=200kg, L=145km)"
+       │       ↓
+       └── Guarda traslado → backend valida ruta+transportista coherentes
+```
+
+**Dependencias:** FASE 24 completada (entidad Ruta con coords y formula base ya existen).
 
 ---
 

@@ -226,6 +226,13 @@
                                 <label class="label-eco">Transportista</label>
                                 <div data-combobox="fTransportista" data-placeholder="Sin asignar"></div>
                             </div>
+                            <div>
+                                <label class="label-eco">Ruta asignada</label>
+                                <select id="fRuta" class="form-control-eco" onchange="onRutaChange()">
+                                  <option value="">Sin ruta asignada</option>
+                                </select>
+                                <div id="precioEstimadoTraslado" style="display:none" class="mt-1.5 text-xs text-[#3b82f6] font-medium"></div>
+                            </div>
                         </div>
                         <div>
                             <label class="label-eco">Observaciones</label>
@@ -480,6 +487,8 @@
                             class="modal-tab">Documentos</button>
                         <button type="button" id="tabHistorial" onclick="cambiarTabDetalle('historial')"
                             class="modal-tab">Historial</button>
+                        <button type="button" id="tabMapa" onclick="cambiarTabDetalle('mapa')"
+                            class="modal-tab">Mapa</button>
                     </div>
                     <!-- Tab: Datos -->
                     <div id="panelDatos" class="modal-body">
@@ -541,6 +550,13 @@
                     <!-- Tab: Historial -->
                     <div id="panelHistorial" class="modal-body modal-body--scroll hidden">
                         <p class="text-slate-400">Cargando...</p>
+                    </div>
+                    <!-- Tab: Mapa -->
+                    <div id="panelMapa" class="modal-body hidden" style="padding:0;">
+                        <div id="detalleMiniMapa" style="height:340px;border-radius:0 0 0.75rem 0.75rem;"></div>
+                        <div id="detalleSinRuta" class="hidden p-6 text-center text-slate-400 text-sm">
+                            Este traslado no tiene ruta con coordenadas asignada.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -631,6 +647,8 @@
     </th:block>
 
     <th:block th:fragment="pageScripts">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
@@ -680,9 +698,10 @@
                 var results = await Promise.all([
                     fetch('/api/centros').then(function (r) { return r.json(); }),
                     fetch('/api/residuos').then(function (r) { return r.json(); }),
-                    fetch('/api/usuarios').then(function (r) { return r.json(); })
+                    fetch('/api/usuarios').then(function (r) { return r.json(); }),
+                    fetch('/api/rutas').then(function (r) { return r.json(); })
                 ]);
-                var centros = results[0], residuos = results[1], usuarios = results[2];
+                var centros = results[0], residuos = results[1], usuarios = results[2], rutasDisponibles = results[3];
                 var centroItems = centros.map(function (c) { return { value: c.id, label: c.nombre, sub: (c.tipo || '') }; });
                 var residuoItems = residuos.map(function (r) { return { value: r.id, label: (r.codigoLER || ('#' + r.id)), sub: (r.descripcion || '') }; });
                 var userItems = usuarios.map(function (u) { return { value: u.id, label: u.nombre, sub: (u.email || '') }; });
@@ -690,6 +709,17 @@
                 Combobox.bind({ id: 'fGestor', items: centroItems, placeholder: 'Buscar centro gestor...' });
                 Combobox.bind({ id: 'fResiduo', items: residuoItems, placeholder: 'Buscar residuo (LER o desc)...' });
                 Combobox.bind({ id: 'fTransportista', items: userItems, placeholder: 'Sin asignar', emptyOption: { value: '', label: 'Sin asignar' } });
+                // Poblar select de rutas
+                var selRuta = document.getElementById('fRuta');
+                selRuta.innerHTML = '<option value="">Sin ruta asignada</option>';
+                rutasDisponibles.forEach(function (ruta) {
+                    var opt = document.createElement('option');
+                    opt.value = ruta.id;
+                    opt.textContent = (ruta.nombre || ('Ruta #' + ruta.id))
+                        + (ruta.distanciaKm != null ? '  \u00b7  ' + ruta.distanciaKm + ' km' : '');
+                    opt.dataset.distancia = ruta.distanciaKm || '';
+                    selRuta.appendChild(opt);
+                });
             }
 
             var vistaActual = 'tabla';
@@ -865,6 +895,8 @@
                 document.getElementById('fObservaciones').value = '';
                 document.getElementById('fFechaProgramadaInicio').value = '';
                 document.getElementById('fFechaProgramadaFin').value = '';
+                document.getElementById('fRuta').value = '';
+                document.getElementById('precioEstimadoTraslado').style.display = 'none';
                 ['fProductor', 'fGestor', 'fResiduo', 'fTransportista'].forEach(function (id) { Combobox.clear(id); });
                 mForm && mForm.show();
             }
@@ -877,6 +909,8 @@
                 Combobox.setValue('fGestor', t.centroGestor ? t.centroGestor.id : '');
                 Combobox.setValue('fResiduo', t.residuo ? t.residuo.id : '');
                 Combobox.setValue('fTransportista', t.transportista ? t.transportista.id : '');
+                document.getElementById('fRuta').value = t.ruta ? t.ruta.id : '';
+                document.getElementById('precioEstimadoTraslado').style.display = 'none';
                 document.getElementById('fObservaciones').value = t.observaciones || '';
                 document.getElementById('fFechaProgramadaInicio').value = toLocalInput(t.fechaProgramadaInicio);
                 document.getElementById('fFechaProgramadaFin').value = toLocalInput(t.fechaProgramadaFin);
@@ -910,6 +944,8 @@
                 if (fpf) body.fechaProgramadaFin = fpf.length === 16 ? fpf + ':00' : fpf;
                 var transpId = parseInt(document.getElementById('fTransportista').value);
                 if (transpId) body.transportista = { id: transpId };
+                var rutaId = parseInt(document.getElementById('fRuta').value);
+                if (rutaId) body.ruta = { id: rutaId };
                 var res = await fetch(id ? '/api/traslados/' + id : '/api/traslados', {
                     method: id ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -917,6 +953,39 @@
                 });
                 if (res.ok) { mForm && mForm.hide(); await cargar(); }
                 else { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el traslado.' }); }
+            }
+
+            // Cuando cambia la ruta seleccionada: recarga los transportistas elegibles
+            // y calcula el precio estimado si hay transportista y ruta seleccionados.
+            async function onRutaChange() {
+                var rutaId = parseInt(document.getElementById('fRuta').value);
+                var precioDiv = document.getElementById('precioEstimadoTraslado');
+                precioDiv.style.display = 'none';
+                if (!rutaId) {
+                    // Sin ruta → restaurar todos los transportistas
+                    return;
+                }
+                try {
+                    var res = await fetch('/api/rutas/' + rutaId + '/transportistas');
+                    if (!res.ok) return;
+                    var lista = await res.json();
+                    if (lista.length === 0) {
+                        precioDiv.textContent = '\u26a0\ufe0f Esta ruta a\u00fan no tiene transportistas asignados.';
+                        precioDiv.style.display = '';
+                        return;
+                    }
+                    // Rebind del combobox de transportista solo con los elegibles
+                    var items = lista.map(function (rt) {
+                        var label = rt.nombre;
+                        if (rt.precioEjemplo != null) {
+                            label += '  \u2014  ' + rt.precioEjemplo.toFixed(2) + ' ' + (rt.unidadTarifa || 'EUR') + ' /100 kg';
+                        }
+                        return { value: rt.transportistaId, label: label, sub: rt.email || '' };
+                    });
+                    Combobox.bind({ id: 'fTransportista', items: items, placeholder: 'Elige transportista de la ruta...', emptyOption: { value: '', label: 'Sin asignar' } });
+                    precioDiv.textContent = lista.length + ' transportista' + (lista.length !== 1 ? 's' : '') + ' operar esta ruta.';
+                    precioDiv.style.display = '';
+                } catch(e) {}
             }
 
             function abrirEstado(id) {
@@ -1100,31 +1169,42 @@
 
             async function abrirDetalle(id) {
                 detalleIdActual = id;
+                _detalleRutaData = null;
                 document.getElementById('detalleTitulo').textContent = 'Traslado #' + id;
                 cambiarTabDetalle('datos');
                 mDetalle && mDetalle.show();
                 // cargar datos
                 try {
                     var t = await fetch('/api/traslados/' + id).then(function (r) { return r.json(); });
+                    _detalleRutaData = t.ruta || null;
                     var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
                     var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
                     var res = (t.residuo && (t.residuo.descripcion || t.residuo.codigoLER)) || '—';
                     var transp = (t.transportista && t.transportista.nombre) || '—';
+                    var rutaNombre = (t.ruta && t.ruta.nombre) || null;
                     document.getElementById('detalleInfo').innerHTML =
                         '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd>' + estadoPill(t.estado) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Residuo</dt><dd class="font-medium">' + esc(res) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Productor</dt><dd>' + esc(prod) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Gestor</dt><dd>' + esc(gest) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Transportista</dt><dd>' + esc(transp) + '</dd></div>'
+                        + (rutaNombre ? '<div><dt class="text-xs text-slate-400 mb-0.5">Ruta</dt><dd class="text-[#3b82f6] font-medium">' + esc(rutaNombre) + '</dd></div>' : '')
                         + (t.observaciones ? '<div class="col-span-2"><dt class="text-xs text-slate-400 mb-0.5">Observaciones</dt><dd class="text-slate-600">' + esc(t.observaciones) + '</dd></div>' : '');
+                    // Mostrar tab Mapa solo si hay ruta con coordenadas
+                    var tabMapa = document.getElementById('tabMapa');
+                    var tieneRutaCoords = t.ruta && t.ruta.origenLat != null && t.ruta.destinoLat != null;
+                    tabMapa.style.display = tieneRutaCoords ? '' : 'none';
                 } catch (e) {
                     document.getElementById('detalleInfo').innerHTML = '<div class="col-span-2 text-red-400">Error al cargar.</div>';
                 }
             }
 
+            var _detalleMiniMapaInst = null;  // instancia Leaflet del mini-mapa
+            var _detalleRutaData = null;       // datos de ruta del traslado actual
+
             function cambiarTabDetalle(tab) {
-                var panels = { datos: 'panelDatos', documentos: 'panelDocumentos', historial: 'panelHistorial' };
-                var btns = { datos: 'tabDatos', documentos: 'tabDocumentos', historial: 'tabHistorial' };
+                var panels = { datos: 'panelDatos', documentos: 'panelDocumentos', historial: 'panelHistorial', mapa: 'panelMapa' };
+                var btns = { datos: 'tabDatos', documentos: 'tabDocumentos', historial: 'tabHistorial', mapa: 'tabMapa' };
                 Object.keys(panels).forEach(function (k) {
                     var panel = document.getElementById(panels[k]);
                     var btn = document.getElementById(btns[k]);
@@ -1139,6 +1219,56 @@
                 if (tab === 'historial' && detalleIdActual) {
                     cargarHistorialDetalle(detalleIdActual);
                 }
+                if (tab === 'mapa') {
+                    renderizarMiniMapa(_detalleRutaData);
+                }
+            }
+
+            function renderizarMiniMapa(ruta) {
+                var mapaDiv = document.getElementById('detalleMiniMapa');
+                var sinRutaDiv = document.getElementById('detalleSinRuta');
+                var tieneCoords = ruta && ruta.origenLat != null && ruta.origenLon != null
+                    && ruta.destinoLat != null && ruta.destinoLon != null;
+
+                if (!tieneCoords) {
+                    mapaDiv.style.display = 'none';
+                    sinRutaDiv.classList.remove('hidden');
+                    return;
+                }
+                mapaDiv.style.display = '';
+                sinRutaDiv.classList.add('hidden');
+
+                // Destruir instancia anterior si existe
+                if (_detalleMiniMapaInst) {
+                    _detalleMiniMapaInst.remove();
+                    _detalleMiniMapaInst = null;
+                }
+
+                var origen = [ruta.origenLat, ruta.origenLon];
+                var destino = [ruta.destinoLat, ruta.destinoLon];
+                var map = L.map('detalleMiniMapa', { zoomControl: true, scrollWheelZoom: false });
+                _detalleMiniMapaInst = map;
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18, attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                var iconVerde = L.divIcon({ className: '', html: '<div style="width:14px;height:14px;border-radius:50%;background:#10b981;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
+                var iconRojo = L.divIcon({ className: '', html: '<div style="width:14px;height:14px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
+                L.marker(origen, { icon: iconVerde }).addTo(map).bindPopup('Origen: ' + esc(ruta.origenDireccion || ''));
+                L.marker(destino, { icon: iconRojo }).addTo(map).bindPopup('Destino: ' + esc(ruta.destinoDireccion || ''));
+
+                // Línea directa origen → destino
+                var polyline = L.polyline([origen, destino], { color: '#3b82f6', weight: 3, opacity: 0.8 }).addTo(map);
+                map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+
+                // Intentar trazar ruta OSRM
+                var url = 'https://router.project-osrm.org/route/v1/driving/' + ruta.origenLon + ',' + ruta.origenLat + ';' + ruta.destinoLon + ',' + ruta.destinoLat + '?overview=full&geometries=geojson';
+                fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+                    if (data.routes && data.routes[0]) {
+                        polyline.remove();
+                        L.geoJSON(data.routes[0].geometry, { style: { color: '#3b82f6', weight: 4, opacity: 0.85 } }).addTo(map);
+                    }
+                }).catch(function () { /* mantener línea directa si falla OSRM */ });
             }
 
             async function cargarHistorialDetalle(id) {

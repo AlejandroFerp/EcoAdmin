@@ -31,6 +31,10 @@ public class RutaService {
 
     public List<Ruta> findByTransportistaId(Long id) { return rutaRepo.findByTransportistaId(id); }
 
+    public List<Ruta> findByEstado(com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta estado) {
+        return rutaRepo.findByEstado(estado);
+    }
+
     public Optional<Ruta> findById(Long id) { return rutaRepo.findById(id); }
 
     @Transactional
@@ -54,6 +58,10 @@ public class RutaService {
         existente.setOrigenDireccion(datos.getOrigenDireccion());
         existente.setDestinoDireccion(datos.getDestinoDireccion());
         existente.setDistanciaKm(datos.getDistanciaKm());
+        existente.setOrigenLat(datos.getOrigenLat());
+        existente.setOrigenLon(datos.getOrigenLon());
+        existente.setDestinoLat(datos.getDestinoLat());
+        existente.setDestinoLon(datos.getDestinoLon());
         existente.setObservaciones(datos.getObservaciones());
         validarFormula(datos.getFormulaTarifa());
         existente.setFormulaTarifa(datos.getFormulaTarifa());

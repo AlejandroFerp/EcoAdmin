@@ -6,9 +6,14 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -19,6 +24,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -48,11 +54,21 @@ public class Ruta {
     private String destinoDireccion;
     private Double distanciaKm;
 
+    private Double origenLat;
+    private Double origenLon;
+    private Double destinoLat;
+    private Double destinoLon;
+
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
     private String formulaTarifa;
     private String unidadTarifa;
+
+    /** Transportistas asignados a esta ruta con sus tarifas propias. Servido via endpoint dedicado. */
+    @JsonIgnore
+    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RutaTransportista> asignaciones = new ArrayList<>();
 
     @CreatedDate
     @Column(updatable = false)
@@ -73,11 +89,20 @@ public class Ruta {
     public void setDestinoDireccion(String d) { this.destinoDireccion = d; }
     public Double getDistanciaKm() { return distanciaKm; }
     public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
+    public Double getOrigenLat() { return origenLat; }
+    public void setOrigenLat(Double origenLat) { this.origenLat = origenLat; }
+    public Double getOrigenLon() { return origenLon; }
+    public void setOrigenLon(Double origenLon) { this.origenLon = origenLon; }
+    public Double getDestinoLat() { return destinoLat; }
+    public void setDestinoLat(Double destinoLat) { this.destinoLat = destinoLat; }
+    public Double getDestinoLon() { return destinoLon; }
+    public void setDestinoLon(Double destinoLon) { this.destinoLon = destinoLon; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
     public String getFormulaTarifa() { return formulaTarifa; }
     public void setFormulaTarifa(String f) { this.formulaTarifa = f; }
     public String getUnidadTarifa() { return unidadTarifa; }
     public void setUnidadTarifa(String u) { this.unidadTarifa = u; }
+    public List<RutaTransportista> getAsignaciones() { return asignaciones; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
 }

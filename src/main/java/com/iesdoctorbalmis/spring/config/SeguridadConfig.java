@@ -73,6 +73,7 @@ public class SeguridadConfig {
                 .requestMatchers("/api/estadisticas/**").authenticated()
                 .requestMatchers("/api/informes/**").hasAnyRole("ADMIN", "GESTOR")
                 .requestMatchers("/api/qr/**").authenticated()
+                .requestMatchers("/qr/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

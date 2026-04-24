@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/main :: layout('shipments', 'EcoAdmin — Escáner QR', 'Escaner QR', ~{::pageContent}, ~{::pageScripts})}">
+
+<body>
+    <th:block th:fragment="pageContent">
+        <main class="page-main">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Escáner QR</h2>
+                    <p class="page-subtitle">Apunta la cámara al código QR del traslado para registrar la entrada</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 w-full max-w-md p-6">
+
+                    <!-- Área de vídeo -->
+                    <div id="reader" class="rounded-xl overflow-hidden border border-slate-200 mb-4"
+                         style="min-height:280px;"></div>
+
+                    <!-- Estado del escáner -->
+                    <div id="scannerStatus" class="text-center text-sm text-slate-400 mb-4">
+                        Iniciando cámara...
+                    </div>
+
+                    <!-- Resultado -->
+                    <div id="resultadoQr" class="hidden bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 mb-4"></div>
+                    <div id="errorQr" class="hidden bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700 mb-4"></div>
+
+                    <!-- Botones -->
+                    <div class="flex gap-2">
+                        <button type="button" id="btnParar" onclick="pararScanner()"
+                            class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition-colors hidden">
+                            Parar cámara
+                        </button>
+                        <button type="button" id="btnReiniciar" onclick="iniciarScanner()"
+                            class="flex-1 px-4 py-2 rounded-xl bg-[#3b82f6] text-white text-sm hover:bg-blue-600 transition-colors hidden">
+                            Escanear de nuevo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </th:block>
+
+    <th:block th:fragment="pageScripts">
+        <!-- html5-qrcode: librería CDN para acceso a cámara sin app nativa -->
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" crossorigin=""></script>
+        <script>
+            var html5QrCode = null;
+            var escaneando = false;
+
+            function iniciarScanner() {
+                document.getElementById('resultadoQr').classList.add('hidden');
+                document.getElementById('errorQr').classList.add('hidden');
+                document.getElementById('btnReiniciar').classList.add('hidden');
+                document.getElementById('scannerStatus').textContent = 'Iniciando cámara...';
+
+                if (html5QrCode) {
+                    html5QrCode.clear();
+                }
+                html5QrCode = new Html5Qrcode('reader');
+                var config = { fps: 10, qrbox: { width: 240, height: 240 } };
+
+                html5QrCode.start(
+                    { facingMode: 'environment' },
+                    config,
+                    onQrSuccess,
+                    function () { /* ignorar errores de frame mientras no hay QR */ }
+                ).then(function () {
+                    escaneando = true;
+                    document.getElementById('scannerStatus').textContent = 'Cámara activa — apunta al código QR';
+                    document.getElementById('btnParar').classList.remove('hidden');
+                }).catch(function (err) {
+                    document.getElementById('scannerStatus').textContent = 'Error al acceder a la cámara.';
+                    mostrarError('No se pudo iniciar la cámara: ' + err);
+                });
+            }
+
+            function pararScanner() {
+                if (html5QrCode && escaneando) {
+                    html5QrCode.stop().then(function () {
+                        escaneando = false;
+                        document.getElementById('btnParar').classList.add('hidden');
+                        document.getElementById('scannerStatus').textContent = 'Cámara detenida.';
+                    });
+                }
+            }
+
+            async function onQrSuccess(decodedText) {
+                if (!escaneando) return;
+                pararScanner();
+                document.getElementById('scannerStatus').textContent = 'QR detectado — procesando...';
+
+                // El QR puede ser la URL completa o solo el id
+                var id = null;
+                try {
+                    var url = new URL(decodedText);
+                    id = url.searchParams.get('id');
+                } catch (e) {
+                    // Si no es URL, intentar usar como id directamente
+                    id = decodedText.trim();
+                }
+
+                if (!id) {
+                    mostrarError('Código QR no válido para un traslado.');
+                    document.getElementById('btnReiniciar').classList.remove('hidden');
+                    return;
+                }
+
+                // Redirigir a la vista de entrada (Thymeleaf la procesa en servidor)
+                window.location.href = '/qr/entrada?id=' + encodeURIComponent(id);
+            }
+
+            function mostrarError(msg) {
+                var el = document.getElementById('errorQr');
+                el.textContent = msg;
+                el.classList.remove('hidden');
+            }
+
+            // Autoarrancar al cargar la página
+            document.addEventListener('DOMContentLoaded', iniciarScanner);
+        </script>
+    </th:block>
+</body>
+</html>
