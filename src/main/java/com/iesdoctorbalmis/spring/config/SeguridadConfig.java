@@ -52,11 +52,14 @@ public class SeguridadConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/login", "/webjars/**", "/css/**",
+                    "/login", "/registro", "/webjars/**", "/css/**",
                     "/logo.png", "/favicon.ico", "/images/**", "/js/**",
                     "/swagger-ui/**", "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/solicitudes-registro").permitAll()
+                .requestMatchers("/api/solicitudes-registro/**").hasRole("ADMIN")
+                .requestMatchers("/api/notificaciones/**").authenticated()
                 .requestMatchers("/api/perfil/**").authenticated()
                 .requestMatchers("/api/empresa/**").authenticated()
                 .requestMatchers("/api/almacen/**").authenticated()

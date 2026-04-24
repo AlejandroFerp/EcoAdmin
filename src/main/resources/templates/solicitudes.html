@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layouts/main :: layout('solicitudes', 'EcoAdmin &mdash; Solicitudes', 'Solicitudes de Registro', ~{::pageContent}, ~{::pageScripts})}">
+<body>
+
+<th:block th:fragment="pageContent">
+<main class="page-main">
+    <div class="page-header">
+        <div>
+            <h2 class="page-title">Solicitudes de Registro</h2>
+            <p class="page-subtitle">Gestiona las solicitudes de acceso al sistema</p>
+        </div>
+        <div class="page-actions">
+            <select id="filtroEstado" onchange="cargar()" class="select select-sm select-bordered">
+                <option value="">Todas</option>
+                <option value="PENDIENTE" selected>Pendientes</option>
+                <option value="APROBADA">Aprobadas</option>
+                <option value="RECHAZADA">Rechazadas</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card overflow-x-auto">
+        <table class="table table-zebra table-sm w-full">
+            <thead>
+                <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
+                    <th class="w-12">ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tBody"></tbody>
+        </table>
+        <p id="emptyMsg" class="hidden text-center text-sm text-slate-400 py-8">No hay solicitudes</p>
+    </div>
+</main>
+</th:block>
+
+<th:block th:fragment="pageScripts">
+<script>
+var ESTADO_SOL = {
+    PENDIENTE:  { label: 'Pendiente',  color: 'amber'   },
+    APROBADA:   { label: 'Aprobada',   color: 'emerald' },
+    RECHAZADA:  { label: 'Rechazada',  color: 'red'     }
+};
+function estadoSolBadge(e) {
+    var c = ESTADO_SOL[e] || { label: e, color: 'slate' };
+    return '<span class="tag-pill" data-color="' + c.color + '"><span class="dot"></span>' + c.label + '</span>';
+}
+
+function cargar() {
+    var estado = document.getElementById('filtroEstado').value;
+    var url = '/api/solicitudes-registro' + (estado ? '?estado=' + estado : '');
+    fetch(url, { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { renderTabla(data); });
+}
+
+function renderTabla(data) {
+    var tbody = document.getElementById('tBody');
+    var empty = document.getElementById('emptyMsg');
+    if (!data.length) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+    tbody.innerHTML = data.map(function(s) {
+        var fecha = s.fechaSolicitud ? new Date(s.fechaSolicitud).toLocaleDateString('es-ES') : '';
+        var acciones = '';
+        if (s.estado === 'PENDIENTE') {
+            acciones = '<button onclick="aprobar(' + s.id + ')" class="btn btn-xs btn-success normal-case mr-1">Aprobar</button>'
+                     + '<button onclick="rechazar(' + s.id + ')" class="btn btn-xs btn-error normal-case">Rechazar</button>';
+        } else {
+            acciones = '<button onclick="verDetalle(' + s.id + ')" class="btn btn-xs btn-ghost normal-case">Ver</button>';
+        }
+        return '<tr>'
+            + '<td class="font-mono text-xs">' + s.id + '</td>'
+            + '<td class="font-medium">' + esc(s.nombre) + '</td>'
+            + '<td class="text-sm">' + esc(s.email) + '</td>'
+            + '<td>' + (window.rolBadge ? rolBadge(s.rolSolicitado) : esc(s.rolSolicitado)) + '</td>'
+            + '<td>' + estadoSolBadge(s.estado) + '</td>'
+            + '<td class="text-sm text-slate-500">' + fecha + '</td>'
+            + '<td class="text-right">' + acciones + '</td>'
+            + '</tr>';
+    }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function aprobar(id) {
+    Swal.fire({
+        title: 'Aprobar solicitud',
+        html: '<p class="text-sm mb-3">Establece la contrase&ntilde;a para el nuevo usuario:</p>'
+            + '<input id="swal-pw" type="password" class="swal2-input" placeholder="Contrase&ntilde;a (min 6 car.)">',
+        showCancelButton: true,
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#16a34a',
+        preConfirm: function() {
+            var pw = document.getElementById('swal-pw').value;
+            if (!pw || pw.length < 6) { Swal.showValidationMessage('M&iacute;nimo 6 caracteres'); return false; }
+            return pw;
+        }
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+        fetch('/api/solicitudes-registro/' + id + '/aprobar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ password: result.value })
+        }).then(function(r) {
+            if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || 'Error'); });
+            Swal.fire({ icon: 'success', title: 'Usuario creado', timer: 1500, showConfirmButton: false });
+            cargar();
+        }).catch(function(err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+        });
+    });
+}
+
+function rechazar(id) {
+    Swal.fire({
+        title: 'Rechazar solicitud',
+        input: 'textarea',
+        inputLabel: 'Motivo del rechazo',
+        inputPlaceholder: 'Escribe el motivo...',
+        showCancelButton: true,
+        confirmButtonText: 'Rechazar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc2626'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+        fetch('/api/solicitudes-registro/' + id + '/rechazar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ motivo: result.value || 'Sin motivo' })
+        }).then(function(r) {
+            if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || 'Error'); });
+            Swal.fire({ icon: 'info', title: 'Solicitud rechazada', timer: 1500, showConfirmButton: false });
+            cargar();
+        }).catch(function(err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+        });
+    });
+}
+
+function verDetalle(id) {
+    fetch('/api/solicitudes-registro/' + id, { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(s) {
+            var html = '<div class="text-left text-sm space-y-1">'
+                + '<p><b>Nombre:</b> ' + esc(s.nombre) + '</p>'
+                + '<p><b>Email:</b> ' + esc(s.email) + '</p>'
+                + '<p><b>Rol:</b> ' + esc(s.rolSolicitado) + '</p>'
+                + '<p><b>Estado:</b> ' + esc(s.estado) + '</p>'
+                + (s.telefono ? '<p><b>Tel:</b> ' + esc(s.telefono) + '</p>' : '')
+                + (s.dni ? '<p><b>DNI:</b> ' + esc(s.dni) + '</p>' : '')
+                + (s.empresa ? '<p><b>Empresa:</b> ' + esc(s.empresa) + '</p>' : '')
+                + (s.motivoRechazo ? '<p><b>Motivo rechazo:</b> ' + esc(s.motivoRechazo) + '</p>' : '')
+                + '</div>';
+            Swal.fire({ title: 'Solicitud #' + s.id, html: html, width: 480 });
+        });
+}
+
+document.addEventListener('DOMContentLoaded', cargar);
+</script>
+</th:block>
+
+</body>
+</html>

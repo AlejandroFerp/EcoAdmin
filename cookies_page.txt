@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -89,20 +89,16 @@
 <div class="w-full max-w-sm">
     <div class="login-card rounded-2xl shadow-2xl px-7 py-9 text-center">
         <div class="mx-auto w-24 h-24 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 overflow-hidden">
-            <img th:src="@{/logo.png}" src="/logo.png" alt="EcoAdmin" class="w-20 h-20 object-contain">
+            <img src="/logo.png" alt="EcoAdmin" class="w-20 h-20 object-contain">
         </div>
         <p class="text-sm text-slate-500 mb-1">Bienvenido a</p>
         <h1 class="text-2xl font-bold text-[#1a6b3c] tracking-tight mb-1">EcoAdmin</h1>
         <p class="text-xs text-slate-500 mb-6">Inicia sesión con tu cuenta</p>
 
-        <div th:if="${param.error}" class="mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs text-left">
-            Email o contraseña incorrectos.
-        </div>
-        <div th:if="${param.logout}" class="mb-4 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs text-left">
-            Sesión cerrada correctamente.
-        </div>
+        
+        
 
-        <form th:action="@{/login}" method="post" class="space-y-6 text-left">
+        <form action="/login" method="post" class="space-y-6 text-left"><input type="hidden" name="_csrf" value="3lsYWvhQANNUK_9dtBAF7xBqhrpWc8kbeEiGV9cpnrHsuFn75j8qa801MrV5Hsdq1j0x1nVTq4NmQ_42T3ywNeMRrdKKjm2Y"/>
             <div class="input-group">
                 <span class="input-icon">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -129,7 +125,7 @@
         </form>
 
         <div class="mt-6 mb-3 h-px bg-slate-200/80"></div>
-        <a th:href="@{/registro}" class="text-sm text-[#1a6b3c] font-semibold hover:underline">Registrarse</a>
+        <a href="/registro" class="text-sm text-[#1a6b3c] font-semibold hover:underline">Registrarse</a>
         <p class="text-xs text-slate-400 mt-2">EcoAdmin &middot; Gesti&oacute;n de residuos peligrosos</p>
     </div>
 </div>

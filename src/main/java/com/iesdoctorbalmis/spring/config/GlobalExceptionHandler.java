@@ -39,12 +39,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException.class)
-    public ResponseEntity<Map<String, Object>> handleTransicionInvalida(
-            com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -60,12 +54,6 @@ public class GlobalExceptionHandler {
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
         String msg = "Valor invalido para parametro '" + ex.getName() + "': " + ex.getValue();
         return buildResponse(HttpStatus.BAD_REQUEST, msg);
-    }
-
-    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleSpringAccessDenied(
-            org.springframework.security.access.AccessDeniedException ex) {
-        return buildResponse(HttpStatus.FORBIDDEN, "Acceso denegado");
     }
 
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)

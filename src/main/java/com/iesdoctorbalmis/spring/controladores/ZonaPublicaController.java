@@ -113,4 +113,15 @@ public class ZonaPublicaController {
         return "usuario-perfil";
     }
 
+
+    @GetMapping("/registro")
+    public String registro() {
+        return "registro";
+    }
+
+    @GetMapping("/solicitudes")
+    public String solicitudes() {
+        return "solicitudes";
+    }
+
 }

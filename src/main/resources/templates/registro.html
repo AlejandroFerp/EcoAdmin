@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EcoAdmin &mdash; Registro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body {
+            background:
+                radial-gradient(ellipse at top left, rgba(255,255,255,0.10), transparent 55%),
+                radial-gradient(ellipse at bottom right, rgba(0,0,0,0.18), transparent 55%),
+                linear-gradient(135deg, #145a32 0%, #1a6b3c 45%, #2d9e5f 100%);
+            min-height: 100vh;
+        }
+        .reg-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .field-input {
+            width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+            font-size: 0.9rem; color: #1f3b2c; transition: border-color .2s; outline: none;
+        }
+        .field-input:focus { border-color: #1a6b3c; box-shadow: 0 0 0 3px rgba(26,107,60,0.12); }
+        .field-label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 4px; }
+        .btn-register {
+            background: #1a6b3c; color: white; font-weight: 600; padding: 12px 28px;
+            border-radius: 999px; border: none; cursor: pointer; width: 100%;
+            transition: background .2s, box-shadow .2s;
+            box-shadow: 0 6px 20px -6px rgba(26,107,60,0.55);
+        }
+        .btn-register:hover { background: #155c33; }
+        .btn-register:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
+        .role-btn {
+            padding: 8px 16px; border-radius: 8px; border: 2px solid #d1d5db;
+            cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all .2s;
+            background: white;
+        }
+        .role-btn.active { border-color: #1a6b3c; background: #f0fdf4; color: #1a6b3c; font-weight: 600; }
+        .role-btn:hover { border-color: #1a6b3c; }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+<div class="w-full max-w-lg">
+    <div class="reg-card rounded-2xl shadow-2xl px-7 py-8">
+        <div class="text-center mb-6">
+            <div class="mx-auto w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 overflow-hidden">
+                <img th:src="@{/logo.png}" alt="EcoAdmin" class="w-12 h-12 object-contain">
+            </div>
+            <h1 class="text-xl font-bold text-[#1a6b3c]">Solicitud de Registro</h1>
+            <p class="text-xs text-slate-500 mt-1">Completa el formulario para solicitar acceso a EcoAdmin</p>
+        </div>
+
+        <div id="msgOk" class="hidden mb-4 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs"></div>
+        <div id="msgErr" class="hidden mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs"></div>
+
+        <form id="regForm" class="space-y-4" onsubmit="enviarSolicitud(event)">
+            <!-- Rol selector -->
+            <div>
+                <span class="field-label">Tipo de cuenta</span>
+                <div class="flex gap-2 mt-1">
+                    <button type="button" class="role-btn active" data-rol="PRODUCTOR" onclick="selRol(this)">Productor</button>
+                    <button type="button" class="role-btn" data-rol="GESTOR" onclick="selRol(this)">Gestor</button>
+                    <button type="button" class="role-btn" data-rol="TRANSPORTISTA" onclick="selRol(this)">Transportista</button>
+                </div>
+                <input type="hidden" id="rolSolicitado" name="rolSolicitado" value="PRODUCTOR">
+            </div>
+
+            <!-- Common fields -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="field-label" for="nombre">Nombre completo *</label>
+                    <input class="field-input" id="nombre" name="nombre" required>
+                </div>
+                <div>
+                    <label class="field-label" for="email">Email *</label>
+                    <input class="field-input" id="email" name="email" type="email" required>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="field-label" for="telefono">Tel&eacute;fono</label>
+                    <input class="field-input" id="telefono" name="telefono">
+                </div>
+                <div>
+                    <label class="field-label" for="dni">DNI / NIF</label>
+                    <input class="field-input" id="dni" name="dni">
+                </div>
+            </div>
+
+            <!-- Gestor fields -->
+            <div id="gestorFields" class="hidden space-y-3 p-3 bg-slate-50 rounded-lg">
+                <p class="text-xs font-semibold text-slate-500 uppercase">Datos de gestor</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="field-label" for="empresa">Empresa</label>
+                        <input class="field-input" id="empresa" name="empresa">
+                    </div>
+                    <div>
+                        <label class="field-label" for="nima">NIMA</label>
+                        <input class="field-input" id="nima" name="nima">
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="autorizacionGestor">N&ordm; autorizaci&oacute;n gestor</label>
+                    <input class="field-input" id="autorizacionGestor" name="autorizacionGestor">
+                </div>
+            </div>
+
+            <!-- Transportista fields -->
+            <div id="transportistaFields" class="hidden space-y-3 p-3 bg-slate-50 rounded-lg">
+                <p class="text-xs font-semibold text-slate-500 uppercase">Datos de transportista</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="field-label" for="matricula">Matr&iacute;cula</label>
+                        <input class="field-input" id="matricula" name="matricula">
+                    </div>
+                    <div>
+                        <label class="field-label" for="certificadoAdr">Certificado ADR</label>
+                        <input class="field-input" id="certificadoAdr" name="certificadoAdr">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="field-label" for="centroPrincipal">Centro principal (opcional)</label>
+                <input class="field-input" id="centroPrincipal" name="centroPrincipal" placeholder="Nombre del centro habitual">
+            </div>
+
+            <button type="submit" class="btn-register" id="submitBtn">Enviar solicitud</button>
+        </form>
+
+        <div class="mt-5 text-center">
+            <a th:href="@{/login}" class="text-sm text-[#1a6b3c] font-medium hover:underline">&larr; Volver al inicio de sesi&oacute;n</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function selRol(btn) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('rolSolicitado').value = btn.dataset.rol;
+    document.getElementById('gestorFields').classList.toggle('hidden', btn.dataset.rol !== 'GESTOR');
+    document.getElementById('transportistaFields').classList.toggle('hidden', btn.dataset.rol !== 'TRANSPORTISTA');
+}
+
+function enviarSolicitud(e) {
+    e.preventDefault();
+    var form = document.getElementById('regForm');
+    var data = {};
+    var fields = ['nombre','email','telefono','dni','rolSolicitado','empresa','nima','autorizacionGestor','matricula','certificadoAdr','centroPrincipal'];
+    fields.forEach(function(f) {
+        var el = document.getElementById(f);
+        if (el && el.value.trim()) data[f] = el.value.trim();
+    });
+
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('msgOk').classList.add('hidden');
+    document.getElementById('msgErr').classList.add('hidden');
+
+    fetch('/api/solicitudes-registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).then(function(r) {
+        if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || j.message || 'Error'); });
+        return r.json();
+    }).then(function() {
+        document.getElementById('msgOk').textContent = 'Solicitud enviada correctamente. Un administrador la revisara pronto.';
+        document.getElementById('msgOk').classList.remove('hidden');
+        form.reset();
+        document.querySelectorAll('.role-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelector('[data-rol="PRODUCTOR"]').classList.add('active');
+        document.getElementById('rolSolicitado').value = 'PRODUCTOR';
+        document.getElementById('gestorFields').classList.add('hidden');
+        document.getElementById('transportistaFields').classList.add('hidden');
+    }).catch(function(err) {
+        document.getElementById('msgErr').textContent = err.message;
+        document.getElementById('msgErr').classList.remove('hidden');
+    }).finally(function() {
+        document.getElementById('submitBtn').disabled = false;
+    });
+}
+</script>
+
+</body>
+</html>
