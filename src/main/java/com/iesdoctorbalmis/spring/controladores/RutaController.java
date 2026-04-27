@@ -60,7 +60,7 @@ public class RutaController {
             return rtService.getRutasPorTransportista(actual.getId());
         }
         if (transportistaId != null) {
-            return rutaService.findByTransportistaId(transportistaId);
+            return rtService.getRutasPorTransportista(transportistaId);
         }
         return rutaService.findAll();
     }
@@ -81,21 +81,7 @@ public class RutaController {
         Usuario actual = authService.obtenerUsuarioActual();
         if (actual == null || (actual.getRol() != Rol.ADMIN && actual.getRol() != Rol.GESTOR))
             throw new AccesoDenegadoException("Solo ADMIN o GESTOR pueden crear rutas.");
-        Ruta r = new Ruta();
-        r.setNombre(dto.nombre());
-        r.setFecha(dto.fecha());
-        r.setEstado(dto.estado());
-        r.setOrigenDireccion(dto.origenDireccion());
-        r.setDestinoDireccion(dto.destinoDireccion());
-        r.setDistanciaKm(dto.distanciaKm());
-        r.setOrigenLat(dto.origenLat());
-        r.setOrigenLon(dto.origenLon());
-        r.setDestinoLat(dto.destinoLat());
-        r.setDestinoLon(dto.destinoLon());
-        r.setObservaciones(dto.observaciones());
-        r.setFormulaTarifa(dto.formulaTarifa());
-        r.setUnidadTarifa(dto.unidadTarifa());
-        return ResponseEntity.ok(rutaService.crear(r, dto.transportistaId()));
+        return ResponseEntity.ok(rutaService.crear(dto));
     }
 
     @Operation(summary = "Actualizar ruta")
@@ -106,27 +92,25 @@ public class RutaController {
             .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
         boolean esAdminGestor = actual != null && (actual.getRol() == Rol.ADMIN || actual.getRol() == Rol.GESTOR);
         boolean esPropioTransportista = actual != null && actual.getRol() == Rol.TRANSPORTISTA
-            && existente.getTransportista() != null
-            && existente.getTransportista().getId().equals(actual.getId());
+            && rtService.perteneceARuta(id, actual.getId());
         if (!esAdminGestor && !esPropioTransportista)
             throw new AccesoDenegadoException("No tiene permiso para modificar esta ruta.");
-        Ruta r = new Ruta();
-        r.setNombre(dto.nombre() != null ? dto.nombre() : existente.getNombre());
-        r.setFecha(dto.fecha() != null ? dto.fecha() : existente.getFecha());
-        r.setEstado(dto.estado() != null ? dto.estado() : existente.getEstado());
-        r.setOrigenDireccion(dto.origenDireccion() != null ? dto.origenDireccion() : existente.getOrigenDireccion());
-        r.setDestinoDireccion(dto.destinoDireccion() != null ? dto.destinoDireccion() : existente.getDestinoDireccion());
-        r.setDistanciaKm(dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm());
-        r.setOrigenLat(dto.origenLat() != null ? dto.origenLat() : existente.getOrigenLat());
-        r.setOrigenLon(dto.origenLon() != null ? dto.origenLon() : existente.getOrigenLon());
-        r.setDestinoLat(dto.destinoLat() != null ? dto.destinoLat() : existente.getDestinoLat());
-        r.setDestinoLon(dto.destinoLon() != null ? dto.destinoLon() : existente.getDestinoLon());
-        r.setObservaciones(dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones());
-        r.setFormulaTarifa(dto.formulaTarifa());
-        r.setUnidadTarifa(dto.unidadTarifa());
-        Long tId = esAdminGestor ? dto.transportistaId()
-                   : (existente.getTransportista() != null ? existente.getTransportista().getId() : null);
-        return ResponseEntity.ok(rutaService.actualizar(id, r, tId));
+        
+        // In order to only update provided fields, if DTO field is null, we can keep the existing one.
+        // For simplicity, we assume the frontend sends the whole object or we construct a new DTO merging them.
+        RutaInputDTO merged = new RutaInputDTO(
+            dto.nombre() != null ? dto.nombre() : existente.getNombre(),
+            dto.fecha() != null ? dto.fecha() : existente.getFecha(),
+            dto.estado() != null ? dto.estado() : existente.getEstado(),
+            dto.origenId() != null ? dto.origenId() : (existente.getOrigen() != null ? existente.getOrigen().getId() : null),
+            dto.destinoId() != null ? dto.destinoId() : (existente.getDestino() != null ? existente.getDestino().getId() : null),
+            dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm(),
+            dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones(),
+            dto.formulaTarifa() != null ? dto.formulaTarifa() : existente.getFormulaTarifa(),
+            dto.unidadTarifa() != null ? dto.unidadTarifa() : existente.getUnidadTarifa()
+        );
+
+        return ResponseEntity.ok(rutaService.actualizar(id, merged));
     }
 
     @Operation(summary = "Calcular tarifa de una ruta especifica")

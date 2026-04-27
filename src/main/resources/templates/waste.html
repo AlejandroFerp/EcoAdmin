@@ -132,12 +132,19 @@ function estadoResiduoPill(estado) {
 
 function diasAlmacenBadge(r) {
     if (!r.fechaEntradaAlmacen) return '<span class="text-slate-400">\u2014</span>';
-    if (r.fechaSalidaAlmacen) return '<span class="text-slate-400 text-xs">Salido</span>';
+    if (r.fechaSalidaAlmacen) return window.tagBadge ? window.tagBadge('Salido', 'slate') : '<span class="text-slate-400 text-xs">Salido</span>';
     var entrada = Array.isArray(r.fechaEntradaAlmacen)
         ? new Date(r.fechaEntradaAlmacen[0], r.fechaEntradaAlmacen[1]-1, r.fechaEntradaAlmacen[2])
         : new Date(r.fechaEntradaAlmacen);
     var dias = Math.floor((Date.now() - entrada.getTime()) / 86400000);
     var maximo = r.diasMaximoAlmacenamiento || 180;
+    
+    if (window.tagBadge) {
+        if (dias > maximo) return window.tagBadge('! ' + dias + 'd', 'red');
+        if (dias > maximo * 0.8) return window.tagBadge(dias + 'd', 'amber');
+        return window.tagBadge(dias + 'd', 'slate', false);
+    }
+    
     if (dias > maximo) return '<span class="badge badge-xs badge-error font-bold" title="Supera l\u00edmite FIFO">FIFO !' + dias + 'd</span>';
     if (dias > maximo * 0.8) return '<span class="badge badge-xs badge-warning">' + dias + 'd</span>';
     return '<span class="text-slate-500 text-xs">' + dias + 'd</span>';

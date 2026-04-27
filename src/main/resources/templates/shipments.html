@@ -228,7 +228,7 @@
                             </div>
                             <div>
                                 <label class="label-eco">Ruta asignada</label>
-                                <select id="fRuta" class="form-control-eco" onchange="onRutaChange()">
+                                <select id="fRuta" class="form-control-eco">
                                   <option value="">Sin ruta asignada</option>
                                 </select>
                                 <div id="precioEstimadoTraslado" style="display:none" class="mt-1.5 text-xs text-[#3b82f6] font-medium"></div>
@@ -708,11 +708,22 @@
                 Combobox.bind({ id: 'fProductor', items: centroItems, placeholder: 'Buscar centro productor...' });
                 Combobox.bind({ id: 'fGestor', items: centroItems, placeholder: 'Buscar centro gestor...' });
                 Combobox.bind({ id: 'fResiduo', items: residuoItems, placeholder: 'Buscar residuo (LER o desc)...' });
-                Combobox.bind({ id: 'fTransportista', items: userItems, placeholder: 'Sin asignar', emptyOption: { value: '', label: 'Sin asignar' } });
-                // Poblar select de rutas
+                Combobox.bind({ 
+                    id: 'fTransportista', 
+                    items: userItems, 
+                    placeholder: 'Sin asignar', 
+                    emptyOption: { value: '', label: 'Sin asignar' },
+                    onChange: function(val) { onTransportistaChange(val); }
+                });
+                // Guardamos todas las rutas en memoria
+                window.rutasTotales = rutasDisponibles;
+                renderRutasSelect(rutasDisponibles);
+            }
+
+            function renderRutasSelect(lista) {
                 var selRuta = document.getElementById('fRuta');
                 selRuta.innerHTML = '<option value="">Sin ruta asignada</option>';
-                rutasDisponibles.forEach(function (ruta) {
+                lista.forEach(function (ruta) {
                     var opt = document.createElement('option');
                     opt.value = ruta.id;
                     opt.textContent = (ruta.nombre || ('Ruta #' + ruta.id))
@@ -720,6 +731,19 @@
                     opt.dataset.distancia = ruta.distanciaKm || '';
                     selRuta.appendChild(opt);
                 });
+            }
+
+            async function onTransportistaChange(transpId) {
+                var selRuta = document.getElementById('fRuta');
+                selRuta.innerHTML = '<option value="">Cargando rutas...</option>';
+                var url = transpId ? '/api/rutas?transportistaId=' + transpId : '/api/rutas';
+                try {
+                    var rutas = await fetch(url).then(r => r.json());
+                    renderRutasSelect(rutas);
+                } catch(e) {
+                    selRuta.innerHTML = '<option value="">Error cargando rutas</option>';
+                }
+                document.getElementById('precioEstimadoTraslado').style.display = 'none';
             }
 
             var vistaActual = 'tabla';
@@ -889,15 +913,16 @@
                 if (calendar) calendar.refetchEvents();
             }
 
-            function abrirCrear() {
+            async function abrirCrear() {
                 document.getElementById('modalFormTitulo').textContent = 'Nuevo Traslado';
                 document.getElementById('itemId').value = '';
                 document.getElementById('fObservaciones').value = '';
                 document.getElementById('fFechaProgramadaInicio').value = '';
                 document.getElementById('fFechaProgramadaFin').value = '';
-                document.getElementById('fRuta').value = '';
                 document.getElementById('precioEstimadoTraslado').style.display = 'none';
                 ['fProductor', 'fGestor', 'fResiduo', 'fTransportista'].forEach(function (id) { Combobox.clear(id); });
+                await onTransportistaChange('');
+                document.getElementById('fRuta').value = '';
                 mForm && mForm.show();
             }
 
@@ -908,7 +933,11 @@
                 Combobox.setValue('fProductor', t.centroProductor ? t.centroProductor.id : '');
                 Combobox.setValue('fGestor', t.centroGestor ? t.centroGestor.id : '');
                 Combobox.setValue('fResiduo', t.residuo ? t.residuo.id : '');
-                Combobox.setValue('fTransportista', t.transportista ? t.transportista.id : '');
+                var transpId = t.transportista ? t.transportista.id : '';
+                Combobox.setValue('fTransportista', transpId);
+                
+                await onTransportistaChange(transpId);
+                
                 document.getElementById('fRuta').value = t.ruta ? t.ruta.id : '';
                 document.getElementById('precioEstimadoTraslado').style.display = 'none';
                 document.getElementById('fObservaciones').value = t.observaciones || '';
@@ -955,38 +984,7 @@
                 else { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el traslado.' }); }
             }
 
-            // Cuando cambia la ruta seleccionada: recarga los transportistas elegibles
-            // y calcula el precio estimado si hay transportista y ruta seleccionados.
-            async function onRutaChange() {
-                var rutaId = parseInt(document.getElementById('fRuta').value);
-                var precioDiv = document.getElementById('precioEstimadoTraslado');
-                precioDiv.style.display = 'none';
-                if (!rutaId) {
-                    // Sin ruta → restaurar todos los transportistas
-                    return;
-                }
-                try {
-                    var res = await fetch('/api/rutas/' + rutaId + '/transportistas');
-                    if (!res.ok) return;
-                    var lista = await res.json();
-                    if (lista.length === 0) {
-                        precioDiv.textContent = '\u26a0\ufe0f Esta ruta a\u00fan no tiene transportistas asignados.';
-                        precioDiv.style.display = '';
-                        return;
-                    }
-                    // Rebind del combobox de transportista solo con los elegibles
-                    var items = lista.map(function (rt) {
-                        var label = rt.nombre;
-                        if (rt.precioEjemplo != null) {
-                            label += '  \u2014  ' + rt.precioEjemplo.toFixed(2) + ' ' + (rt.unidadTarifa || 'EUR') + ' /100 kg';
-                        }
-                        return { value: rt.transportistaId, label: label, sub: rt.email || '' };
-                    });
-                    Combobox.bind({ id: 'fTransportista', items: items, placeholder: 'Elige transportista de la ruta...', emptyOption: { value: '', label: 'Sin asignar' } });
-                    precioDiv.textContent = lista.length + ' transportista' + (lista.length !== 1 ? 's' : '') + ' operar esta ruta.';
-                    precioDiv.style.display = '';
-                } catch(e) {}
-            }
+            // Eliminado onRutaChange() porque el flujo ahora es: Seleccionar transportista -> filtrar rutas.
 
             function abrirEstado(id) {
                 document.getElementById('estadoTrasladoId').value = id;

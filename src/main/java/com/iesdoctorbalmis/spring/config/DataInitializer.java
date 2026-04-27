@@ -595,64 +595,64 @@ public class DataInitializer implements ApplicationRunner {
 
         // == 9. RUTAS (6) ==
         Ruta ruta1 = new Ruta();
-        ruta1.setNombre("Alicante - Valencia"); ruta1.setTransportista(trans1); ruta1.setFecha(today.plusDays(0));
+        ruta1.setNombre("Alicante - Valencia"); ruta1.setFecha(today.plusDays(0));
         ruta1.setEstado(EstadoRuta.PLANIFICADA);
-        ruta1.setOrigenDireccion("Av. de la Constitucion 10, Alicante"); ruta1.setDestinoDireccion("Pol. Ind. Fuente del Jarro, Paterna");
-        ruta1.setDistanciaKm(170.5); ruta1.setOrigenLat(38.3452); ruta1.setOrigenLon(-0.481);
-        ruta1.setDestinoLat(39.505); ruta1.setDestinoLon(-0.435);
+        ruta1.setOrigen(d1); ruta1.setDestino(d12);
+        ruta1.setDistanciaKm(170.5); 
         ruta1.setFormulaTarifa("w * 0.15 + L * 0.8"); ruta1.setUnidadTarifa("EUR");
         ruta1.setObservaciones("Ruta habitual norte");
-        rutaRepository.save(ruta1);
+        ruta1 = rutaRepository.save(ruta1);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta1.getId(), trans1.getId());
 
         Ruta ruta2 = new Ruta();
-        ruta2.setNombre("Elche - Murcia"); ruta2.setTransportista(trans2); ruta2.setFecha(today.minusDays(5));
+        ruta2.setNombre("Elche - Murcia"); ruta2.setFecha(today.minusDays(5));
         ruta2.setEstado(EstadoRuta.EN_CURSO);
-        ruta2.setOrigenDireccion("C/ Mayor 22, Elche"); ruta2.setDestinoDireccion("Av. Juan Carlos I 50, Murcia");
-        ruta2.setDistanciaKm(85.2); ruta2.setOrigenLat(38.2669); ruta2.setOrigenLon(-0.6983);
-        ruta2.setDestinoLat(37.9922); ruta2.setDestinoLon(-1.1307);
+        ruta2.setOrigen(d5); ruta2.setDestino(d10);
+        ruta2.setDistanciaKm(85.2); 
         ruta2.setFormulaTarifa("w * 0.12 + L * 0.6"); ruta2.setUnidadTarifa("EUR");
         ruta2.setObservaciones("Transporte residuos industriales");
-        rutaRepository.save(ruta2);
+        ruta2 = rutaRepository.save(ruta2);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta2.getId(), trans2.getId());
 
         Ruta ruta3 = new Ruta();
-        ruta3.setNombre("Benidorm - Alicante"); ruta3.setTransportista(trans1); ruta3.setFecha(today.plusDays(3));
+        ruta3.setNombre("Benidorm - Alicante"); ruta3.setFecha(today.plusDays(3));
         ruta3.setEstado(EstadoRuta.PLANIFICADA);
-        ruta3.setOrigenDireccion("Av. del Mediterraneo 120, Benidorm"); ruta3.setDestinoDireccion("Pol. Ind. Agua Amarga, Alicante");
-        ruta3.setDistanciaKm(45.0); ruta3.setOrigenLat(38.5411); ruta3.setOrigenLon(-0.1225);
-        ruta3.setDestinoLat(38.326); ruta3.setDestinoLon(-0.495);
+        ruta3.setOrigen(d4); ruta3.setDestino(d3);
+        ruta3.setDistanciaKm(45.0); 
         ruta3.setFormulaTarifa("w * 0.20"); ruta3.setUnidadTarifa("EUR");
         ruta3.setObservaciones("Residuos hoteleros");
-        rutaRepository.save(ruta3);
+        ruta3 = rutaRepository.save(ruta3);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta3.getId(), trans1.getId());
 
         Ruta ruta4 = new Ruta();
-        ruta4.setNombre("Alcoy - Valencia"); ruta4.setTransportista(trans3); ruta4.setFecha(today.minusDays(30));
+        ruta4.setNombre("Alcoy - Valencia"); ruta4.setFecha(today.minusDays(30));
         ruta4.setEstado(EstadoRuta.COMPLETADA);
-        ruta4.setOrigenDireccion("C/ Colom 5, Alcoy"); ruta4.setDestinoDireccion("Pol. Ind. Fuente del Jarro, Paterna");
-        ruta4.setDistanciaKm(115.0); ruta4.setOrigenLat(38.6985); ruta4.setOrigenLon(-0.4737);
-        ruta4.setDestinoLat(39.505); ruta4.setDestinoLon(-0.435);
+        ruta4.setOrigen(d8); ruta4.setDestino(d12);
+        ruta4.setDistanciaKm(115.0); 
         ruta4.setFormulaTarifa("w * 0.18 + L * 0.5"); ruta4.setUnidadTarifa("EUR");
         ruta4.setObservaciones("Ruta textiles");
-        rutaRepository.save(ruta4);
+        ruta4 = rutaRepository.save(ruta4);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta4.getId(), trans3.getId());
 
         Ruta ruta5 = new Ruta();
-        ruta5.setNombre("Orihuela - Murcia"); ruta5.setTransportista(trans2); ruta5.setFecha(today.plusDays(7));
+        ruta5.setNombre("Orihuela - Murcia"); ruta5.setFecha(today.plusDays(7));
         ruta5.setEstado(EstadoRuta.PLANIFICADA);
-        ruta5.setOrigenDireccion("C/ Corredera 12, Orihuela"); ruta5.setDestinoDireccion("Av. Juan Carlos I 50, Murcia");
-        ruta5.setDistanciaKm(60.0); ruta5.setOrigenLat(38.0847); ruta5.setOrigenLon(-0.9441);
-        ruta5.setDestinoLat(37.9922); ruta5.setDestinoLon(-1.1307);
+        ruta5.setOrigen(d11); ruta5.setDestino(d10);
+        ruta5.setDistanciaKm(60.0); 
         ruta5.setFormulaTarifa("w * 0.10 + L * 0.4"); ruta5.setUnidadTarifa("EUR");
         ruta5.setObservaciones("Ruta agroalimentaria");
-        rutaRepository.save(ruta5);
+        ruta5 = rutaRepository.save(ruta5);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta5.getId(), trans2.getId());
 
         Ruta ruta6 = new Ruta();
-        ruta6.setNombre("Denia - Alicante"); ruta6.setTransportista(trans3); ruta6.setFecha(today.minusDays(15));
+        ruta6.setNombre("Denia - Alicante"); ruta6.setFecha(today.minusDays(15));
         ruta6.setEstado(EstadoRuta.COMPLETADA);
-        ruta6.setOrigenDireccion("C/ del Mar 33, Denia"); ruta6.setDestinoDireccion("Pol. Ind. Las Atalayas, Alicante");
-        ruta6.setDistanciaKm(95.0); ruta6.setOrigenLat(38.8406); ruta6.setOrigenLon(0.1056);
-        ruta6.setDestinoLat(38.335); ruta6.setDestinoLon(-0.51);
+        ruta6.setOrigen(d14); ruta6.setDestino(d9);
+        ruta6.setDistanciaKm(95.0); 
         ruta6.setFormulaTarifa("w * 0.22 + L * 0.7"); ruta6.setUnidadTarifa("EUR");
         ruta6.setObservaciones("Conservas y envases");
-        rutaRepository.save(ruta6);
+        ruta6 = rutaRepository.save(ruta6);
+        jdbcTemplate.update("INSERT INTO ruta_transportistas (ruta_id, transportista_id, activo) VALUES (?, ?, 1)", ruta6.getId(), trans3.getId());
 
         // == 10. JDBC: spread fechaCreacion across last 90 days ==
         log.info("Ajustando fechas de creacion para historico...");

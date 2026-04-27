@@ -5,31 +5,28 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
+import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Ruta;
-import com.iesdoctorbalmis.spring.modelo.Usuario;
-import com.iesdoctorbalmis.spring.modelo.enums.Rol;
+import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.RutaRepository;
-import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
-import com.iesdoctorbalmis.spring.servicios.TarifaValidator;
+import com.iesdoctorbalmis.spring.dto.RutaInputDTO;
 
 @Service
 public class RutaService {
 
     private final RutaRepository rutaRepo;
-    private final UsuarioRepository usuarioRepo;
+    private final DireccionRepository direccionRepo;
     private final TarifaValidator tarifaValidator;
 
-    public RutaService(RutaRepository rutaRepo, UsuarioRepository usuarioRepo, TarifaValidator tarifaValidator) {
+    public RutaService(RutaRepository rutaRepo, DireccionRepository direccionRepo, TarifaValidator tarifaValidator) {
         this.rutaRepo = rutaRepo;
-        this.usuarioRepo = usuarioRepo;
+        this.direccionRepo = direccionRepo;
         this.tarifaValidator = tarifaValidator;
     }
 
     public List<Ruta> findAll() { return rutaRepo.findAll(); }
 
-    public List<Ruta> findByTransportistaId(Long id) { return rutaRepo.findByTransportistaId(id); }
 
     public List<Ruta> findByEstado(com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta estado) {
         return rutaRepo.findByEstado(estado);
@@ -38,35 +35,59 @@ public class RutaService {
     public Optional<Ruta> findById(Long id) { return rutaRepo.findById(id); }
 
     @Transactional
-    public Ruta crear(Ruta datos, Long transportistaId) {
-        if (datos.getNombre() == null || datos.getNombre().isBlank())
+    public Ruta crear(RutaInputDTO datos) {
+        if (datos.nombre() == null || datos.nombre().isBlank())
             throw new IllegalArgumentException("El nombre de la ruta es obligatorio.");
-        validarFormula(datos.getFormulaTarifa());
-        datos.setTransportista(resolverTransportista(transportistaId));
-        return rutaRepo.save(datos);
+        validarFormula(datos.formulaTarifa());
+        
+        Ruta ruta = new Ruta();
+        ruta.setNombre(datos.nombre());
+        ruta.setFecha(datos.fecha());
+        ruta.setEstado(datos.estado());
+        ruta.setDistanciaKm(datos.distanciaKm());
+        ruta.setObservaciones(datos.observaciones());
+        ruta.setFormulaTarifa(datos.formulaTarifa());
+        ruta.setUnidadTarifa(datos.unidadTarifa());
+        
+        if (datos.origenId() != null) {
+            ruta.setOrigen(direccionRepo.findById(datos.origenId()).orElse(null));
+        }
+        if (datos.destinoId() != null) {
+            ruta.setDestino(direccionRepo.findById(datos.destinoId()).orElse(null));
+        }
+
+        return rutaRepo.save(ruta);
     }
 
     @Transactional
-    public Ruta actualizar(Long id, Ruta datos, Long transportistaId) {
+    public Ruta actualizar(Long id, RutaInputDTO datos) {
         Ruta existente = rutaRepo.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
-        if (datos.getNombre() == null || datos.getNombre().isBlank())
+        if (datos.nombre() == null || datos.nombre().isBlank())
             throw new IllegalArgumentException("El nombre de la ruta es obligatorio.");
-        existente.setNombre(datos.getNombre());
-        existente.setFecha(datos.getFecha());
-        existente.setEstado(datos.getEstado());
-        existente.setOrigenDireccion(datos.getOrigenDireccion());
-        existente.setDestinoDireccion(datos.getDestinoDireccion());
-        existente.setDistanciaKm(datos.getDistanciaKm());
-        existente.setOrigenLat(datos.getOrigenLat());
-        existente.setOrigenLon(datos.getOrigenLon());
-        existente.setDestinoLat(datos.getDestinoLat());
-        existente.setDestinoLon(datos.getDestinoLon());
-        existente.setObservaciones(datos.getObservaciones());
-        validarFormula(datos.getFormulaTarifa());
-        existente.setFormulaTarifa(datos.getFormulaTarifa());
-        existente.setUnidadTarifa(datos.getUnidadTarifa());
-        existente.setTransportista(resolverTransportista(transportistaId));
+        
+        validarFormula(datos.formulaTarifa());
+
+        existente.setNombre(datos.nombre());
+        existente.setFecha(datos.fecha());
+        existente.setEstado(datos.estado());
+        existente.setDistanciaKm(datos.distanciaKm());
+        existente.setObservaciones(datos.observaciones());
+        existente.setFormulaTarifa(datos.formulaTarifa());
+        existente.setUnidadTarifa(datos.unidadTarifa());
+
+        if (datos.origenId() != null) {
+            existente.setOrigen(direccionRepo.findById(datos.origenId()).orElse(null));
+        } else {
+            existente.setOrigen(null);
+        }
+        
+        if (datos.destinoId() != null) {
+            existente.setDestino(direccionRepo.findById(datos.destinoId()).orElse(null));
+        } else {
+            existente.setDestino(null);
+        }
+
         return rutaRepo.save(existente);
     }
 
@@ -83,12 +104,5 @@ public class RutaService {
         rutaRepo.deleteById(id);
     }
 
-    private Usuario resolverTransportista(Long id) {
-        if (id == null) return null;
-        Usuario u = usuarioRepo.findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Transportista no encontrado: " + id));
-        if (u.getRol() != Rol.TRANSPORTISTA)
-            throw new IllegalArgumentException("El usuario asignado debe tener rol TRANSPORTISTA.");
-        return u;
-    }
+
 }

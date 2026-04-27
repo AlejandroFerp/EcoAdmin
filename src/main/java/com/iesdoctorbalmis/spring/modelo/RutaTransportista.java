@@ -40,12 +40,6 @@ public class RutaTransportista {
     @JoinColumn(name = "transportista_id", nullable = false)
     private Usuario transportista;
 
-    /** Fórmula específica de este transportista para esta ruta. Null → usa ruta.formulaTarifa. */
-    @Column(columnDefinition = "TEXT")
-    private String formulaTarifa;
-
-    private String unidadTarifa;
-
     @Column(nullable = false)
     private boolean activo = true;
 
@@ -56,12 +50,6 @@ public class RutaTransportista {
 
     public Usuario getTransportista() { return transportista; }
     public void setTransportista(Usuario transportista) { this.transportista = transportista; }
-
-    public String getFormulaTarifa() { return formulaTarifa; }
-    public void setFormulaTarifa(String formulaTarifa) { this.formulaTarifa = formulaTarifa; }
-
-    public String getUnidadTarifa() { return unidadTarifa; }
-    public void setUnidadTarifa(String unidadTarifa) { this.unidadTarifa = unidadTarifa; }
 
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }

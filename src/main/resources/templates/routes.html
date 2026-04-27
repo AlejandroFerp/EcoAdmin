@@ -1,913 +1,935 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-    th:replace="~{layouts/main :: layout('routes', 'EcoAdmin � Rutas', 'Gesti�n de Rutas', ~{::pageContent}, ~{::pageScripts})}">
+  th:replace="~{layouts/main :: layout('routes', 'EcoAdmin  Rutas', 'Gestión de Rutas', ~{::pageContent}, ~{::pageScripts})}">
+
 <body>
 
-<th:block th:fragment="pageContent">
-<main class="page-main">
+  <th:block th:fragment="pageContent">
+    <main class="page-main">
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Gesti�n de Rutas</h1>
-      <p class="page-subtitle">Mapa de rutas activas, listado y calculadora de tarifas</p>
-    </div>
-    <div class="page-actions" id="accionesAdmin" style="display:none">
-      <button type="button" onclick="abrirCrear()" class="btn-primary">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        Nueva ruta
-      </button>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="flex gap-1 mb-4 border-b border-slate-200">
-    <button id="tab-mapa-btn" onclick="cambiarTab('mapa')"
-      class="px-4 py-2.5 text-sm font-medium border-b-2 border-[#3b82f6] text-[#3b82f6] transition-colors">
-      <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-      </svg>
-      Mapa
-    </button>
-    <button id="tab-lista-btn" onclick="cambiarTab('lista')"
-      class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
-      <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-      </svg>
-      Lista
-    </button>
-    <button id="tab-tarifas-btn" onclick="cambiarTab('tarifas')"
-      class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
-      <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-      </svg>
-      Tarifas
-    </button>
-  </div>
-
-  <!-- ================================================ TAB MAPA -->
-  <div id="tab-mapa">
-    <div class="card p-4 mb-4">
-      <div class="flex flex-wrap gap-3 items-center">
-        <input type="text" id="busquedaMapa" placeholder="Filtrar por nombre o transportista..." class="form-control-eco flex-1 min-w-48" oninput="filtrarMapa()">
-        <select id="filtroEstadoMapa" class="form-control-eco w-48" onchange="filtrarMapa()">
-          <option value="">Todos los estados</option>
-          <option value="PLANIFICADA">Planificada</option>
-          <option value="EN_CURSO">En curso</option>
-        </select>
-        <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-          <input type="checkbox" id="soloConCoordenadas" onchange="filtrarMapa()" class="rounded">
-          Solo con coordenadas
-        </label>
-      </div>
-    </div>
-
-    <div class="card overflow-hidden">
-      <div id="mapaRutas" style="height:520px;z-index:0;"></div>
-    </div>
-
-    <div class="card p-4 mt-4">
-      <p class="text-xs text-slate-500 font-medium mb-2">Leyenda</p>
-      <div class="flex flex-wrap gap-4 text-xs text-slate-600">
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Origen</span>
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Destino</span>
-        <span class="flex items-center gap-1.5"><span class="w-10 h-1 bg-blue-500 inline-block rounded"></span> Ruta calculada (OSRM)</span>
-      </div>
-      <p id="sinCoordenadasMsg" class="text-xs text-amber-600 mt-2 hidden">
-        Algunas rutas no tienen coordenadas y no aparecen en el mapa. Ed�talas (tab Lista) para a�adirlas.
-      </p>
-    </div>
-  </div>
-
-  <!-- ================================================ TAB LISTA -->
-  <div id="tab-lista" style="display:none">
-    <div class="card p-4 mb-4">
-      <div class="flex flex-wrap gap-3 items-center">
-        <input type="text" id="busqueda" placeholder="Buscar por nombre o transportista..." class="form-control-eco flex-1 min-w-48" oninput="filtrar()">
-        <select id="filtroEstado" class="form-control-eco w-48" onchange="filtrar()">
-          <option value="">Todos los estados</option>
-          <option value="PLANIFICADA">Planificada</option>
-          <option value="EN_CURSO">En curso</option>
-          <option value="COMPLETADA">Completada</option>
-          <option value="CANCELADA">Cancelada</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="card overflow-hidden">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Transportista</th>
-            <th>Fecha</th>
-            <th>Ruta</th>
-            <th>Dist.</th>
-            <th>Estado</th>
-            <th class="text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tablaCuerpo">
-          <tr><td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td></tr>
-        </tbody>
-      </table>
-      <div class="px-4 py-3 flex items-center justify-between border-t border-slate-100">
-        <span id="infoReg" class="text-xs text-slate-400"></span>
-        <div id="pgBotones" class="join"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================================================ TAB TARIFAS -->
-  <div id="tab-tarifas" style="display:none">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-      <div class="card overflow-hidden">
-        <div class="px-4 pt-4 pb-2 border-b border-slate-100">
-          <h3 class="font-semibold text-slate-800 text-sm">Rutas con tarifa definida</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Haz clic en una ruta para calcular su precio</p>
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Gestión de Rutas</h1>
+          <p class="page-subtitle">Mapa de rutas activas, listado y calculadora de tarifas</p>
         </div>
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Transportista</th>
-              <th>Dist.</th>
-              <th>F�rmula</th>
-            </tr>
-          </thead>
-          <tbody id="tablaFormulas">
-            <tr><td colspan="4" class="text-center py-8 text-slate-400">Cargando...</td></tr>
-          </tbody>
-        </table>
+        <div class="page-actions" id="accionesAdmin" style="display:none">
+          <button type="button" onclick="abrirCrear()" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva ruta
+          </button>
+        </div>
       </div>
 
-      <div class="card p-5">
-        <div id="calcSinSeleccion" class="flex flex-col items-center justify-center h-full text-slate-400 py-12">
-          <svg class="w-10 h-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      <!-- Tabs -->
+      <div class="flex gap-1 mb-4 border-b border-slate-200">
+        <button id="tab-mapa-btn" onclick="cambiarTab('mapa')"
+          class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-blue-500 text-blue-600 transition-colors">
+          <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
           </svg>
-          <p class="text-sm">Selecciona una ruta para calcular la tarifa</p>
+          Mapa
+        </button>
+        <button id="tab-lista-btn" onclick="cambiarTab('lista')"
+          class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
+          <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Lista
+        </button>
+        <button id="tab-tarifas-btn" onclick="cambiarTab('tarifas')"
+          class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
+          <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          Tarifas
+        </button>
+      </div>
+
+      <!-- ================================================ TAB MAPA -->
+      <div id="tab-mapa">
+        <div class="card p-4 mb-4">
+          <div class="flex flex-row flex-wrap gap-3 items-center">
+            <input type="text" id="busquedaMapa" placeholder="Filtrar por nombre o transportista..."
+              class="form-control-eco flex-1 min-w-[200px]" oninput="filtrarMapa()">
+            <select id="filtroEstadoMapa" class="form-control-eco" style="width:180px" onchange="filtrarMapa()">
+              <option value="">Todos los estados</option>
+              <option value="PLANIFICADA">Planificada</option>
+              <option value="EN_CURSO">En curso</option>
+            </select>
+            <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer whitespace-nowrap">
+              <input type="checkbox" id="soloConCoordenadas" onchange="filtrarMapa()" class="rounded">
+              Solo con coordenadas
+            </label>
+          </div>
         </div>
 
-        <div id="calcPanel" style="display:none">
-          <h3 class="font-semibold text-slate-800 mb-1" id="calcNombre">�</h3>
-          <p class="text-xs text-slate-400 mb-4" id="calcRuta">�</p>
+        <div class="card overflow-hidden">
+          <div id="mapaRutas" style="height:520px;min-height:520px;width:100%;z-index:0;position:relative;"></div>
+        </div>
 
-          <div class="bg-slate-50 rounded-lg p-3 mb-4 font-mono text-sm text-slate-700">
-            F�rmula: <span id="calcFormula" class="font-bold text-[#3b82f6]">�</span>
+        <div class="card p-4 mt-4">
+          <p class="text-xs text-slate-500 font-medium mb-2">Leyenda</p>
+          <div class="flex flex-wrap gap-4 text-xs text-slate-600">
+            <span class="flex items-center gap-1.5"><span
+                class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Origen</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+              Destino</span>
+            <span class="flex items-center gap-1.5"><span class="w-10 h-1 bg-blue-500 inline-block rounded"></span> Ruta
+              calculada (OSRM)</span>
           </div>
-
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <label class="label-eco">w � Peso (kg)</label>
-              <input type="number" id="calcW" class="form-control-eco" placeholder="0" min="0" step="0.1" oninput="calcularTarifa()">
-            </div>
-            <div>
-              <label class="label-eco">L � Distancia (km)</label>
-              <input type="number" id="calcL" class="form-control-eco" placeholder="0" min="0" step="0.1" oninput="calcularTarifa()">
-            </div>
-          </div>
-
-          <div class="bg-[#3b82f6]/5 border border-[#3b82f6]/20 rounded-lg p-4 mb-4 text-center">
-            <p class="text-xs text-slate-500 mb-1">Estimaci�n</p>
-            <p class="text-3xl font-bold text-[#3b82f6]" id="calcResultado">�</p>
-            <p class="text-xs text-red-400 mt-1" id="calcError" style="display:none"></p>
-          </div>
-
-          <div id="asignarPanel" style="display:none">
-            <label class="label-eco">Asignar a traslado (estado PENDIENTE)</label>
-            <div class="flex gap-2">
-              <select id="selectTraslado" class="form-control-eco flex-1">
-                <option value="">Selecciona traslado...</option>
-              </select>
-              <button type="button" onclick="asignarRuta()" class="btn-primary whitespace-nowrap">Asignar</button>
-            </div>
-          </div>
+          <p id="sinCoordenadasMsg" class="text-xs text-amber-600 mt-2 hidden">
+            Algunas rutas no tienen coordenadas y no aparecen en el mapa. Editarlas (tab Lista) para anadirlas.
+          </p>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ========== Modal Crear/Editar ========== -->
-  <div id="modalForm" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--xl">
-      <div class="modal-card">
-        <div class="modal-head">
-          <h3 id="modalTitulo" class="modal-title">Nueva ruta</h3>
-          <button type="button" onclick="cerrarModal()" class="text-slate-400 hover:text-slate-700">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="itemId">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
-              <label class="label-eco">Nombre de la ruta *</label>
-              <input type="text" id="fNombre" class="form-control-eco" placeholder="Ej. Ruta Norte � Ma�ana">
-            </div>
-            <div id="campoTransportista">
-              <label class="label-eco">Transportista</label>
-              <select id="fTransportista" class="form-control-eco">
-                <option value="">Sin asignar</option>
-              </select>
-            </div>
-            <div>
-              <label class="label-eco">Fecha</label>
-              <input type="date" id="fFecha" class="form-control-eco">
-            </div>
-            <div>
-              <label class="label-eco">Origen (texto)</label>
-              <input type="text" id="fOrigen" class="form-control-eco" placeholder="Direcci�n de inicio">
-            </div>
-            <div>
-              <label class="label-eco">Destino (texto)</label>
-              <input type="text" id="fDestino" class="form-control-eco" placeholder="Direcci�n de fin">
-            </div>
-            <div>
-              <label class="label-eco">Lat. origen</label>
-              <input type="number" id="fOrigenLat" class="form-control-eco" placeholder="37.38634" step="any">
-            </div>
-            <div>
-              <label class="label-eco">Lon. origen</label>
-              <input type="number" id="fOrigenLon" class="form-control-eco" placeholder="-5.99295" step="any">
-            </div>
-            <div>
-              <label class="label-eco">Lat. destino</label>
-              <input type="number" id="fDestinoLat" class="form-control-eco" placeholder="37.38634" step="any">
-            </div>
-            <div>
-              <label class="label-eco">Lon. destino</label>
-              <input type="number" id="fDestinoLon" class="form-control-eco" placeholder="-5.99295" step="any">
-            </div>
-            <div>
-              <label class="label-eco">Distancia estimada (km)</label>
-              <input type="number" id="fDistancia" class="form-control-eco" placeholder="0" min="0" step="0.1">
-            </div>
-            <div>
-              <label class="label-eco">Estado</label>
-              <select id="fEstado" class="form-control-eco">
-                <option value="PLANIFICADA">Planificada</option>
-                <option value="EN_CURSO">En curso</option>
-                <option value="COMPLETADA">Completada</option>
-                <option value="CANCELADA">Cancelada</option>
-              </select>
-            </div>
-            <div>
-              <label class="label-eco">F�rmula de tarifa</label>
-              <input type="text" id="fFormula" class="form-control-eco font-mono" placeholder="w * 0.5 + L * 0.1">
-              <p class="text-xs text-slate-400 mt-1">Variables: <code>w</code> (kg), <code>L</code> (km)</p>
-            </div>
-            <div>
-              <label class="label-eco">Moneda</label>
-              <input type="text" id="fUnidad" class="form-control-eco" placeholder="EUR" maxlength="10">
-            </div>
-            <div class="md:col-span-2">
-              <label class="label-eco">Observaciones</label>
-              <textarea id="fObservaciones" class="form-control-eco" rows="3" placeholder="Notas sobre la ruta..."></textarea>
-            </div>
+      <!-- ================================================ TAB LISTA -->
+      <div id="tab-lista" style="display:none">
+        <div class="card p-4 mb-4">
+          <div class="flex flex-wrap gap-3 items-center">
+            <input type="text" id="busqueda" placeholder="Buscar por nombre o transportista..."
+              class="form-control-eco flex-1 min-w-48" oninput="filtrar()">
+            <select id="filtroEstado" class="form-control-eco w-48" onchange="filtrar()">
+              <option value="">Todos los estados</option>
+              <option value="PLANIFICADA">Planificada</option>
+              <option value="EN_CURSO">En curso</option>
+              <option value="COMPLETADA">Completada</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select>
           </div>
         </div>
-        <div class="modal-foot">
-          <button type="button" onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
-          <button type="button" onclick="guardar()" class="btn-primary">Guardar</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ========== Modal Transportistas por Ruta ========== -->
-  <div id="modalTransportistas" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--xl">
-      <div class="modal-card">
-        <div class="modal-head">
-          <div>
-            <h3 class="modal-title">Transportistas — <span id="transRutaNombre"></span></h3>
-            <p class="text-xs text-slate-400 mt-0.5" id="transRutaInfo"></p>
-          </div>
-          <button type="button" onclick="cerrarModalTrans()" class="text-slate-400 hover:text-slate-700">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <table class="table w-full mb-4">
+        <div class="card overflow-hidden">
+          <table class="table w-full">
             <thead>
               <tr>
+                <th>Nombre</th>
                 <th>Transportista</th>
-                <th>Fórmula propia</th>
-                <th>Fórmula efectiva</th>
-                <th>Moneda</th>
-                <th class="text-right">Precio (100 kg)</th>
-                <th id="transAccHead" style="display:none"></th>
+                <th>Fecha</th>
+                <th>Ruta</th>
+                <th>Dist.</th>
+                <th>Estado</th>
+                <th class="text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody id="tablaTransRuta">
-              <tr><td colspan="6" class="text-center py-8 text-slate-400">Cargando...</td></tr>
+            <tbody id="tablaCuerpo">
+              <tr>
+                <td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td>
+              </tr>
             </tbody>
           </table>
+          <div class="px-4 py-3 flex items-center justify-between border-t border-slate-100">
+            <span id="infoReg" class="text-xs text-slate-400"></span>
+            <div id="pgBotones" class="join"></div>
+          </div>
+        </div>
+      </div>
 
-          <div id="addTransForm" style="display:none" class="border-t border-slate-100 pt-4">
-            <p class="text-sm font-medium text-slate-700 mb-3">Añadir transportista</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label class="label-eco">Transportista *</label>
-                <select id="tSelectTrans" class="form-control-eco"><option value="">Selecciona...</option></select>
+      <!-- ================================================ TAB TARIFAS -->
+      <div id="tab-tarifas" style="display:none">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          <div class="card overflow-hidden">
+            <div class="px-4 pt-4 pb-2 border-b border-slate-100">
+              <h3 class="font-semibold text-slate-800 text-sm">Rutas con tarifa definida</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Haz clic en una ruta para calcular su precio</p>
+            </div>
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Transportista</th>
+                  <th>Dist.</th>
+                  <th>Formula</th>
+                </tr>
+              </thead>
+              <tbody id="tablaFormulas">
+                <tr>
+                  <td colspan="4" class="text-center py-8 text-slate-400">Cargando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card p-5">
+            <div id="calcSinSeleccion" class="flex flex-col items-center justify-center h-full text-slate-400 py-12">
+              <svg class="w-10 h-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <p class="text-sm">Selecciona una ruta para calcular la tarifa</p>
+            </div>
+
+            <div id="calcPanel" style="display:none">
+              <h3 class="font-semibold text-slate-800 mb-1" id="calcNombre">-</h3>
+              <p class="text-xs text-slate-400 mb-4" id="calcRuta">-</p>
+
+              <div class="bg-slate-50 rounded-lg p-3 mb-4 font-mono text-sm text-slate-700">
+                Formula: <span id="calcFormula" class="font-bold text-[#3b82f6]">-</span>
               </div>
-              <div>
-                <label class="label-eco">Fórmula propia <span class="text-slate-400 text-xs">(opcional)</span></label>
-                <input type="text" id="tFormula" class="form-control-eco font-mono" placeholder="w * 0.4 + L * 0.08">
-                <p class="text-xs text-slate-400 mt-0.5">Vacío = usa fórmula de la ruta</p>
+
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label class="label-eco">w - Peso (kg)</label>
+                  <input type="number" id="calcW" class="form-control-eco" placeholder="0" min="0" step="0.1"
+                    oninput="calcularTarifa()">
+                </div>
+                <div>
+                  <label class="label-eco">L - Distancia (km)</label>
+                  <input type="number" id="calcL" class="form-control-eco" placeholder="0" min="0" step="0.1"
+                    oninput="calcularTarifa()">
+                </div>
               </div>
-              <div>
-                <label class="label-eco">Moneda</label>
+
+              <div class="bg-[#3b82f6]/5 border border-[#3b82f6]/20 rounded-lg p-4 mb-4 text-center">
+                <p class="text-xs text-slate-500 mb-1">Estimacion</p>
+                <p class="text-3xl font-bold text-[#3b82f6]" id="calcResultado">-</p>
+                <p class="text-xs text-red-400 mt-1" id="calcError" style="display:none"></p>
+              </div>
+
+              <div id="asignarPanel" style="display:none">
+                <label class="label-eco">Asignar a traslado (estado PENDIENTE)</label>
                 <div class="flex gap-2">
-                  <input type="text" id="tUnidad" class="form-control-eco" placeholder="EUR" maxlength="10">
-                  <button type="button" onclick="confirmarAsignarTrans()" class="btn-primary whitespace-nowrap">Añadir</button>
+                  <select id="selectTraslado" class="form-control-eco flex-1">
+                    <option value="">Selecciona traslado...</option>
+                  </select>
+                  <button type="button" onclick="asignarRuta()" class="btn-primary whitespace-nowrap">Asignar</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-foot">
-          <button type="button" onclick="cerrarModalTrans()" class="btn-secondary">Cerrar</button>
+      </div>
+
+      <!-- ========== Modal Crear/Editar ========== -->
+      <div id="modalForm" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+        <div class="modal-shell modal-shell--xl">
+          <div class="modal-card">
+            <div class="modal-head">
+              <h3 id="modalTitulo" class="modal-title">Nueva ruta</h3>
+              <button type="button" onclick="cerrarModal()" class="text-slate-400 hover:text-slate-700">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="itemId">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                  <label class="label-eco">Nombre de la ruta *</label>
+                  <input type="text" id="fNombre" class="form-control-eco" placeholder="Ej. Ruta Norte - Manana">
+                </div>
+                <div>
+                  <label class="label-eco">Fecha</label>
+                  <input type="date" id="fFecha" class="form-control-eco">
+                </div>
+                <div>
+                  <label class="label-eco">Origen</label>
+                  <div data-combobox="fOrigenId" data-placeholder="Seleccionar origen..."></div>
+                </div>
+                <div>
+                  <label class="label-eco">Destino</label>
+                  <div data-combobox="fDestinoId" data-placeholder="Seleccionar destino..."></div>
+                </div>
+                <div>
+                  <label class="label-eco">Distancia estimada (km)</label>
+                  <input type="number" id="fDistancia" class="form-control-eco" placeholder="0" min="0" step="0.1">
+                </div>
+                <div>
+                  <label class="label-eco">Estado</label>
+                  <select id="fEstado" class="form-control-eco">
+                    <option value="PLANIFICADA">Planificada</option>
+                    <option value="EN_CURSO">En curso</option>
+                    <option value="COMPLETADA">Completada</option>
+                    <option value="CANCELADA">Cancelada</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label-eco">Formula de tarifa</label>
+                  <input type="text" id="fFormula" class="form-control-eco font-mono" placeholder="w * 0.5 + L * 0.1">
+                  <p class="text-xs text-slate-400 mt-1">Variables: <code>w</code> (kg), <code>L</code> (km)</p>
+                </div>
+                <div>
+                  <label class="label-eco">Moneda</label>
+                  <input type="text" id="fUnidad" class="form-control-eco" placeholder="EUR" maxlength="10">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="label-eco">Observaciones</label>
+                  <textarea id="fObservaciones" class="form-control-eco" rows="3"
+                    placeholder="Notas sobre la ruta..."></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button type="button" onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
+              <button type="button" onclick="guardar()" class="btn-primary">Guardar</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ========== Modal Borrar ========== -->
-  <div id="modalBorrar" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
-    <div class="modal-shell modal-shell--sm">
-      <div class="modal-card">
-        <div class="modal-head">
-          <h3 class="modal-title">Eliminar ruta</h3>
-          <button type="button" onclick="cerrarModalBorrar()" class="text-slate-400 hover:text-slate-700">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p class="text-slate-700">�Eliminar la ruta <strong id="nombreBorrar" class="text-slate-900"></strong>?</p>
-          <p class="text-sm text-slate-400 mt-1">Esta acci�n no se puede deshacer.</p>
-        </div>
-        <div class="modal-foot">
-          <button type="button" onclick="cerrarModalBorrar()" class="btn-secondary">Cancelar</button>
-          <button type="button" onclick="confirmarBorrar()" class="btn-danger">Eliminar</button>
+      <!-- ========== Modal Transportistas por Ruta ========== -->
+      <div id="modalTransportistas" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+        <div class="modal-shell modal-shell--xl">
+          <div class="modal-card">
+            <div class="modal-head">
+              <div>
+                <h3 class="modal-title">Transportistas — <span id="transRutaNombre"></span></h3>
+                <p class="text-xs text-slate-400 mt-0.5" id="transRutaInfo"></p>
+              </div>
+              <button type="button" onclick="cerrarModalTrans()" class="text-slate-400 hover:text-slate-700">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <table class="table w-full mb-4">
+                <thead>
+                  <tr>
+                    <th>Transportista</th>
+                    <th>Fórmula propia</th>
+                    <th>Fórmula efectiva</th>
+                    <th>Moneda</th>
+                    <th class="text-right">Precio (100 kg)</th>
+                    <th id="transAccHead" style="display:none"></th>
+                  </tr>
+                </thead>
+                <tbody id="tablaTransRuta">
+                  <tr>
+                    <td colspan="6" class="text-center py-8 text-slate-400">Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div id="addTransForm" style="display:none" class="border-t border-slate-100 pt-4">
+                <p class="text-sm font-medium text-slate-700 mb-3">Añadir transportista</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label class="label-eco">Transportista *</label>
+                    <select id="tSelectTrans" class="form-control-eco">
+                      <option value="">Selecciona...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="label-eco">Fórmula propia <span
+                        class="text-slate-400 text-xs">(opcional)</span></label>
+                    <input type="text" id="tFormula" class="form-control-eco font-mono"
+                      placeholder="w * 0.4 + L * 0.08">
+                    <p class="text-xs text-slate-400 mt-0.5">Vacío = usa fórmula de la ruta</p>
+                  </div>
+                  <div>
+                    <label class="label-eco">Moneda</label>
+                    <div class="flex gap-2">
+                      <input type="text" id="tUnidad" class="form-control-eco" placeholder="EUR" maxlength="10">
+                      <button type="button" onclick="confirmarAsignarTrans()"
+                        class="btn-primary whitespace-nowrap">Añadir</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button type="button" onclick="cerrarModalTrans()" class="btn-secondary">Cerrar</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-</main>
-</th:block>
+      <!-- ========== Modal Borrar ========== -->
+      <div id="modalBorrar" tabindex="-1" aria-hidden="true" class="modal-overlay hidden">
+        <div class="modal-shell modal-shell--sm">
+          <div class="modal-card">
+            <div class="modal-head">
+              <h3 class="modal-title">Eliminar ruta</h3>
+              <button type="button" onclick="cerrarModalBorrar()" class="text-slate-400 hover:text-slate-700">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p class="text-slate-700">-Eliminar la ruta <strong id="nombreBorrar" class="text-slate-900"></strong>?
+              </p>
+              <p class="text-sm text-slate-400 mt-1">Esta acci-n no se puede deshacer.</p>
+            </div>
+            <div class="modal-foot">
+              <button type="button" onclick="cerrarModalBorrar()" class="btn-secondary">Cancelar</button>
+              <button type="button" onclick="confirmarBorrar()" class="btn-danger">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<th:block th:fragment="pageScripts">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" crossorigin=""/>
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js" crossorigin=""></script>
+    </main>
+  </th:block>
 
-<script>
-var todos = [], filtro = '', filtroEst = '', pagina = 1, POR_PAGINA = 10;
-var idBorrar = null, rolActual = null, idActual = null;
-var rutaSeleccionadaId = null;
-var mapa = null, capasRuta = [];
+  <th:block th:fragment="pageScripts">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+      crossorigin="" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"
+      crossorigin=""></script>
 
-var ESTADO_LABELS = { PLANIFICADA: 'Planificada', EN_CURSO: 'En curso', COMPLETADA: 'Completada', CANCELADA: 'Cancelada' };
-var ESTADO_CSS = {
-  PLANIFICADA: 'bg-slate-100 text-slate-700',
-  EN_CURSO: 'bg-blue-100 text-blue-700',
-  COMPLETADA: 'bg-emerald-100 text-emerald-700',
-  CANCELADA: 'bg-red-100 text-red-700'
-};
+    <script th:inline="none">
+      var todos = [], filtro = '', filtroEst = '', pagina = 1, POR_PAGINA = 10;
+      var idBorrar = null, rolActual = null, idActual = null;
+      var rutaSeleccionadaId = null;
+      var mapa = null, capasRuta = [];
 
-document.addEventListener('DOMContentLoaded', function() { init(); });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { cerrarModal(); cerrarModalBorrar(); } });
+      var ESTADO_LABELS = { PLANIFICADA: 'Planificada', EN_CURSO: 'En curso', COMPLETADA: 'Completada', CANCELADA: 'Cancelada' };
+      var ESTADO_CSS = {
+        PLANIFICADA: 'bg-slate-100 text-slate-700',
+        EN_CURSO: 'bg-blue-100 text-blue-700',
+        COMPLETADA: 'bg-emerald-100 text-emerald-700',
+        CANCELADA: 'bg-red-100 text-red-700'
+      };
 
-async function init() {
-  try {
-    var pr = await fetch('/api/perfil');
-    if (pr.ok) { var u = await pr.json(); rolActual = u.rol; idActual = u.id; }
-  } catch(e) {}
-  if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
-    document.getElementById('accionesAdmin').style.display = '';
-  }
-  await Promise.all([cargar(), cargarTransportistas()]);
-  iniciarMapa();
-}
+      document.addEventListener('DOMContentLoaded', function () { init(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { cerrarModal(); cerrarModalBorrar(); } });
 
-async function cargar() {
-  try {
-    var res = await fetch('/api/rutas');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    todos = await res.json();
-  } catch(e) {
-    document.getElementById('tablaCuerpo').innerHTML =
-      '<tr><td colspan="7" class="text-center py-12 text-red-400">Error al cargar rutas. Recarga la p�gina.</td></tr>';
-    return;
-  }
-  pagina = 1;
-  renderTabla();
-  renderFormulas();
-}
-
-async function cargarTransportistas() {
-  try {
-    var res = await fetch('/api/transportistas');
-    if (!res.ok) return;
-    var lista = await res.json();
-    var sel = document.getElementById('fTransportista');
-    lista.forEach(function(t) {
-      var opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = t.nombre || t.email;
-      sel.appendChild(opt);
-    });
-  } catch(e) {}
-}
-
-// ����� Tabs �����
-function cambiarTab(tab) {
-  ['mapa', 'lista', 'tarifas'].forEach(function(t) {
-    var panel = document.getElementById('tab-' + t);
-    var btn = document.getElementById('tab-' + t + '-btn');
-    var activo = t === tab;
-    panel.style.display = activo ? '' : 'none';
-    btn.classList.toggle('border-[#3b82f6]', activo);
-    btn.classList.toggle('text-[#3b82f6]', activo);
-    btn.classList.toggle('border-transparent', !activo);
-    btn.classList.toggle('text-slate-500', !activo);
-  });
-  if (tab === 'mapa' && mapa) { setTimeout(function() { mapa.invalidateSize(); }, 100); }
-}
-
-// ����� Mapa �����
-function iniciarMapa() {
-  if (mapa) return;
-  mapa = L.map('mapaRutas').setView([37.38, -5.99], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '� <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(mapa);
-  dibujarRutasEnMapa(todos);
-}
-
-function filtrarMapa() {
-  var q = document.getElementById('busquedaMapa').value.toLowerCase();
-  var est = document.getElementById('filtroEstadoMapa').value;
-  var soloCoordenadas = document.getElementById('soloConCoordenadas').checked;
-  var lista = todos.filter(function(r) {
-    var txt = ((r.nombre || '') + ' ' + ((r.transportista && r.transportista.nombre) || '')).toLowerCase();
-    var estadoOk = !est || r.estado === est;
-    var coordsOk = !soloCoordenadas || (r.origenLat != null && r.origenLon != null && r.destinoLat != null && r.destinoLon != null);
-    return txt.includes(q) && estadoOk && coordsOk;
-  });
-  dibujarRutasEnMapa(lista);
-}
-
-var iconOrigen = L.divIcon({
-  html: '<div style="width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
-  className: '', iconSize: [12, 12], iconAnchor: [6, 6]
-});
-var iconDestino = L.divIcon({
-  html: '<div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
-  className: '', iconSize: [12, 12], iconAnchor: [6, 6]
-});
-
-function dibujarRutasEnMapa(lista) {
-  if (!mapa) return;
-  capasRuta.forEach(function(c) { try { mapa.removeLayer(c); } catch(e) {} });
-  capasRuta = [];
-
-  var sinCoords = false;
-  lista.forEach(function(r) {
-    var tieneCoords = r.origenLat != null && r.origenLon != null && r.destinoLat != null && r.destinoLon != null;
-    if (!tieneCoords) { sinCoords = true; return; }
-
-    var oLat = r.origenLat, oLon = r.origenLon, dLat = r.destinoLat, dLon = r.destinoLon;
-    var popupHtml = '<b>' + esc(r.nombre || '') + '</b>'
-      + '<br><span style="color:#64748b;font-size:12px">' + esc((r.transportista && r.transportista.nombre) || 'Sin asignar') + '</span>'
-      + '<br><span style="font-size:12px">' + (ESTADO_LABELS[r.estado] || r.estado) + '</span>'
-      + (r.distanciaKm != null ? '<br><span style="font-size:12px">' + r.distanciaKm + ' km</span>' : '');
-
-    if (typeof L.Routing !== 'undefined') {
-      var control = L.Routing.control({
-        waypoints: [L.latLng(oLat, oLon), L.latLng(dLat, dLon)],
-        router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-        lineOptions: { styles: [{ color: '#3b82f6', weight: 4, opacity: 0.75 }] },
-        addWaypoints: false, draggableWaypoints: false,
-        fitSelectedRoutes: false, showAlternatives: false,
-        collapsible: true, show: false,
-        createMarker: function() { return null; }
-      }).addTo(mapa);
-      control.on('routesfound', function(e) {
-        var line = e.routes[0] && e.routes[0].coordinates;
-        if (line) {
-          var poly = L.polyline(line, { color: '#3b82f6', weight: 4, opacity: 0.75 })
-            .bindPopup(popupHtml).addTo(mapa);
-          capasRuta.push(poly);
-          try { mapa.removeControl(control); } catch(e) {}
+      async function init() {
+        try {
+          var pr = await fetch('/api/perfil');
+          if (pr.ok) { var u = await pr.json(); rolActual = u.rol; idActual = u.id; }
+        } catch (e) { }
+        if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
+          document.getElementById('accionesAdmin').style.display = '';
         }
-      });
-      control.on('routingerror', function() { try { mapa.removeControl(control); } catch(e) {} });
-      capasRuta.push(control);
-    } else {
-      var linea = L.polyline([[oLat, oLon], [dLat, dLon]], { color: '#3b82f6', weight: 3, opacity: 0.7 })
-        .bindPopup(popupHtml).addTo(mapa);
-      capasRuta.push(linea);
-    }
-
-    var mO = L.marker([oLat, oLon], { icon: iconOrigen })
-      .bindPopup('<b>Origen</b><br>' + esc(r.origenDireccion || '')).addTo(mapa);
-    var mD = L.marker([dLat, dLon], { icon: iconDestino })
-      .bindPopup('<b>Destino</b><br>' + esc(r.destinoDireccion || '')).addTo(mapa);
-    capasRuta.push(mO, mD);
-  });
-
-  var msg = document.getElementById('sinCoordenadasMsg');
-  if (msg) msg.classList.toggle('hidden', !sinCoords);
-}
-
-// ����� Tab Lista �����
-function filtrar() {
-  filtro = document.getElementById('busqueda').value.toLowerCase();
-  filtroEst = document.getElementById('filtroEstado').value;
-  pagina = 1;
-  renderTabla();
-}
-
-function renderTabla() {
-  var lista = todos.filter(function(r) {
-    var txt = ((r.nombre || '') + ' ' + ((r.transportista && r.transportista.nombre) || '')).toLowerCase();
-    return txt.includes(filtro) && (!filtroEst || r.estado === filtroEst);
-  });
-  var inicio = (pagina - 1) * POR_PAGINA;
-  var slice = lista.slice(inicio, inicio + POR_PAGINA);
-  var total = lista.length;
-  var totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
-  var esAdminGestor = rolActual === 'ADMIN' || rolActual === 'GESTOR';
-
-  document.getElementById('infoReg').textContent = total === 0
-    ? 'Sin registros'
-    : 'Mostrando ' + (inicio + 1) + '�' + Math.min(inicio + POR_PAGINA, total) + ' de ' + total;
-
-  document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
-    ? '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
-    : slice.map(function(r) {
-        var esMio = r.transportista && r.transportista.id == idActual;
-        var puedeEditar = esAdminGestor || esMio;
-        var badge = '<span class="badge badge-sm ' + (ESTADO_CSS[r.estado] || '') + '">' + (ESTADO_LABELS[r.estado] || esc(r.estado || '')) + '</span>';
-        var ruta = r.origenDireccion
-          ? esc(r.origenDireccion) + (r.destinoDireccion ? ' ? ' + esc(r.destinoDireccion) : '')
-          : '<span class="text-slate-300">�</span>';
-        var coordBadge = (r.origenLat != null && r.destinoLat != null)
-          ? '<span class="ml-1 text-emerald-500" title="Tiene coordenadas para el mapa">&#9679;</span>' : '';
-        return '<tr class="hover" ' + (puedeEditar ? 'ondblclick="abrirEditar(' + r.id + ')" ' : '') + '>'
-          + '<td class="font-medium">' + esc(r.nombre || '�') + coordBadge + '</td>'
-          + '<td class="text-sm text-slate-500">' + esc((r.transportista && r.transportista.nombre) || 'Sin asignar') + '</td>'
-          + '<td class="text-sm text-slate-600">' + (r.fecha || '<span class="text-slate-300">�</span>') + '</td>'
-          + '<td class="text-xs text-slate-500">' + ruta + '</td>'
-          + '<td class="text-sm">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '<span class="text-slate-300">�</span>') + '</td>'
-          + '<td>' + badge + '</td>'
-          + '<td class="text-right whitespace-nowrap">'
-          + '<button class="btn-icon" title="Ver transportistas" onclick="verTransportistas(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>'
-          + (puedeEditar ? '<button class="btn-icon" title="Editar" onclick="abrirEditar(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>' : '')
-          + (esAdminGestor ? '<button class="btn-icon btn-icon--danger" title="Eliminar" onclick="pedirBorrar(' + r.id + ',\'' + esc(r.nombre || '') + '\')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>' : '')
-          + '</td></tr>';
-      }).join('');
-
-  document.getElementById('pgBotones').innerHTML = totalPags <= 1 ? '' : Array.from({ length: totalPags }, function(_, i) { return i + 1; })
-    .map(function(i) {
-      return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>';
-    }).join('');
-}
-
-function irPagina(n) { pagina = n; renderTabla(); }
-
-// ����� Tab Tarifas �����
-function renderFormulas() {
-  var conFormula = todos.filter(function(r) { return r.formulaTarifa && r.formulaTarifa.trim(); });
-  document.getElementById('tablaFormulas').innerHTML = conFormula.length === 0
-    ? '<tr><td colspan="4" class="text-center py-8 text-slate-400">Ninguna ruta tiene f�rmula definida</td></tr>'
-    : conFormula.map(function(r) {
-        var activa = r.id === rutaSeleccionadaId;
-        return '<tr class="hover cursor-pointer ' + (activa ? 'bg-blue-50' : '') + '" onclick="seleccionarRutaTarifa(' + r.id + ')">'
-          + '<td class="font-medium text-sm">' + esc(r.nombre || '�') + '</td>'
-          + '<td class="text-xs text-slate-500">' + esc((r.transportista && r.transportista.nombre) || '�') + '</td>'
-          + '<td class="text-xs text-slate-600">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '�') + '</td>'
-          + '<td class="font-mono text-xs text-[#3b82f6]">' + esc(r.formulaTarifa) + '</td>'
-          + '</tr>';
-      }).join('');
-}
-
-async function seleccionarRutaTarifa(id) {
-  rutaSeleccionadaId = id;
-  var r = todos.find(function(x) { return x.id === id; });
-  if (!r) return;
-  renderFormulas();
-
-  document.getElementById('calcSinSeleccion').style.display = 'none';
-  document.getElementById('calcPanel').style.display = '';
-  document.getElementById('calcNombre').textContent = r.nombre || '�';
-  document.getElementById('calcRuta').textContent = [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' ? ') || '�';
-  document.getElementById('calcFormula').textContent = r.formulaTarifa || '�';
-  document.getElementById('calcW').value = '';
-  document.getElementById('calcL').value = r.distanciaKm != null ? r.distanciaKm : '';
-  document.getElementById('calcResultado').textContent = '�';
-  document.getElementById('calcError').style.display = 'none';
-
-  var asignarPanel = document.getElementById('asignarPanel');
-  if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
-    asignarPanel.style.display = '';
-    await cargarTrasladosAbiertos();
-  } else {
-    asignarPanel.style.display = 'none';
-  }
-  calcularTarifa();
-}
-
-async function calcularTarifa() {
-  if (!rutaSeleccionadaId) return;
-  var w = parseFloat(document.getElementById('calcW').value) || 0;
-  var L = parseFloat(document.getElementById('calcL').value) || 0;
-  try {
-    var res = await fetch('/api/rutas/' + rutaSeleccionadaId + '/calcular?w=' + w + '&L=' + L);
-    var data = await res.json();
-    var errorEl = document.getElementById('calcError');
-    if (data.error) {
-      document.getElementById('calcResultado').textContent = '�';
-      errorEl.textContent = data.error;
-      errorEl.style.display = '';
-    } else {
-      document.getElementById('calcResultado').textContent = data.resultado.toFixed(2) + ' ' + (data.moneda || 'EUR');
-      errorEl.style.display = 'none';
-    }
-  } catch(e) {
-    document.getElementById('calcResultado').textContent = '�';
-  }
-}
-
-async function cargarTrasladosAbiertos() {
-  try {
-    var res = await fetch('/api/traslados/por-estado/PENDIENTE');
-    if (!res.ok) return;
-    var lista = await res.json();
-    var sel = document.getElementById('selectTraslado');
-    sel.innerHTML = '<option value="">Selecciona traslado...</option>';
-    lista.forEach(function(t) {
-      var opt = document.createElement('option');
-      opt.value = t.id;
-      var label = 'Traslado #' + t.id;
-      if (t.codigo) label += ' � ' + t.codigo;
-      if (t.residuo && t.residuo.nombre) label += ' (' + t.residuo.nombre + ')';
-      opt.textContent = label;
-      sel.appendChild(opt);
-    });
-  } catch(e) {}
-}
-
-async function asignarRuta() {
-  var trasladoId = document.getElementById('selectTraslado').value;
-  if (!trasladoId || !rutaSeleccionadaId) {
-    if (window.Swal) Swal.fire({ icon: 'warning', title: 'Selecciona un traslado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-    return;
-  }
-  try {
-    var res = await fetch('/api/traslados/' + trasladoId + '/ruta?rutaId=' + rutaSeleccionadaId, { method: 'PATCH' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Ruta asignada al traslado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-  } catch(e) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo asignar la ruta.' });
-  }
-}
-
-// ����� Modal Crear/Editar �����
-function abrirCrear() {
-  document.getElementById('modalTitulo').textContent = 'Nueva ruta';
-  document.getElementById('itemId').value = '';
-  ['fNombre','fOrigen','fDestino','fOrigenLat','fOrigenLon','fDestinoLat','fDestinoLon',
-   'fDistancia','fObservaciones','fFormula','fUnidad'].forEach(function(id) { document.getElementById(id).value = ''; });
-  document.getElementById('fTransportista').value = '';
-  document.getElementById('fFecha').value = '';
-  document.getElementById('fEstado').value = 'PLANIFICADA';
-  document.getElementById('campoTransportista').style.display = (rolActual === 'ADMIN' || rolActual === 'GESTOR') ? '' : 'none';
-  document.getElementById('modalForm').classList.remove('hidden');
-  setTimeout(function() { document.getElementById('fNombre').focus(); }, 50);
-}
-
-function abrirEditar(id) {
-  var r = todos.find(function(x) { return x.id === id; });
-  if (!r) return;
-  document.getElementById('modalTitulo').textContent = 'Editar ruta';
-  document.getElementById('itemId').value = r.id;
-  document.getElementById('fNombre').value = r.nombre || '';
-  document.getElementById('fTransportista').value = r.transportista ? r.transportista.id : '';
-  document.getElementById('fFecha').value = r.fecha || '';
-  document.getElementById('fOrigen').value = r.origenDireccion || '';
-  document.getElementById('fDestino').value = r.destinoDireccion || '';
-  document.getElementById('fOrigenLat').value = r.origenLat != null ? r.origenLat : '';
-  document.getElementById('fOrigenLon').value = r.origenLon != null ? r.origenLon : '';
-  document.getElementById('fDestinoLat').value = r.destinoLat != null ? r.destinoLat : '';
-  document.getElementById('fDestinoLon').value = r.destinoLon != null ? r.destinoLon : '';
-  document.getElementById('fDistancia').value = r.distanciaKm != null ? r.distanciaKm : '';
-  document.getElementById('fEstado').value = r.estado || 'PLANIFICADA';
-  document.getElementById('fFormula').value = r.formulaTarifa || '';
-  document.getElementById('fUnidad').value = r.unidadTarifa || '';
-  document.getElementById('fObservaciones').value = r.observaciones || '';
-  document.getElementById('campoTransportista').style.display = (rolActual === 'ADMIN' || rolActual === 'GESTOR') ? '' : 'none';
-  document.getElementById('modalForm').classList.remove('hidden');
-  setTimeout(function() { document.getElementById('fNombre').focus(); }, 50);
-}
-
-async function guardar() {
-  var nombre = document.getElementById('fNombre').value.trim();
-  if (!nombre) {
-    if (window.Swal) Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'El nombre de la ruta es obligatorio.' });
-    else alert('El nombre de la ruta es obligatorio.');
-    return;
-  }
-  var id = document.getElementById('itemId').value;
-  var body = {
-    nombre: nombre,
-    transportistaId: document.getElementById('fTransportista').value ? parseInt(document.getElementById('fTransportista').value) : null,
-    fecha: document.getElementById('fFecha').value || null,
-    estado: document.getElementById('fEstado').value || 'PLANIFICADA',
-    origenDireccion: document.getElementById('fOrigen').value.trim() || null,
-    destinoDireccion: document.getElementById('fDestino').value.trim() || null,
-    distanciaKm: document.getElementById('fDistancia').value ? parseFloat(document.getElementById('fDistancia').value) : null,
-    origenLat: document.getElementById('fOrigenLat').value ? parseFloat(document.getElementById('fOrigenLat').value) : null,
-    origenLon: document.getElementById('fOrigenLon').value ? parseFloat(document.getElementById('fOrigenLon').value) : null,
-    destinoLat: document.getElementById('fDestinoLat').value ? parseFloat(document.getElementById('fDestinoLat').value) : null,
-    destinoLon: document.getElementById('fDestinoLon').value ? parseFloat(document.getElementById('fDestinoLon').value) : null,
-    formulaTarifa: document.getElementById('fFormula').value.trim() || null,
-    unidadTarifa: document.getElementById('fUnidad').value.trim() || null,
-    observaciones: document.getElementById('fObservaciones').value.trim() || null
-  };
-  var url = id ? '/api/rutas/' + id : '/api/rutas';
-  var method = id ? 'PUT' : 'POST';
-  try {
-    var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!res.ok) {
-      var msg = await res.text();
-      if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo guardar la ruta.' });
-      return;
-    }
-    cerrarModal();
-    await cargar();
-    dibujarRutasEnMapa(todos);
-    if (window.Swal) Swal.fire({ icon: 'success', title: id ? 'Ruta actualizada' : 'Ruta creada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-  } catch(e) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
-  }
-}
-
-function pedirBorrar(id, nombre) {
-  idBorrar = id;
-  document.getElementById('nombreBorrar').textContent = nombre;
-  document.getElementById('modalBorrar').classList.remove('hidden');
-}
-
-async function confirmarBorrar() {
-  if (!idBorrar) return;
-  try {
-    var res = await fetch('/api/rutas/' + idBorrar, { method: 'DELETE' });
-    cerrarModalBorrar();
-    if (!res.ok) { if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la ruta.' }); return; }
-    await cargar();
-    dibujarRutasEnMapa(todos);
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Ruta eliminada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-  } catch(e) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
-  } finally { idBorrar = null; }
-}
-
-function cerrarModal() { document.getElementById('modalForm').classList.add('hidden'); }
-function cerrarModalBorrar() { document.getElementById('modalBorrar').classList.add('hidden'); idBorrar = null; }
-function cerrarModalTrans() { document.getElementById('modalTransportistas').classList.add('hidden'); rutaTransActivaId = null; }
-
-// ————— Transportistas por Ruta —————
-var rutaTransActivaId = null;
-var todosTransportistas = [];
-
-async function verTransportistas(rutaId) {
-  rutaTransActivaId = rutaId;
-  var r = todos.find(function(x) { return x.id === rutaId; }) || {};
-  document.getElementById('transRutaNombre').textContent = r.nombre || ('Ruta #' + rutaId);
-  document.getElementById('transRutaInfo').textContent =
-    [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' → ')
-    + (r.distanciaKm != null ? '  ·  ' + r.distanciaKm + ' km' : '');
-
-  var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
-  document.getElementById('addTransForm').style.display = esAdmin ? '' : 'none';
-  document.getElementById('transAccHead').style.display = esAdmin ? '' : 'none';
-
-  if (esAdmin && todosTransportistas.length === 0) {
-    try {
-      var res = await fetch('/api/usuarios');
-      if (res.ok) {
-        var lista = await res.json();
-        todosTransportistas = lista.filter(function(u) { return u.rol === 'TRANSPORTISTA'; });
-        var sel = document.getElementById('tSelectTrans');
-        sel.innerHTML = '<option value="">Selecciona...</option>';
-        todosTransportistas.forEach(function(u) {
-          var opt = document.createElement('option');
-          opt.value = u.id;
-          opt.textContent = u.nombre + ' (' + u.email + ')';
-          sel.appendChild(opt);
-        });
+        await Promise.all([cargar(), cargarDirecciones()]);
+        iniciarMapa();
       }
-    } catch(e) {}
-  }
 
-  document.getElementById('modalTransportistas').classList.remove('hidden');
-  await renderTransportistas(rutaId);
-}
+      async function cargar() {
+        try {
+          var res = await fetch('/api/rutas');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          todos = await res.json();
+        } catch (e) {
+          document.getElementById('tablaCuerpo').innerHTML =
+            '<tr><td colspan="7" class="text-center py-12 text-red-400">Error al cargar rutas. Recarga la p-gina.</td></tr>';
+          return;
+        }
+        pagina = 1;
+        renderTabla();
+        renderFormulas();
+      }
 
-async function renderTransportistas(rutaId) {
-  document.getElementById('tablaTransRuta').innerHTML =
-    '<tr><td colspan="6" class="text-center py-6 text-slate-400">Cargando...</td></tr>';
-  try {
-    var res = await fetch('/api/rutas/' + rutaId + '/transportistas');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    var lista = await res.json();
-    var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
-    document.getElementById('tablaTransRuta').innerHTML = lista.length === 0
-      ? '<tr><td colspan="6" class="text-center py-8 text-slate-400">Ningún transportista asignado a esta ruta</td></tr>'
-      : lista.map(function(rt) {
-          var badge = rt.formulaTarifa
-            ? '<span class="font-mono text-xs text-[#3b82f6]">' + esc(rt.formulaTarifa) + '</span>'
-            : '<span class="text-slate-300 text-xs">—</span>';
-          var efectiva = rt.formulaEfectiva
-            ? '<span class="font-mono text-xs text-slate-600">' + esc(rt.formulaEfectiva) + (rt.formulaTarifa ? '' : ' <span class="text-amber-500 text-xs" title="Fallback de la ruta">↩</span>') + '</span>'
-            : '<span class="text-slate-300 text-xs">Sin tarifa</span>';
-          var precio = rt.precioEjemplo != null
-            ? '<span class="font-semibold text-[#3b82f6]">' + rt.precioEjemplo.toFixed(2) + ' ' + (rt.unidadTarifa || 'EUR') + '</span>'
-            : '<span class="text-slate-300">—</span>';
-          return '<tr class="hover">'
-            + '<td class="font-medium text-sm">' + esc(rt.nombre || '') + '<br><span class="text-xs text-slate-400">' + esc(rt.email || '') + '</span></td>'
-            + '<td>' + badge + '</td>'
-            + '<td>' + efectiva + '</td>'
-            + '<td class="text-sm">' + esc(rt.unidadTarifa || '—') + '</td>'
-            + '<td class="text-right">' + precio + '<br><span class="text-xs text-slate-400">base 100 kg</span></td>'
-            + (esAdmin ? '<td class="text-right"><button class="btn-icon btn-icon--danger" title="Quitar" onclick="quitarTransportista(' + rutaId + ',' + rt.transportistaId + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></td>' : '')
-            + '</tr>';
-        }).join('');
-  } catch(e) {
-    document.getElementById('tablaTransRuta').innerHTML =
-      '<tr><td colspan="6" class="text-center py-6 text-red-400">Error al cargar transportistas.</td></tr>';
-  }
-}
+      async function cargarDirecciones() {
+        try {
+          var res = await fetch('/api/direcciones');
+          if (res.ok) {
+            var lista = await res.json();
+            var items = lista.map(function(d) { 
+              return { 
+                value: d.id, 
+                label: d.nombre || d.calle, 
+                sub: d.ciudad + (d.provincia ? ' (' + d.provincia + ')' : '') 
+              }; 
+            });
+            Combobox.bind({ id: 'fOrigenId', items: items, placeholder: 'Seleccionar origen...', emptyOption: { value: '', label: 'Sin origen' } });
+            Combobox.bind({ id: 'fDestinoId', items: items, placeholder: 'Seleccionar destino...', emptyOption: { value: '', label: 'Sin destino' } });
+          }
+        } catch (e) { }
+      }
 
-async function confirmarAsignarTrans() {
-  var transId = document.getElementById('tSelectTrans').value;
-  if (!transId || !rutaTransActivaId) {
-    if (window.Swal) Swal.fire({ icon: 'warning', title: 'Selecciona un transportista', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-    return;
-  }
-  var body = {
-    transportistaId: parseInt(transId),
-    formulaTarifa: document.getElementById('tFormula').value.trim() || null,
-    unidadTarifa: document.getElementById('tUnidad').value.trim() || null
-  };
-  try {
-    var res = await fetch('/api/rutas/' + rutaTransActivaId + '/transportistas', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      var msg = await res.text();
-      if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo asignar.' });
-      return;
-    }
-    document.getElementById('tSelectTrans').value = '';
-    document.getElementById('tFormula').value = '';
-    document.getElementById('tUnidad').value = '';
-    await renderTransportistas(rutaTransActivaId);
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Transportista asignado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-  } catch(e) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' });
-  }
-}
+      // --- Tabs ---
+      function cambiarTab(tab) {
+        var tabs = ['mapa', 'lista', 'tarifas'];
+        tabs.forEach(function(t) {
+          var panel = document.getElementById('tab-' + t);
+          var btn = document.getElementById('tab-' + t + '-btn');
+          var activo = (t === tab);
+          if (panel) panel.style.display = activo ? '' : 'none';
+          if (btn) {
+            btn.style.borderBottomColor = activo ? '#3b82f6' : 'transparent';
+            btn.style.color = activo ? '#3b82f6' : '#64748b';
+          }
+        });
+        if (tab === 'mapa') {
+          setTimeout(function() {
+            if (!mapa) { iniciarMapa(); } else { mapa.invalidateSize(); }
+          }, 150);
+        }
+      };
 
-async function quitarTransportista(rutaId, transId) {
-  if (!window.Swal) { if (!confirm('¿Quitar este transportista de la ruta?')) return; }
-  else {
-    var conf = await Swal.fire({ icon: 'question', title: '¿Quitar transportista?', showCancelButton: true, confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' });
-    if (!conf.isConfirmed) return;
-  }
-  try {
-    var res = await fetch('/api/rutas/' + rutaId + '/transportistas/' + transId, { method: 'DELETE' });
-    if (!res.ok) { if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo quitar.' }); return; }
-    await renderTransportistas(rutaId);
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Transportista quitado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-  } catch(e) {
-    if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' });
-  }
-}
+      //  Mapa 
+      function iniciarMapa() {
+        if (mapa) return;
+        if (typeof L === 'undefined') {
+          setTimeout(iniciarMapa, 300);
+          return;
+        }
+        var contenedor = document.getElementById('mapaRutas');
+        if (!contenedor || contenedor.clientHeight === 0) {
+          setTimeout(iniciarMapa, 200);
+          return;
+        }
+        mapa = L.map('mapaRutas', { zoomControl: true }).setView([37.38, -5.99], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 18
+        }).addTo(mapa);
+        setTimeout(function() { mapa.invalidateSize(); }, 100);
+        dibujarRutasEnMapa(todos);
+      }
 
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-</script>
-</th:block>
+      function filtrarMapa() {
+        var q = document.getElementById('busquedaMapa').value.toLowerCase();
+        var est = document.getElementById('filtroEstadoMapa').value;
+        var soloCoordenadas = document.getElementById('soloConCoordenadas').checked;
+        var lista = todos.filter(function (r) {
+          var txt = (r.nombre || '').toLowerCase();
+          var estadoOk = !est || r.estado === est;
+          var coordsOk = !soloCoordenadas || (r.origen && r.origen.latitud != null && r.origen.longitud != null && r.destino && r.destino.latitud != null && r.destino.longitud != null);
+          return txt.includes(q) && estadoOk && coordsOk;
+        });
+        dibujarRutasEnMapa(lista);
+      }
+
+      var iconOrigen = L.divIcon({
+        html: '<div style="width:12px;height:12px;border-radius:50%;background:#10b981;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
+        className: '', iconSize: [12, 12], iconAnchor: [6, 6]
+      });
+      var iconDestino = L.divIcon({
+        html: '<div style="width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
+        className: '', iconSize: [12, 12], iconAnchor: [6, 6]
+      });
+
+      function dibujarRutasEnMapa(lista) {
+        if (!mapa) return;
+        capasRuta.forEach(function (c) { try { mapa.removeLayer(c); } catch (e) { } });
+        capasRuta = [];
+
+        var sinCoords = false;
+        lista.forEach(function (r) {
+          var tieneCoords = r.origen && r.origen.latitud != null && r.origen.longitud != null && 
+                            r.destino && r.destino.latitud != null && r.destino.longitud != null;
+          if (!tieneCoords) { sinCoords = true; return; }
+
+          var oLat = r.origen.latitud, oLon = r.origen.longitud, dLat = r.destino.latitud, dLon = r.destino.longitud;
+          var popupHtml = '<b>' + esc(r.nombre || '') + '</b>'
+            + '<br><span style="color:#64748b;font-size:12px">Varios transp. posibles</span>'
+            + '<br><span style="font-size:12px">' + (ESTADO_LABELS[r.estado] || r.estado) + '</span>'
+            + (r.distanciaKm != null ? '<br><span style="font-size:12px">' + r.distanciaKm + ' km</span>' : '');
+
+          if (typeof L.Routing !== 'undefined') {
+            var control = L.Routing.control({
+              waypoints: [L.latLng(oLat, oLon), L.latLng(dLat, dLon)],
+              router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+              lineOptions: { styles: [{ color: '#3b82f6', weight: 4, opacity: 0.75 }] },
+              addWaypoints: false, draggableWaypoints: false,
+              fitSelectedRoutes: false, showAlternatives: false,
+              collapsible: true, show: false,
+              createMarker: function () { return null; }
+            }).addTo(mapa);
+            control.on('routesfound', function (e) {
+              var line = e.routes[0] && e.routes[0].coordinates;
+              if (line) {
+                var poly = L.polyline(line, { color: '#3b82f6', weight: 4, opacity: 0.75 })
+                  .bindPopup(popupHtml).addTo(mapa);
+                capasRuta.push(poly);
+                try { mapa.removeControl(control); } catch (e) { }
+              }
+            });
+            control.on('routingerror', function () { try { mapa.removeControl(control); } catch (e) { } });
+            capasRuta.push(control);
+          } else {
+            var linea = L.polyline([[oLat, oLon], [dLat, dLon]], { color: '#3b82f6', weight: 3, opacity: 0.7 })
+              .bindPopup(popupHtml).addTo(mapa);
+            capasRuta.push(linea);
+          }
+
+          var mO = L.marker([oLat, oLon], { icon: iconOrigen })
+            .bindPopup('<b>Origen</b><br>' + esc(r.origen.nombre || r.origen.calle || '')).addTo(mapa);
+          var mD = L.marker([dLat, dLon], { icon: iconDestino })
+            .bindPopup('<b>Destino</b><br>' + esc(r.destino.nombre || r.destino.calle || '')).addTo(mapa);
+          capasRuta.push(mO, mD);
+        });
+
+        var msg = document.getElementById('sinCoordenadasMsg');
+        if (msg) msg.classList.toggle('hidden', !sinCoords);
+      }
+
+      // ----- Tab Lista -----
+      function filtrar() {
+        filtro = document.getElementById('busqueda').value.toLowerCase();
+        filtroEst = document.getElementById('filtroEstado').value;
+        pagina = 1;
+        renderTabla();
+      }
+
+      function renderTabla() {
+        var lista = todos.filter(function (r) {
+          var txt = (r.nombre || '').toLowerCase();
+          return txt.includes(filtro) && (!filtroEst || r.estado === filtroEst);
+        });
+        var inicio = (pagina - 1) * POR_PAGINA;
+        var slice = lista.slice(inicio, inicio + POR_PAGINA);
+        var total = lista.length;
+        var totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
+        var esAdminGestor = rolActual === 'ADMIN' || rolActual === 'GESTOR';
+
+        document.getElementById('infoReg').textContent = total === 0
+          ? 'Sin registros'
+          : 'Mostrando ' + (inicio + 1) + '-' + Math.min(inicio + POR_PAGINA, total) + ' de ' + total;
+
+        document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
+          ? '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
+          : slice.map(function (r) {
+            // As permissions now depend on M:N, we allow double click for admins. For transporters we could check M:N but usually they don't edit the route itself.
+            var puedeEditar = esAdminGestor;
+            var badge = '<span class="badge badge-sm ' + (ESTADO_CSS[r.estado] || '') + '">' + (ESTADO_LABELS[r.estado] || esc(r.estado || '')) + '</span>';
+            var origenStr = r.origen ? esc(r.origen.nombre || r.origen.calle) : '<span class="text-slate-300">-</span>';
+            var destinoStr = r.destino ? esc(r.destino.nombre || r.destino.calle) : '<span class="text-slate-300">-</span>';
+            var ruta = origenStr + ' \u2192 ' + destinoStr;
+            var coordBadge = (r.origen && r.origen.latitud != null && r.destino && r.destino.latitud != null)
+              ? '<span class="ml-1 text-emerald-500" title="Tiene coordenadas para el mapa">&#9679;</span>' : '';
+            return '<tr class="hover" ' + (puedeEditar ? 'ondblclick="abrirEditar(' + r.id + ')" ' : '') + '>'
+              + '<td class="font-medium">' + esc(r.nombre || '-') + coordBadge + '</td>'
+              + '<td class="text-sm text-slate-500">Mult.</td>'
+              + '<td class="text-sm text-slate-600">' + (r.fecha || '<span class="text-slate-300">-</span>') + '</td>'
+              + '<td class="text-xs text-slate-500">' + ruta + '</td>'
+              + '<td class="text-sm">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '<span class="text-slate-300">-</span>') + '</td>'
+              + '<td>' + badge + '</td>'
+              + '<td class="text-right whitespace-nowrap">'
+              + '<button class="btn-icon" title="Ver transportistas" onclick="verTransportistas(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>'
+              + (puedeEditar ? '<button class="btn-icon" title="Editar" onclick="abrirEditar(' + r.id + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>' : '')
+              + (esAdminGestor ? '<button class="btn-icon btn-icon--danger" title="Eliminar" onclick="pedirBorrar(' + r.id + ',\'' + esc(r.nombre || '') + '\')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></button>' : '')
+              + '</td></tr>';
+          }).join('');
+
+        document.getElementById('pgBotones').innerHTML = totalPags <= 1 ? '' : Array.from({ length: totalPags }, function (_, i) { return i + 1; })
+          .map(function (i) {
+            return '<button class="join-item btn btn-xs ' + (i === pagina ? 'bg-[#3b82f6] text-white border-none' : '') + '" onclick="irPagina(' + i + ')">' + i + '</button>';
+          }).join('');
+      }
+
+      function irPagina(n) { pagina = n; renderTabla(); }
+
+      // ----- Tab Tarifas -----
+      function renderFormulas() {
+        var conFormula = todos.filter(function (r) { return r.formulaTarifa && r.formulaTarifa.trim(); });
+        document.getElementById('tablaFormulas').innerHTML = conFormula.length === 0
+          ? '<tr><td colspan="4" class="text-center py-8 text-slate-400">Ninguna ruta tiene Formula definida</td></tr>'
+          : conFormula.map(function (r) {
+            var activa = r.id === rutaSeleccionadaId;
+            return '<tr class="hover cursor-pointer ' + (activa ? 'bg-blue-50' : '') + '" onclick="seleccionarRutaTarifa(' + r.id + ')">'
+              + '<td class="font-medium text-sm">' + esc(r.nombre || '-') + '</td>'
+              + '<td class="text-xs text-slate-500">' + esc((r.transportista && r.transportista.nombre) || '-') + '</td>'
+              + '<td class="text-xs text-slate-600">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '-') + '</td>'
+              + '<td class="font-mono text-xs text-[#3b82f6]">' + esc(r.formulaTarifa) + '</td>'
+              + '</tr>';
+          }).join('');
+      }
+
+      async function seleccionarRutaTarifa(id) {
+        rutaSeleccionadaId = id;
+        var r = todos.find(function (x) { return x.id === id; });
+        if (!r) return;
+        renderFormulas();
+
+        document.getElementById('calcSinSeleccion').style.display = 'none';
+        document.getElementById('calcPanel').style.display = '';
+        document.getElementById('calcNombre').textContent = r.nombre || '-';
+        document.getElementById('calcRuta').textContent = [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' ? ') || '-';
+        document.getElementById('calcFormula').textContent = r.formulaTarifa || '-';
+        document.getElementById('calcW').value = '';
+        document.getElementById('calcL').value = r.distanciaKm != null ? r.distanciaKm : '';
+        document.getElementById('calcResultado').textContent = '-';
+        document.getElementById('calcError').style.display = 'none';
+
+        var asignarPanel = document.getElementById('asignarPanel');
+        if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
+          asignarPanel.style.display = '';
+          await cargarTrasladosAbiertos();
+        } else {
+          asignarPanel.style.display = 'none';
+        }
+        calcularTarifa();
+      }
+
+      async function calcularTarifa() {
+        if (!rutaSeleccionadaId) return;
+        var w = parseFloat(document.getElementById('calcW').value) || 0;
+        var L = parseFloat(document.getElementById('calcL').value) || 0;
+        try {
+          var res = await fetch('/api/rutas/' + rutaSeleccionadaId + '/calcular?w=' + w + '&L=' + L);
+          var data = await res.json();
+          var errorEl = document.getElementById('calcError');
+          if (data.error) {
+            document.getElementById('calcResultado').textContent = '-';
+            errorEl.textContent = data.error;
+            errorEl.style.display = '';
+          } else {
+            document.getElementById('calcResultado').textContent = data.resultado.toFixed(2) + ' ' + (data.moneda || 'EUR');
+            errorEl.style.display = 'none';
+          }
+        } catch (e) {
+          document.getElementById('calcResultado').textContent = '-';
+        }
+      }
+
+      async function cargarTrasladosAbiertos() {
+        try {
+          var res = await fetch('/api/traslados/por-estado/PENDIENTE');
+          if (!res.ok) return;
+          var lista = await res.json();
+          var sel = document.getElementById('selectTraslado');
+          sel.innerHTML = '<option value="">Selecciona traslado...</option>';
+          lista.forEach(function (t) {
+            var opt = document.createElement('option');
+            opt.value = t.id;
+            var label = 'Traslado #' + t.id;
+            if (t.codigo) label += ' - ' + t.codigo;
+            if (t.residuo && t.residuo.nombre) label += ' (' + t.residuo.nombre + ')';
+            opt.textContent = label;
+            sel.appendChild(opt);
+          });
+        } catch (e) { }
+      }
+
+      async function asignarRuta() {
+        var trasladoId = document.getElementById('selectTraslado').value;
+        if (!trasladoId || !rutaSeleccionadaId) {
+          if (window.Swal) Swal.fire({ icon: 'warning', title: 'Selecciona un traslado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+          return;
+        }
+        try {
+          var res = await fetch('/api/traslados/' + trasladoId + '/ruta?rutaId=' + rutaSeleccionadaId, { method: 'PATCH' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          if (window.Swal) Swal.fire({ icon: 'success', title: 'Ruta asignada al traslado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo asignar la ruta.' });
+        }
+      }
+
+      // ----- Modal Crear/Editar -----
+      function abrirCrear() {
+        document.getElementById('modalTitulo').textContent = 'Nueva ruta';
+        document.getElementById('itemId').value = '';
+        ['fNombre', 'fDistancia', 'fObservaciones', 'fFormula', 'fUnidad'].forEach(function (id) { document.getElementById(id).value = ''; });
+        Combobox.clear('fOrigenId');
+        Combobox.clear('fDestinoId');
+        document.getElementById('fFecha').value = '';
+        document.getElementById('fEstado').value = 'PLANIFICADA';
+        document.getElementById('modalForm').classList.remove('hidden');
+        setTimeout(function () { document.getElementById('fNombre').focus(); }, 50);
+      }
+
+      function abrirEditar(id) {
+        var r = todos.find(function (x) { return x.id === id; });
+        if (!r) return;
+        document.getElementById('modalTitulo').textContent = 'Editar ruta';
+        document.getElementById('itemId').value = r.id;
+        document.getElementById('fNombre').value = r.nombre || '';
+        document.getElementById('fFecha').value = r.fecha || '';
+        Combobox.setValue('fOrigenId', r.origen ? r.origen.id : '');
+        Combobox.setValue('fDestinoId', r.destino ? r.destino.id : '');
+        document.getElementById('fDistancia').value = r.distanciaKm != null ? r.distanciaKm : '';
+        document.getElementById('fEstado').value = r.estado || 'PLANIFICADA';
+        document.getElementById('fFormula').value = r.formulaTarifa || '';
+        document.getElementById('fUnidad').value = r.unidadTarifa || '';
+        document.getElementById('fObservaciones').value = r.observaciones || '';
+        document.getElementById('modalForm').classList.remove('hidden');
+        setTimeout(function () { document.getElementById('fNombre').focus(); }, 50);
+      }
+
+      async function guardar() {
+        var nombre = document.getElementById('fNombre').value.trim();
+        if (!nombre) {
+          if (window.Swal) Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'El nombre de la ruta es obligatorio.' });
+          else alert('El nombre de la ruta es obligatorio.');
+          return;
+        }
+        var id = document.getElementById('itemId').value;
+        var body = {
+          nombre: nombre,
+          fecha: document.getElementById('fFecha').value || null,
+          estado: document.getElementById('fEstado').value || 'PLANIFICADA',
+          origenId: document.getElementById('fOrigenId').value ? parseInt(document.getElementById('fOrigenId').value) : null,
+          destinoId: document.getElementById('fDestinoId').value ? parseInt(document.getElementById('fDestinoId').value) : null,
+          distanciaKm: document.getElementById('fDistancia').value ? parseFloat(document.getElementById('fDistancia').value) : null,
+          formulaTarifa: document.getElementById('fFormula').value.trim() || null,
+          unidadTarifa: document.getElementById('fUnidad').value.trim() || null,
+          observaciones: document.getElementById('fObservaciones').value.trim() || null
+        };
+        var url = id ? '/api/rutas/' + id : '/api/rutas';
+        var method = id ? 'PUT' : 'POST';
+        try {
+          var res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!res.ok) {
+            var msg = await res.text();
+            if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo guardar la ruta.' });
+            return;
+          }
+          cerrarModal();
+          await cargar();
+          dibujarRutasEnMapa(todos);
+          if (window.Swal) Swal.fire({ icon: 'success', title: id ? 'Ruta actualizada' : 'Ruta creada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+        }
+      }
+
+      function pedirBorrar(id, nombre) {
+        idBorrar = id;
+        document.getElementById('nombreBorrar').textContent = nombre;
+        document.getElementById('modalBorrar').classList.remove('hidden');
+      }
+
+      async function confirmarBorrar() {
+        if (!idBorrar) return;
+        try {
+          var res = await fetch('/api/rutas/' + idBorrar, { method: 'DELETE' });
+          cerrarModalBorrar();
+          if (!res.ok) { if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la ruta.' }); return; }
+          await cargar();
+          dibujarRutasEnMapa(todos);
+          if (window.Swal) Swal.fire({ icon: 'success', title: 'Ruta eliminada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+        } finally { idBorrar = null; }
+      }
+
+      function cerrarModal() { document.getElementById('modalForm').classList.add('hidden'); }
+      function cerrarModalBorrar() { document.getElementById('modalBorrar').classList.add('hidden'); idBorrar = null; }
+      function cerrarModalTrans() { document.getElementById('modalTransportistas').classList.add('hidden'); rutaTransActivaId = null; }
+
+      // ————— Transportistas por Ruta —————
+      var rutaTransActivaId = null;
+      var todosTransportistas = [];
+
+      async function verTransportistas(rutaId) {
+        rutaTransActivaId = rutaId;
+        var r = todos.find(function (x) { return x.id === rutaId; }) || {};
+        document.getElementById('transRutaNombre').textContent = r.nombre || ('Ruta #' + rutaId);
+        document.getElementById('transRutaInfo').textContent =
+          [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' → ')
+          + (r.distanciaKm != null ? '  *  ' + r.distanciaKm + ' km' : '');
+
+        var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
+        document.getElementById('addTransForm').style.display = esAdmin ? '' : 'none';
+        document.getElementById('transAccHead').style.display = esAdmin ? '' : 'none';
+
+        if (esAdmin && todosTransportistas.length === 0) {
+          try {
+            var res = await fetch('/api/usuarios');
+            if (res.ok) {
+              var lista = await res.json();
+              todosTransportistas = lista.filter(function (u) { return u.rol === 'TRANSPORTISTA'; });
+              var sel = document.getElementById('tSelectTrans');
+              sel.innerHTML = '<option value="">Selecciona...</option>';
+              todosTransportistas.forEach(function (u) {
+                var opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.nombre + ' (' + u.email + ')';
+                sel.appendChild(opt);
+              });
+            }
+          } catch (e) { }
+        }
+
+        document.getElementById('modalTransportistas').classList.remove('hidden');
+        await renderTransportistas(rutaId);
+      }
+
+      async function renderTransportistas(rutaId) {
+        document.getElementById('tablaTransRuta').innerHTML =
+          '<tr><td colspan="6" class="text-center py-6 text-slate-400">Cargando...</td></tr>';
+        try {
+          var res = await fetch('/api/rutas/' + rutaId + '/transportistas');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          var lista = await res.json();
+          var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
+          document.getElementById('tablaTransRuta').innerHTML = lista.length === 0
+            ? '<tr><td colspan="6" class="text-center py-8 text-slate-400">Ningún transportista asignado a esta ruta</td></tr>'
+            : lista.map(function (rt) {
+              var badge = rt.formulaTarifa
+                ? '<span class="font-mono text-xs text-[#3b82f6]">' + esc(rt.formulaTarifa) + '</span>'
+                : '<span class="text-slate-300 text-xs">—</span>';
+              var efectiva = rt.formulaEfectiva
+                ? '<span class="font-mono text-xs text-slate-600">' + esc(rt.formulaEfectiva) + (rt.formulaTarifa ? '' : ' <span class="text-amber-500 text-xs" title="Fallback de la ruta">↩</span>') + '</span>'
+                : '<span class="text-slate-300 text-xs">Sin tarifa</span>';
+              var precio = rt.precioEjemplo != null
+                ? '<span class="font-semibold text-[#3b82f6]">' + rt.precioEjemplo.toFixed(2) + ' ' + (rt.unidadTarifa || 'EUR') + '</span>'
+                : '<span class="text-slate-300">—</span>';
+              return '<tr class="hover">'
+                + '<td class="font-medium text-sm">' + esc(rt.nombre || '') + '<br><span class="text-xs text-slate-400">' + esc(rt.email || '') + '</span></td>'
+                + '<td>' + badge + '</td>'
+                + '<td>' + efectiva + '</td>'
+                + '<td class="text-sm">' + esc(rt.unidadTarifa || '—') + '</td>'
+                + '<td class="text-right">' + precio + '<br><span class="text-xs text-slate-400">base 100 kg</span></td>'
+                + (esAdmin ? '<td class="text-right"><button class="btn-icon btn-icon--danger" title="Quitar" onclick="quitarTransportista(' + rutaId + ',' + rt.transportistaId + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></td>' : '')
+                + '</tr>';
+            }).join('');
+        } catch (e) {
+          document.getElementById('tablaTransRuta').innerHTML =
+            '<tr><td colspan="6" class="text-center py-6 text-red-400">Error al cargar transportistas.</td></tr>';
+        }
+      }
+
+      async function confirmarAsignarTrans() {
+        var transId = document.getElementById('tSelectTrans').value;
+        if (!transId || !rutaTransActivaId) {
+          if (window.Swal) Swal.fire({ icon: 'warning', title: 'Selecciona un transportista', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+          return;
+        }
+        var body = {
+          transportistaId: parseInt(transId),
+          formulaTarifa: document.getElementById('tFormula').value.trim() || null,
+          unidadTarifa: document.getElementById('tUnidad').value.trim() || null
+        };
+        try {
+          var res = await fetch('/api/rutas/' + rutaTransActivaId + '/transportistas', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+          });
+          if (!res.ok) {
+            var msg = await res.text();
+            if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo asignar.' });
+            return;
+          }
+          document.getElementById('tSelectTrans').value = '';
+          document.getElementById('tFormula').value = '';
+          document.getElementById('tUnidad').value = '';
+          await renderTransportistas(rutaTransActivaId);
+          if (window.Swal) Swal.fire({ icon: 'success', title: 'Transportista asignado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' });
+        }
+      }
+
+      async function quitarTransportista(rutaId, transId) {
+        if (!window.Swal) { if (!confirm('¿Quitar este transportista de la ruta?')) return; }
+        else {
+          var conf = await Swal.fire({ icon: 'question', title: '¿Quitar transportista?', showCancelButton: true, confirmButtonText: 'Sí, quitar', cancelButtonText: 'Cancelar' });
+          if (!conf.isConfirmed) return;
+        }
+        try {
+          var res = await fetch('/api/rutas/' + rutaId + '/transportistas/' + transId, { method: 'DELETE' });
+          if (!res.ok) { if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo quitar.' }); return; }
+          await renderTransportistas(rutaId);
+          if (window.Swal) Swal.fire({ icon: 'success', title: 'Transportista quitado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar.' });
+        }
+      }
+
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+    </script>
+  </th:block>
 
 </body>
+
 </html>

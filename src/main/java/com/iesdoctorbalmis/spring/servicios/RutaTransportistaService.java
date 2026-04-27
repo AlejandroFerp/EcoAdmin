@@ -62,26 +62,19 @@ public class RutaTransportistaService {
             .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         Usuario trans = usuarioRepo.findById(dto.transportistaId())
             .orElseThrow(() -> new RecursoNoEncontradoException("Transportista no encontrado: " + dto.transportistaId()));
-        validarFormula(dto.formulaTarifa());
-
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, dto.transportistaId())
             .orElse(new RutaTransportista());
         rt.setRuta(ruta);
         rt.setTransportista(trans);
-        rt.setFormulaTarifa(blancoANull(dto.formulaTarifa()));
-        rt.setUnidadTarifa(blancoANull(dto.unidadTarifa()));
         rt.setActivo(true);
         return rtRepo.save(rt);
     }
 
-    /** Actualiza la fórmula y moneda del transportista en la ruta. */
+    /** Actualiza el transportista en la ruta (aunque ya no tiene atributos extra, se deja por compatibilidad). */
     @Transactional
     public RutaTransportista actualizar(Long rutaId, Long transId, RutaTransportistaInputDTO dto) {
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
             .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
-        validarFormula(dto.formulaTarifa());
-        rt.setFormulaTarifa(blancoANull(dto.formulaTarifa()));
-        rt.setUnidadTarifa(blancoANull(dto.unidadTarifa()));
         return rtRepo.save(rt);
     }
 
@@ -103,12 +96,11 @@ public class RutaTransportistaService {
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
             .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
 
-        String formula = resolverFormula(rt, ruta);
-        String moneda = rt.getUnidadTarifa() != null ? rt.getUnidadTarifa()
-                      : (ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR");
+        String formula = ruta.getFormulaTarifa();
+        String moneda = ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR";
 
-        if (formula == null) {
-            return Map.of("error", "Sin tarifa definida para este transportista en esta ruta.");
+        if (formula == null || formula.isBlank()) {
+            return Map.of("error", "Sin tarifa definida para esta ruta.");
         }
         double L = ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0;
         try {
@@ -122,7 +114,7 @@ public class RutaTransportistaService {
                 "L", L,
                 "resultado", Math.round(resultado * 100.0) / 100.0,
                 "moneda", moneda,
-                "formulaPropia", rt.getFormulaTarifa() != null,
+                "formulaPropia", false,
                 "transportista", rt.getTransportista().getNombre()
             );
         } catch (Exception e) {
@@ -137,39 +129,23 @@ public class RutaTransportistaService {
 
     // ——— helpers privados ———
 
-    private String resolverFormula(RutaTransportista rt, Ruta ruta) {
-        if (rt.getFormulaTarifa() != null && !rt.getFormulaTarifa().isBlank()) return rt.getFormulaTarifa();
-        if (ruta.getFormulaTarifa() != null && !ruta.getFormulaTarifa().isBlank()) return ruta.getFormulaTarifa();
-        return null;
-    }
-
-    private void validarFormula(String formula) {
-        if (formula == null || formula.isBlank()) return;
-        TarifaValidator.ResultadoValidacion rv = tarifaValidator.validar(formula);
-        if (!rv.valido()) throw new IllegalArgumentException(rv.mensaje());
-    }
-
-    private String blancoANull(String s) {
-        return (s != null && !s.isBlank()) ? s : null;
-    }
-
     private RutaTransportistaViewDTO toViewDTO(RutaTransportista rt, Ruta ruta) {
-        String formulaEfectiva = resolverFormula(rt, ruta);
+        String formulaEfectiva = ruta.getFormulaTarifa();
         Double precio = null;
-        if (formulaEfectiva != null) {
+        if (formulaEfectiva != null && !formulaEfectiva.isBlank()) {
             try {
                 double L = ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0;
                 double p = tarifaValidator.calcular(formulaEfectiva, 100.0, L);
                 precio = Double.isFinite(p) ? Math.round(p * 100.0) / 100.0 : null;
             } catch (Exception ignored) {}
         }
-        String moneda = rt.getUnidadTarifa() != null ? rt.getUnidadTarifa() : ruta.getUnidadTarifa();
+        String moneda = ruta.getUnidadTarifa();
         return new RutaTransportistaViewDTO(
             rt.getId(),
             rt.getTransportista().getId(),
             rt.getTransportista().getNombre(),
             rt.getTransportista().getEmail(),
-            rt.getFormulaTarifa(),
+            null,
             formulaEfectiva,
             moneda,
             precio

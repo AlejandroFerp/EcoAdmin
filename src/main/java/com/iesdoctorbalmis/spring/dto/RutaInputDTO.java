@@ -5,16 +5,11 @@ import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
 
 public record RutaInputDTO(
     String nombre,
-    Long transportistaId,
     LocalDate fecha,
     EstadoRuta estado,
-    String origenDireccion,
-    String destinoDireccion,
+    Long origenId,
+    Long destinoId,
     Double distanciaKm,
-    Double origenLat,
-    Double origenLon,
-    Double destinoLat,
-    Double destinoLon,
     String observaciones,
     String formulaTarifa,
     String unidadTarifa

@@ -8,6 +8,5 @@ import com.iesdoctorbalmis.spring.modelo.Ruta;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
 
 public interface RutaRepository extends JpaRepository<Ruta, Long> {
-    List<Ruta> findByTransportistaId(Long transportistaId);
     List<Ruta> findByEstado(EstadoRuta estado);
 }

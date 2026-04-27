@@ -39,10 +39,13 @@ public class Ruta {
     @Column(nullable = false)
     private String nombre;
 
-    @JsonIgnoreProperties({"fotoUrl", "notificacionesEmail", "telefono", "dni", "cargo"})
     @ManyToOne
-    @JoinColumn(name = "transportista_id")
-    private Usuario transportista;
+    @JoinColumn(name = "origen_direccion_id")
+    private Direccion origen;
+
+    @ManyToOne
+    @JoinColumn(name = "destino_direccion_id")
+    private Direccion destino;
 
     private LocalDate fecha;
 
@@ -50,14 +53,7 @@ public class Ruta {
     @Column(nullable = false)
     private EstadoRuta estado = EstadoRuta.PLANIFICADA;
 
-    private String origenDireccion;
-    private String destinoDireccion;
     private Double distanciaKm;
-
-    private Double origenLat;
-    private Double origenLon;
-    private Double destinoLat;
-    private Double destinoLon;
 
     @Column(columnDefinition = "TEXT")
     private String observaciones;
@@ -77,26 +73,16 @@ public class Ruta {
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
-    public Usuario getTransportista() { return transportista; }
-    public void setTransportista(Usuario transportista) { this.transportista = transportista; }
+    public Direccion getOrigen() { return origen; }
+    public void setOrigen(Direccion o) { this.origen = o; }
+    public Direccion getDestino() { return destino; }
+    public void setDestino(Direccion d) { this.destino = d; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
     public EstadoRuta getEstado() { return estado; }
     public void setEstado(EstadoRuta estado) { this.estado = estado != null ? estado : EstadoRuta.PLANIFICADA; }
-    public String getOrigenDireccion() { return origenDireccion; }
-    public void setOrigenDireccion(String o) { this.origenDireccion = o; }
-    public String getDestinoDireccion() { return destinoDireccion; }
-    public void setDestinoDireccion(String d) { this.destinoDireccion = d; }
     public Double getDistanciaKm() { return distanciaKm; }
     public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
-    public Double getOrigenLat() { return origenLat; }
-    public void setOrigenLat(Double origenLat) { this.origenLat = origenLat; }
-    public Double getOrigenLon() { return origenLon; }
-    public void setOrigenLon(Double origenLon) { this.origenLon = origenLon; }
-    public Double getDestinoLat() { return destinoLat; }
-    public void setDestinoLat(Double destinoLat) { this.destinoLat = destinoLat; }
-    public Double getDestinoLon() { return destinoLon; }
-    public void setDestinoLon(Double destinoLon) { this.destinoLon = destinoLon; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
     public String getFormulaTarifa() { return formulaTarifa; }
