@@ -94,8 +94,11 @@
       <div id="tab-lista" style="display:none">
         <div class="card p-4 mb-4">
           <div class="flex flex-wrap gap-3 items-center">
-            <input type="text" id="busqueda" placeholder="Buscar por nombre o transportista..."
+            <input type="text" id="busqueda" placeholder="Buscar por nombre..."
               class="form-control-eco flex-1 min-w-48" oninput="filtrar()">
+            <select id="filtroTransportista" class="form-control-eco w-52" onchange="filtrar()">
+              <option value="">Todos los transportistas</option>
+            </select>
             <select id="filtroEstado" class="form-control-eco w-48" onchange="filtrar()">
               <option value="">Todos los estados</option>
               <option value="PLANIFICADA">Planificada</option>
@@ -296,8 +299,7 @@
                 <thead>
                   <tr>
                     <th>Transportista</th>
-                    <th>Fórmula propia</th>
-                    <th>Fórmula efectiva</th>
+                    <th>Fórmula (ruta)</th>
                     <th>Moneda</th>
                     <th class="text-right">Precio (100 kg)</th>
                     <th id="transAccHead" style="display:none"></th>
@@ -305,35 +307,22 @@
                 </thead>
                 <tbody id="tablaTransRuta">
                   <tr>
-                    <td colspan="6" class="text-center py-8 text-slate-400">Cargando...</td>
+                    <td colspan="5" class="text-center py-8 text-slate-400">Cargando...</td>
                   </tr>
                 </tbody>
               </table>
 
               <div id="addTransForm" style="display:none" class="border-t border-slate-100 pt-4">
                 <p class="text-sm font-medium text-slate-700 mb-3">Añadir transportista</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
+                <div class="flex gap-3 items-end">
+                  <div class="flex-1">
                     <label class="label-eco">Transportista *</label>
                     <select id="tSelectTrans" class="form-control-eco">
                       <option value="">Selecciona...</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="label-eco">Fórmula propia <span
-                        class="text-slate-400 text-xs">(opcional)</span></label>
-                    <input type="text" id="tFormula" class="form-control-eco font-mono"
-                      placeholder="w * 0.4 + L * 0.08">
-                    <p class="text-xs text-slate-400 mt-0.5">Vacío = usa fórmula de la ruta</p>
-                  </div>
-                  <div>
-                    <label class="label-eco">Moneda</label>
-                    <div class="flex gap-2">
-                      <input type="text" id="tUnidad" class="form-control-eco" placeholder="EUR" maxlength="10">
-                      <button type="button" onclick="confirmarAsignarTrans()"
-                        class="btn-primary whitespace-nowrap">Añadir</button>
-                    </div>
-                  </div>
+                  <button type="button" onclick="confirmarAsignarTrans()"
+                    class="btn-primary whitespace-nowrap">Añadir</button>
                 </div>
               </div>
             </div>
@@ -381,7 +370,7 @@
       crossorigin=""></script>
 
     <script th:inline="none">
-      var todos = [], filtro = '', filtroEst = '', pagina = 1, POR_PAGINA = 10;
+      var todos = [], filtro = '', filtroEst = '', filtroTrans = '', pagina = 1, POR_PAGINA = 10;
       var idBorrar = null, rolActual = null, idActual = null;
       var rutaSeleccionadaId = null;
       var mapa = null, capasRuta = [];
@@ -405,7 +394,7 @@
         if (rolActual === 'ADMIN' || rolActual === 'GESTOR') {
           document.getElementById('accionesAdmin').style.display = '';
         }
-        await Promise.all([cargar(), cargarDirecciones()]);
+        await Promise.all([cargar(), cargarDirecciones(), cargarTransportistas()]);
         iniciarMapa();
       }
 
@@ -439,6 +428,23 @@
             Combobox.bind({ id: 'fOrigenId', items: items, placeholder: 'Seleccionar origen...', emptyOption: { value: '', label: 'Sin origen' } });
             Combobox.bind({ id: 'fDestinoId', items: items, placeholder: 'Seleccionar destino...', emptyOption: { value: '', label: 'Sin destino' } });
           }
+        } catch (e) { }
+      }
+
+      async function cargarTransportistas() {
+        try {
+          var res = await fetch('/api/usuarios');
+          if (!res.ok) return;
+          var lista = await res.json();
+          todosTransportistas = lista.filter(function (u) { return u.rol === 'TRANSPORTISTA'; });
+          var sel = document.getElementById('filtroTransportista');
+          sel.innerHTML = '<option value="">Todos los transportistas</option>';
+          todosTransportistas.forEach(function (u) {
+            var opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = u.nombre + ' (' + u.email + ')';
+            sel.appendChild(opt);
+          });
         } catch (e) { }
       }
 
@@ -489,9 +495,11 @@
         var soloCoordenadas = document.getElementById('soloConCoordenadas').checked;
         var lista = todos.filter(function (r) {
           var txt = (r.nombre || '').toLowerCase();
+          var transNames = (r.asignaciones || []).filter(function(a) { return a.activo; }).map(function(a) { return (a.transportista.nombre || '').toLowerCase(); }).join(' ');
+          var matchText = (txt + ' ' + transNames).includes(q);
           var estadoOk = !est || r.estado === est;
           var coordsOk = !soloCoordenadas || (r.origen && r.origen.latitud != null && r.origen.longitud != null && r.destino && r.destino.latitud != null && r.destino.longitud != null);
-          return txt.includes(q) && estadoOk && coordsOk;
+          return matchText && estadoOk && coordsOk;
         });
         dibujarRutasEnMapa(lista);
       }
@@ -564,6 +572,7 @@
       function filtrar() {
         filtro = document.getElementById('busqueda').value.toLowerCase();
         filtroEst = document.getElementById('filtroEstado').value;
+        filtroTrans = document.getElementById('filtroTransportista').value;
         pagina = 1;
         renderTabla();
       }
@@ -571,7 +580,8 @@
       function renderTabla() {
         var lista = todos.filter(function (r) {
           var txt = (r.nombre || '').toLowerCase();
-          return txt.includes(filtro) && (!filtroEst || r.estado === filtroEst);
+          var transOk = !filtroTrans || (r.asignaciones || []).some(function (a) { return a.activo && String(a.transportista.id) === filtroTrans; });
+          return txt.includes(filtro) && (!filtroEst || r.estado === filtroEst) && transOk;
         });
         var inicio = (pagina - 1) * POR_PAGINA;
         var slice = lista.slice(inicio, inicio + POR_PAGINA);
@@ -596,7 +606,7 @@
               ? '<span class="ml-1 text-emerald-500" title="Tiene coordenadas para el mapa">&#9679;</span>' : '';
             return '<tr class="hover" ' + (puedeEditar ? 'ondblclick="abrirEditar(' + r.id + ')" ' : '') + '>'
               + '<td class="font-medium">' + esc(r.nombre || '-') + coordBadge + '</td>'
-              + '<td class="text-sm text-slate-500">Mult.</td>'
+              + '<td class="text-sm text-slate-500">' + formatTransportistas(r) + '</td>'
               + '<td class="text-sm text-slate-600">' + (r.fecha || '<span class="text-slate-300">-</span>') + '</td>'
               + '<td class="text-xs text-slate-500">' + ruta + '</td>'
               + '<td class="text-sm">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '<span class="text-slate-300">-</span>') + '</td>'
@@ -625,7 +635,7 @@
             var activa = r.id === rutaSeleccionadaId;
             return '<tr class="hover cursor-pointer ' + (activa ? 'bg-blue-50' : '') + '" onclick="seleccionarRutaTarifa(' + r.id + ')">'
               + '<td class="font-medium text-sm">' + esc(r.nombre || '-') + '</td>'
-              + '<td class="text-xs text-slate-500">' + esc((r.transportista && r.transportista.nombre) || '-') + '</td>'
+              + '<td class="text-xs text-slate-500">' + formatTransportistas(r) + '</td>'
               + '<td class="text-xs text-slate-600">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '-') + '</td>'
               + '<td class="font-mono text-xs text-[#3b82f6]">' + esc(r.formulaTarifa) + '</td>'
               + '</tr>';
@@ -641,7 +651,9 @@
         document.getElementById('calcSinSeleccion').style.display = 'none';
         document.getElementById('calcPanel').style.display = '';
         document.getElementById('calcNombre').textContent = r.nombre || '-';
-        document.getElementById('calcRuta').textContent = [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' ? ') || '-';
+        var origenCalc = r.origen ? (r.origen.nombre || r.origen.calle || '') : '';
+        var destinoCalc = r.destino ? (r.destino.nombre || r.destino.calle || '') : '';
+        document.getElementById('calcRuta').textContent = [origenCalc, destinoCalc].filter(Boolean).join(' \u2192 ') || '-';
         document.getElementById('calcFormula').textContent = r.formulaTarifa || '-';
         document.getElementById('calcW').value = '';
         document.getElementById('calcL').value = r.distanciaKm != null ? r.distanciaKm : '';
@@ -813,30 +825,25 @@
         rutaTransActivaId = rutaId;
         var r = todos.find(function (x) { return x.id === rutaId; }) || {};
         document.getElementById('transRutaNombre').textContent = r.nombre || ('Ruta #' + rutaId);
+        var origenTxt = r.origen ? (r.origen.nombre || r.origen.calle || '') : '';
+        var destinoTxt = r.destino ? (r.destino.nombre || r.destino.calle || '') : '';
         document.getElementById('transRutaInfo').textContent =
-          [r.origenDireccion, r.destinoDireccion].filter(Boolean).join(' → ')
-          + (r.distanciaKm != null ? '  *  ' + r.distanciaKm + ' km' : '');
+          [origenTxt, destinoTxt].filter(Boolean).join(' \u2192 ')
+          + (r.distanciaKm != null ? '  \u00b7  ' + r.distanciaKm + ' km' : '');
 
         var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
         document.getElementById('addTransForm').style.display = esAdmin ? '' : 'none';
         document.getElementById('transAccHead').style.display = esAdmin ? '' : 'none';
 
-        if (esAdmin && todosTransportistas.length === 0) {
-          try {
-            var res = await fetch('/api/usuarios');
-            if (res.ok) {
-              var lista = await res.json();
-              todosTransportistas = lista.filter(function (u) { return u.rol === 'TRANSPORTISTA'; });
-              var sel = document.getElementById('tSelectTrans');
-              sel.innerHTML = '<option value="">Selecciona...</option>';
-              todosTransportistas.forEach(function (u) {
-                var opt = document.createElement('option');
-                opt.value = u.id;
-                opt.textContent = u.nombre + ' (' + u.email + ')';
-                sel.appendChild(opt);
-              });
-            }
-          } catch (e) { }
+        if (esAdmin && todosTransportistas.length > 0) {
+          var sel = document.getElementById('tSelectTrans');
+          sel.innerHTML = '<option value="">Selecciona...</option>';
+          todosTransportistas.forEach(function (u) {
+            var opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = u.nombre + ' (' + u.email + ')';
+            sel.appendChild(opt);
+          });
         }
 
         document.getElementById('modalTransportistas').classList.remove('hidden');
@@ -845,28 +852,24 @@
 
       async function renderTransportistas(rutaId) {
         document.getElementById('tablaTransRuta').innerHTML =
-          '<tr><td colspan="6" class="text-center py-6 text-slate-400">Cargando...</td></tr>';
+          '<tr><td colspan="5" class="text-center py-6 text-slate-400">Cargando...</td></tr>';
         try {
           var res = await fetch('/api/rutas/' + rutaId + '/transportistas');
           if (!res.ok) throw new Error('HTTP ' + res.status);
           var lista = await res.json();
           var esAdmin = rolActual === 'ADMIN' || rolActual === 'GESTOR';
           document.getElementById('tablaTransRuta').innerHTML = lista.length === 0
-            ? '<tr><td colspan="6" class="text-center py-8 text-slate-400">Ningún transportista asignado a esta ruta</td></tr>'
+            ? '<tr><td colspan="5" class="text-center py-8 text-slate-400">Ningún transportista asignado a esta ruta</td></tr>'
             : lista.map(function (rt) {
-              var badge = rt.formulaTarifa
-                ? '<span class="font-mono text-xs text-[#3b82f6]">' + esc(rt.formulaTarifa) + '</span>'
-                : '<span class="text-slate-300 text-xs">—</span>';
-              var efectiva = rt.formulaEfectiva
-                ? '<span class="font-mono text-xs text-slate-600">' + esc(rt.formulaEfectiva) + (rt.formulaTarifa ? '' : ' <span class="text-amber-500 text-xs" title="Fallback de la ruta">↩</span>') + '</span>'
+              var formula = rt.formulaEfectiva
+                ? '<span class="font-mono text-xs text-[#3b82f6]">' + esc(rt.formulaEfectiva) + '</span>'
                 : '<span class="text-slate-300 text-xs">Sin tarifa</span>';
               var precio = rt.precioEjemplo != null
                 ? '<span class="font-semibold text-[#3b82f6]">' + rt.precioEjemplo.toFixed(2) + ' ' + (rt.unidadTarifa || 'EUR') + '</span>'
                 : '<span class="text-slate-300">—</span>';
               return '<tr class="hover">'
                 + '<td class="font-medium text-sm">' + esc(rt.nombre || '') + '<br><span class="text-xs text-slate-400">' + esc(rt.email || '') + '</span></td>'
-                + '<td>' + badge + '</td>'
-                + '<td>' + efectiva + '</td>'
+                + '<td>' + formula + '</td>'
                 + '<td class="text-sm">' + esc(rt.unidadTarifa || '—') + '</td>'
                 + '<td class="text-right">' + precio + '<br><span class="text-xs text-slate-400">base 100 kg</span></td>'
                 + (esAdmin ? '<td class="text-right"><button class="btn-icon btn-icon--danger" title="Quitar" onclick="quitarTransportista(' + rutaId + ',' + rt.transportistaId + ')"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button></td>' : '')
@@ -874,7 +877,7 @@
             }).join('');
         } catch (e) {
           document.getElementById('tablaTransRuta').innerHTML =
-            '<tr><td colspan="6" class="text-center py-6 text-red-400">Error al cargar transportistas.</td></tr>';
+            '<tr><td colspan="5" class="text-center py-6 text-red-400">Error al cargar transportistas.</td></tr>';
         }
       }
 
@@ -884,11 +887,7 @@
           if (window.Swal) Swal.fire({ icon: 'warning', title: 'Selecciona un transportista', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
           return;
         }
-        var body = {
-          transportistaId: parseInt(transId),
-          formulaTarifa: document.getElementById('tFormula').value.trim() || null,
-          unidadTarifa: document.getElementById('tUnidad').value.trim() || null
-        };
+        var body = { transportistaId: parseInt(transId) };
         try {
           var res = await fetch('/api/rutas/' + rutaTransActivaId + '/transportistas', {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
@@ -899,8 +898,6 @@
             return;
           }
           document.getElementById('tSelectTrans').value = '';
-          document.getElementById('tFormula').value = '';
-          document.getElementById('tUnidad').value = '';
           await renderTransportistas(rutaTransActivaId);
           if (window.Swal) Swal.fire({ icon: 'success', title: 'Transportista asignado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
         } catch (e) {
@@ -926,6 +923,14 @@
 
       function esc(s) {
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function formatTransportistas(r) {
+        var asig = (r.asignaciones || []).filter(function (a) { return a.activo; });
+        if (asig.length === 0) return '<span class="text-slate-300">—</span>';
+        var nombres = asig.map(function (a) { return esc(a.transportista.nombre); });
+        if (nombres.length === 1) return nombres[0];
+        return nombres[0] + ' <span class="text-slate-400">+' + (nombres.length - 1) + '</span>';
       }
     </script>
   </th:block>
