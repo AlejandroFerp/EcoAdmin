@@ -43,6 +43,14 @@ public class RutaTransportista {
     @Column(nullable = false)
     private boolean activo = true;
 
+    /** Fórmula de tarifa propia del transportista para esta ruta. Null → hereda la de la ruta. */
+    @Column
+    private String formulaTarifa;
+
+    /** Moneda propia del transportista para esta ruta. Null → hereda la de la ruta. */
+    @Column
+    private String unidadTarifa;
+
     public Long getId() { return id; }
 
     public Ruta getRuta() { return ruta; }
@@ -53,4 +61,10 @@ public class RutaTransportista {
 
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
+
+    public String getFormulaTarifa() { return formulaTarifa; }
+    public void setFormulaTarifa(String formulaTarifa) { this.formulaTarifa = formulaTarifa; }
+
+    public String getUnidadTarifa() { return unidadTarifa; }
+    public void setUnidadTarifa(String unidadTarifa) { this.unidadTarifa = unidadTarifa; }
 }

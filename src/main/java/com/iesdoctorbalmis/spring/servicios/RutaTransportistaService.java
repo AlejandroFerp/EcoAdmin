@@ -26,9 +26,9 @@ public class RutaTransportistaService {
     private final TarifaValidator tarifaValidator;
 
     public RutaTransportistaService(RutaTransportistaRepository rtRepo,
-                                    RutaRepository rutaRepo,
-                                    UsuarioRepository usuarioRepo,
-                                    TarifaValidator tarifaValidator) {
+            RutaRepository rutaRepo,
+            UsuarioRepository usuarioRepo,
+            TarifaValidator tarifaValidator) {
         this.rtRepo = rtRepo;
         this.rutaRepo = rutaRepo;
         this.usuarioRepo = usuarioRepo;
@@ -36,18 +36,22 @@ public class RutaTransportistaService {
     }
 
     /**
-     * Lista los transportistas activos de una ruta, enriquecidos con la fórmula efectiva
+     * Lista los transportistas activos de una ruta, enriquecidos con la fórmula
+     * efectiva
      * y un precio de ejemplo para w=100 kg.
      */
     public List<RutaTransportistaViewDTO> listarConPrecio(Long rutaId) {
         Ruta ruta = rutaRepo.findById(rutaId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         return rtRepo.findByRutaIdAndActivoTrue(rutaId).stream()
-            .map(rt -> toViewDTO(rt, ruta))
-            .collect(Collectors.toList());
+                .map(rt -> toViewDTO(rt, ruta))
+                .collect(Collectors.toList());
     }
 
-    /** Rutas en las que un transportista está activamente asignado (para la vista de lista). */
+    /**
+     * Rutas en las que un transportista está activamente asignado (para la vista de
+     * lista).
+     */
     public List<Ruta> getRutasPorTransportista(Long transId) {
         return rtRepo.findRutasByTransportista(transId);
     }
@@ -59,42 +63,54 @@ public class RutaTransportistaService {
     @Transactional
     public RutaTransportista asignar(Long rutaId, RutaTransportistaInputDTO dto) {
         Ruta ruta = rutaRepo.findById(rutaId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         Usuario trans = usuarioRepo.findById(dto.transportistaId())
-            .orElseThrow(() -> new RecursoNoEncontradoException("Transportista no encontrado: " + dto.transportistaId()));
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Transportista no encontrado: " + dto.transportistaId()));
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, dto.transportistaId())
-            .orElse(new RutaTransportista());
+                .orElse(new RutaTransportista());
         rt.setRuta(ruta);
         rt.setTransportista(trans);
         rt.setActivo(true);
+        if (dto.formulaTarifa() != null)
+            rt.setFormulaTarifa(dto.formulaTarifa().isBlank() ? null : dto.formulaTarifa().trim());
+        if (dto.unidadTarifa() != null)
+            rt.setUnidadTarifa(dto.unidadTarifa().isBlank() ? null : dto.unidadTarifa().trim());
         return rtRepo.save(rt);
     }
 
-    /** Actualiza el transportista en la ruta (aunque ya no tiene atributos extra, se deja por compatibilidad). */
+    /** Actualiza la fórmula/moneda del transportista en esta ruta. */
     @Transactional
     public RutaTransportista actualizar(Long rutaId, Long transId, RutaTransportistaInputDTO dto) {
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
+        // Null en el DTO = limpiar el override (heredar la fórmula de la ruta)
+        rt.setFormulaTarifa(
+                dto.formulaTarifa() == null || dto.formulaTarifa().isBlank() ? null : dto.formulaTarifa().trim());
+        rt.setUnidadTarifa(
+                dto.unidadTarifa() == null || dto.unidadTarifa().isBlank() ? null : dto.unidadTarifa().trim());
         return rtRepo.save(rt);
     }
 
     /** Elimina la asignación de un transportista a una ruta. */
     @Transactional
     public void desasignar(Long rutaId, Long transId) {
-        RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
-        rtRepo.delete(rt);
+        int borrados = rtRepo.eliminarAsignacion(rutaId, transId);
+        if (borrados == 0) {
+            throw new RecursoNoEncontradoException("Asignación no encontrada");
+        }
     }
 
     /**
      * Calcula el precio para un transportista en una ruta dado el peso del residuo.
-     * Usa la fórmula propia del transportista; si no tiene, cae al fallback de la ruta.
+     * Usa la fórmula propia del transportista; si no tiene, cae al fallback de la
+     * ruta.
      */
     public Map<String, Object> calcularPrecio(Long rutaId, Long transId, double w) {
         Ruta ruta = rutaRepo.findById(rutaId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
 
         String formula = ruta.getFormulaTarifa();
         String moneda = ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR";
@@ -109,14 +125,13 @@ public class RutaTransportistaService {
                 return Map.of("error", "La fórmula produce un resultado no finito.");
             }
             return Map.of(
-                "formula", formula,
-                "w", w,
-                "L", L,
-                "resultado", Math.round(resultado * 100.0) / 100.0,
-                "moneda", moneda,
-                "formulaPropia", false,
-                "transportista", rt.getTransportista().getNombre()
-            );
+                    "formula", formula,
+                    "w", w,
+                    "L", L,
+                    "resultado", Math.round(resultado * 100.0) / 100.0,
+                    "moneda", moneda,
+                    "formulaPropia", false,
+                    "transportista", rt.getTransportista().getNombre());
         } catch (Exception e) {
             return Map.of("error", "Error en la fórmula: " + e.getMessage());
         }
@@ -130,25 +145,31 @@ public class RutaTransportistaService {
     // ——— helpers privados ———
 
     private RutaTransportistaViewDTO toViewDTO(RutaTransportista rt, Ruta ruta) {
-        String formulaEfectiva = ruta.getFormulaTarifa();
+        // Formula efectiva: propia del transportista si la tiene, sino la de la ruta
+        String formulaPropia = rt.getFormulaTarifa();
+        String formulaEfectiva = (formulaPropia != null && !formulaPropia.isBlank())
+                ? formulaPropia
+                : ruta.getFormulaTarifa();
+        String moneda = (rt.getUnidadTarifa() != null && !rt.getUnidadTarifa().isBlank())
+                ? rt.getUnidadTarifa()
+                : ruta.getUnidadTarifa();
         Double precio = null;
         if (formulaEfectiva != null && !formulaEfectiva.isBlank()) {
             try {
                 double L = ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0;
                 double p = tarifaValidator.calcular(formulaEfectiva, 100.0, L);
                 precio = Double.isFinite(p) ? Math.round(p * 100.0) / 100.0 : null;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
-        String moneda = ruta.getUnidadTarifa();
         return new RutaTransportistaViewDTO(
-            rt.getId(),
-            rt.getTransportista().getId(),
-            rt.getTransportista().getNombre(),
-            rt.getTransportista().getEmail(),
-            null,
-            formulaEfectiva,
-            moneda,
-            precio
-        );
+                rt.getId(),
+                rt.getTransportista().getId(),
+                rt.getTransportista().getNombre(),
+                rt.getTransportista().getEmail(),
+                formulaPropia,
+                formulaEfectiva,
+                moneda,
+                precio);
     }
 }

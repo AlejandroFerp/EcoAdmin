@@ -44,7 +44,7 @@ public class RutaController {
     private final RutaTransportistaService rtService;
 
     public RutaController(RutaService rutaService, UsuarioAutenticadoService authService,
-                          TarifaValidator validator, RutaTransportistaService rtService) {
+            TarifaValidator validator, RutaTransportistaService rtService) {
         this.rutaService = rutaService;
         this.authService = authService;
         this.validator = validator;
@@ -89,26 +89,29 @@ public class RutaController {
     public ResponseEntity<Ruta> actualizar(@PathVariable Long id, @RequestBody RutaInputDTO dto) {
         Usuario actual = authService.obtenerUsuarioActual();
         Ruta existente = rutaService.findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
         boolean esAdminGestor = actual != null && (actual.getRol() == Rol.ADMIN || actual.getRol() == Rol.GESTOR);
         boolean esPropioTransportista = actual != null && actual.getRol() == Rol.TRANSPORTISTA
-            && rtService.perteneceARuta(id, actual.getId());
+                && rtService.perteneceARuta(id, actual.getId());
         if (!esAdminGestor && !esPropioTransportista)
             throw new AccesoDenegadoException("No tiene permiso para modificar esta ruta.");
-        
-        // In order to only update provided fields, if DTO field is null, we can keep the existing one.
-        // For simplicity, we assume the frontend sends the whole object or we construct a new DTO merging them.
+
+        // In order to only update provided fields, if DTO field is null, we can keep
+        // the existing one.
+        // For simplicity, we assume the frontend sends the whole object or we construct
+        // a new DTO merging them.
         RutaInputDTO merged = new RutaInputDTO(
-            dto.nombre() != null ? dto.nombre() : existente.getNombre(),
-            dto.fecha() != null ? dto.fecha() : existente.getFecha(),
-            dto.estado() != null ? dto.estado() : existente.getEstado(),
-            dto.origenId() != null ? dto.origenId() : (existente.getOrigen() != null ? existente.getOrigen().getId() : null),
-            dto.destinoId() != null ? dto.destinoId() : (existente.getDestino() != null ? existente.getDestino().getId() : null),
-            dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm(),
-            dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones(),
-            dto.formulaTarifa() != null ? dto.formulaTarifa() : existente.getFormulaTarifa(),
-            dto.unidadTarifa() != null ? dto.unidadTarifa() : existente.getUnidadTarifa()
-        );
+                dto.nombre() != null ? dto.nombre() : existente.getNombre(),
+                dto.fecha() != null ? dto.fecha() : existente.getFecha(),
+                dto.estado() != null ? dto.estado() : existente.getEstado(),
+                dto.origenId() != null ? dto.origenId()
+                        : (existente.getOrigen() != null ? existente.getOrigen().getId() : null),
+                dto.destinoId() != null ? dto.destinoId()
+                        : (existente.getDestino() != null ? existente.getDestino().getId() : null),
+                dto.distanciaKm() != null ? dto.distanciaKm() : existente.getDistanciaKm(),
+                dto.observaciones() != null ? dto.observaciones() : existente.getObservaciones(),
+                dto.formulaTarifa() != null ? dto.formulaTarifa() : existente.getFormulaTarifa(),
+                dto.unidadTarifa() != null ? dto.unidadTarifa() : existente.getUnidadTarifa());
 
         return ResponseEntity.ok(rutaService.actualizar(id, merged));
     }
@@ -116,10 +119,10 @@ public class RutaController {
     @Operation(summary = "Calcular tarifa de una ruta especifica")
     @GetMapping("/{id}/calcular")
     public ResponseEntity<?> calcular(@PathVariable Long id,
-                                       @RequestParam(defaultValue = "0") double w,
-                                       @RequestParam(defaultValue = "0") double L) {
+            @RequestParam(defaultValue = "0") double w,
+            @RequestParam(defaultValue = "0") double L) {
         Ruta ruta = rutaService.findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
         if (ruta.getFormulaTarifa() == null || ruta.getFormulaTarifa().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Esta ruta no tiene formula de tarifa definida."));
         }
@@ -129,11 +132,10 @@ public class RutaController {
                 return ResponseEntity.badRequest().body(Map.of("error", "La formula produce un resultado no finito."));
             }
             return ResponseEntity.ok(Map.of(
-                "formula", ruta.getFormulaTarifa(),
-                "w", w, "L", L,
-                "resultado", Math.round(resultado * 100.0) / 100.0,
-                "moneda", ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR"
-            ));
+                    "formula", ruta.getFormulaTarifa(),
+                    "w", w, "L", L,
+                    "resultado", Math.round(resultado * 100.0) / 100.0,
+                    "moneda", ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Error en la formula: " + e.getMessage()));
         }

@@ -25,21 +25,24 @@ public class RutaService {
         this.tarifaValidator = tarifaValidator;
     }
 
-    public List<Ruta> findAll() { return rutaRepo.findAll(); }
-
+    public List<Ruta> findAll() {
+        return rutaRepo.findAll();
+    }
 
     public List<Ruta> findByEstado(com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta estado) {
         return rutaRepo.findByEstado(estado);
     }
 
-    public Optional<Ruta> findById(Long id) { return rutaRepo.findById(id); }
+    public Optional<Ruta> findById(Long id) {
+        return rutaRepo.findById(id);
+    }
 
     @Transactional
     public Ruta crear(RutaInputDTO datos) {
         if (datos.nombre() == null || datos.nombre().isBlank())
             throw new IllegalArgumentException("El nombre de la ruta es obligatorio.");
         validarFormula(datos.formulaTarifa());
-        
+
         Ruta ruta = new Ruta();
         ruta.setNombre(datos.nombre());
         ruta.setFecha(datos.fecha());
@@ -48,7 +51,7 @@ public class RutaService {
         ruta.setObservaciones(datos.observaciones());
         ruta.setFormulaTarifa(datos.formulaTarifa());
         ruta.setUnidadTarifa(datos.unidadTarifa());
-        
+
         if (datos.origenId() != null) {
             ruta.setOrigen(direccionRepo.findById(datos.origenId()).orElse(null));
         }
@@ -62,10 +65,10 @@ public class RutaService {
     @Transactional
     public Ruta actualizar(Long id, RutaInputDTO datos) {
         Ruta existente = rutaRepo.findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
         if (datos.nombre() == null || datos.nombre().isBlank())
             throw new IllegalArgumentException("El nombre de la ruta es obligatorio.");
-        
+
         validarFormula(datos.formulaTarifa());
 
         existente.setNombre(datos.nombre());
@@ -81,7 +84,7 @@ public class RutaService {
         } else {
             existente.setOrigen(null);
         }
-        
+
         if (datos.destinoId() != null) {
             existente.setDestino(direccionRepo.findById(datos.destinoId()).orElse(null));
         } else {
@@ -92,9 +95,11 @@ public class RutaService {
     }
 
     private void validarFormula(String formula) {
-        if (formula == null || formula.isBlank()) return;
+        if (formula == null || formula.isBlank())
+            return;
         TarifaValidator.ResultadoValidacion rv = tarifaValidator.validar(formula);
-        if (!rv.valido()) throw new IllegalArgumentException(rv.mensaje());
+        if (!rv.valido())
+            throw new IllegalArgumentException(rv.mensaje());
     }
 
     @Transactional
@@ -103,6 +108,5 @@ public class RutaService {
             throw new RecursoNoEncontradoException("Ruta no encontrada: " + id);
         rutaRepo.deleteById(id);
     }
-
 
 }
