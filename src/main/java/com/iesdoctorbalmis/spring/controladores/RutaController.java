@@ -192,8 +192,9 @@ public class RutaController {
     @GetMapping("/{id}/calcular/{transId}")
     public ResponseEntity<?> calcularPorTransportista(
             @PathVariable Long id, @PathVariable Long transId,
-            @RequestParam(defaultValue = "0") double w) {
-        Map<String, Object> resultado = rtService.calcularPrecio(id, transId, w);
+            @RequestParam(defaultValue = "0") double w,
+            @RequestParam(required = false) Double L) {
+        Map<String, Object> resultado = rtService.calcularPrecio(id, transId, w, L);
         if (resultado.containsKey("error")) {
             return ResponseEntity.badRequest().body(resultado);
         }

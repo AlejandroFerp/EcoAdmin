@@ -410,7 +410,7 @@
     <script th:inline="none">
       var todos = [], filtro = '', filtroEst = '', filtroTrans = '', pagina = 1, POR_PAGINA = 10;
       var idBorrar = null, rolActual = null, idActual = null;
-      var rutaSeleccionadaId = null, edicionAsignacionTransId = null;
+      var rutaSeleccionadaId = null, rutaSeleccionadaTransId = null, edicionAsignacionTransId = null;
       var mapa = null, capasRuta = [];
 
       var ESTADO_LABELS = { PLANIFICADA: 'Planificada', EN_CURSO: 'En curso', COMPLETADA: 'Completada', CANCELADA: 'Cancelada' };
@@ -708,9 +708,10 @@
           ? '<tr><td colspan="4" class="text-center py-8 text-slate-400">Ninguna ruta tiene Formula definida</td></tr>'
           : expanded.map(function (item) {
             var r = item.ruta;
-            var activa = r.id === rutaSeleccionadaId;
+            var transId = item.asig ? item.asig.transportista.id : null;
+            var activa = r.id === rutaSeleccionadaId && String(transId) === String(rutaSeleccionadaTransId);
             var transNombre = item.asig ? esc(item.asig.transportista.nombre) : '<span class="text-slate-300">\u2014</span>';
-            return '<tr class="hover cursor-pointer ' + (activa ? 'bg-blue-50' : '') + '" onclick="seleccionarRutaTarifa(' + r.id + ')">'
+            return '<tr class="hover cursor-pointer ' + (activa ? 'bg-blue-50' : '') + '" onclick="seleccionarRutaTarifa(' + r.id + ',' + (transId != null ? transId : 'null') + ')">'
               + '<td class="font-medium text-sm">' + esc(r.nombre || '-') + '</td>'
               + '<td class="text-xs text-slate-500">' + transNombre + '</td>'
               + '<td class="text-xs text-slate-600">' + (r.distanciaKm != null ? r.distanciaKm + ' km' : '-') + '</td>'
@@ -719,10 +720,12 @@
           }).join('');
       }
 
-      async function seleccionarRutaTarifa(id) {
+      async function seleccionarRutaTarifa(id, transId) {
         rutaSeleccionadaId = id;
+        rutaSeleccionadaTransId = transId != null ? transId : null;
         var r = todos.find(function (x) { return x.id === id; });
         if (!r) return;
+        var asig = buscarAsignacionActiva(r, transId);
         renderFormulas();
 
         document.getElementById('calcSinSeleccion').style.display = 'none';
@@ -730,8 +733,12 @@
         document.getElementById('calcNombre').textContent = r.nombre || '-';
         var origenCalc = r.origen ? (r.origen.nombre || r.origen.calle || '') : '';
         var destinoCalc = r.destino ? (r.destino.nombre || r.destino.calle || '') : '';
-        document.getElementById('calcRuta').textContent = [origenCalc, destinoCalc].filter(Boolean).join(' \u2192 ') || '-';
-        document.getElementById('calcFormula').textContent = r.formulaTarifa || '-';
+        var detalleRuta = [origenCalc, destinoCalc].filter(Boolean).join(' \u2192 ') || '-';
+        if (asig) {
+          detalleRuta += ' \u00b7 ' + asig.transportista.nombre;
+        }
+        document.getElementById('calcRuta').textContent = detalleRuta;
+        document.getElementById('calcFormula').textContent = obtenerFormulaEfectiva(r, asig) || '-';
         document.getElementById('calcW').value = '';
         document.getElementById('calcL').value = r.distanciaKm != null ? r.distanciaKm : '';
         document.getElementById('calcResultado').textContent = '-';
@@ -752,7 +759,10 @@
         var w = parseFloat(document.getElementById('calcW').value) || 0;
         var L = parseFloat(document.getElementById('calcL').value) || 0;
         try {
-          var res = await fetch('/api/rutas/' + rutaSeleccionadaId + '/calcular?w=' + w + '&L=' + L);
+          var url = rutaSeleccionadaTransId != null
+            ? '/api/rutas/' + rutaSeleccionadaId + '/calcular/' + rutaSeleccionadaTransId + '?w=' + w + '&L=' + L
+            : '/api/rutas/' + rutaSeleccionadaId + '/calcular?w=' + w + '&L=' + L;
+          var res = await fetch(url);
           var data = await res.json();
           var errorEl = document.getElementById('calcError');
           if (data.error) {
@@ -760,6 +770,7 @@
             errorEl.textContent = data.error;
             errorEl.style.display = '';
           } else {
+            document.getElementById('calcFormula').textContent = data.formula || document.getElementById('calcFormula').textContent;
             document.getElementById('calcResultado').textContent = data.resultado.toFixed(2) + ' ' + (data.moneda || 'EUR');
             errorEl.style.display = 'none';
           }
@@ -1095,6 +1106,13 @@
         return (ruta.asignaciones || []).find(function (a) {
           return a.activo && a.transportista && String(a.transportista.id) === String(transId);
         }) || null;
+      }
+
+      function obtenerFormulaEfectiva(ruta, asignacion) {
+        if (asignacion && asignacion.formulaTarifa && asignacion.formulaTarifa.trim()) {
+          return asignacion.formulaTarifa;
+        }
+        return ruta && ruta.formulaTarifa ? ruta.formulaTarifa : null;
       }
 
       function formatTransportistas(r) {

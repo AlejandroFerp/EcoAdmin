@@ -107,18 +107,27 @@ public class RutaTransportistaService {
      * ruta.
      */
     public Map<String, Object> calcularPrecio(Long rutaId, Long transId, double w) {
+        return calcularPrecio(rutaId, transId, w, null);
+    }
+
+    public Map<String, Object> calcularPrecio(Long rutaId, Long transId, double w, Double distanciaKm) {
         Ruta ruta = rutaRepo.findById(rutaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
 
-        String formula = ruta.getFormulaTarifa();
-        String moneda = ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR";
+        String formulaPropia = rt.getFormulaTarifa();
+        String formula = (formulaPropia != null && !formulaPropia.isBlank())
+            ? formulaPropia
+            : ruta.getFormulaTarifa();
+        String moneda = (rt.getUnidadTarifa() != null && !rt.getUnidadTarifa().isBlank())
+            ? rt.getUnidadTarifa()
+            : (ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR");
 
         if (formula == null || formula.isBlank()) {
             return Map.of("error", "Sin tarifa definida para esta ruta.");
         }
-        double L = ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0;
+        double L = distanciaKm != null ? distanciaKm : (ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0);
         try {
             double resultado = tarifaValidator.calcular(formula, w, L);
             if (!Double.isFinite(resultado)) {
@@ -130,7 +139,7 @@ public class RutaTransportistaService {
                     "L", L,
                     "resultado", Math.round(resultado * 100.0) / 100.0,
                     "moneda", moneda,
-                    "formulaPropia", false,
+                    "formulaPropia", formulaPropia != null && !formulaPropia.isBlank(),
                     "transportista", rt.getTransportista().getNombre());
         } catch (Exception e) {
             return Map.of("error", "Error en la fórmula: " + e.getMessage());

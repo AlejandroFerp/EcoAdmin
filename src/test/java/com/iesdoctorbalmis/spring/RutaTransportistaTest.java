@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.iesdoctorbalmis.spring.dto.RutaInputDTO;
 import com.iesdoctorbalmis.spring.dto.RutaTransportistaInputDTO;
 import com.iesdoctorbalmis.spring.dto.RutaTransportistaViewDTO;
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
@@ -39,6 +40,20 @@ class RutaTransportistaTest {
     private Usuario transportista1;
     private Usuario transportista2;
 
+    private Ruta crearRuta(Ruta ruta) {
+        RutaInputDTO datos = new RutaInputDTO(
+            ruta.getNombre(),
+            ruta.getFecha(),
+            ruta.getEstado(),
+            ruta.getOrigen() != null ? ruta.getOrigen().getId() : null,
+            ruta.getDestino() != null ? ruta.getDestino().getId() : null,
+            ruta.getDistanciaKm(),
+            ruta.getObservaciones(),
+            ruta.getFormulaTarifa(),
+            ruta.getUnidadTarifa());
+        return rutaService.crear(datos);
+    }
+
     @BeforeEach
     void setUp() {
         transportista1 = usuarioRepo.save(
@@ -52,7 +67,7 @@ class RutaTransportistaTest {
         datos.setDistanciaKm(100.0);
         datos.setFormulaTarifa("w * 0.3 + L * 0.05"); // fórmula base de la ruta
         datos.setUnidadTarifa("EUR");
-        rutaConDistancia = rutaService.crear(datos, null);
+        rutaConDistancia = crearRuta(datos);
     }
 
     // ———————————————————————————————————————————
@@ -155,7 +170,7 @@ class RutaTransportistaTest {
         rutaSinFormula.setNombre("Ruta sin tarifa");
         rutaSinFormula.setEstado(EstadoRuta.PLANIFICADA);
         rutaSinFormula.setDistanciaKm(50.0);
-        Ruta guardada = rutaService.crear(rutaSinFormula, null);
+        Ruta guardada = crearRuta(rutaSinFormula);
 
         rtService.asignar(guardada.getId(),
             new RutaTransportistaInputDTO(transportista1.getId(), null, null));
@@ -215,12 +230,27 @@ class RutaTransportistaTest {
     }
 
     @Test
+    @DisplayName("calcularPrecio con fórmula propia usa la distancia indicada cuando se informa")
+    void calcular_conFormulaPropia_yDistanciaInformada() {
+        rtService.asignar(rutaConDistancia.getId(),
+            new RutaTransportistaInputDTO(transportista1.getId(), "w + L", "EUR"));
+
+        Map<String, Object> res = rtService.calcularPrecio(
+            rutaConDistancia.getId(), transportista1.getId(), 10.0, 20.0);
+
+        assertThat(res).containsKey("resultado");
+        assertThat((Double) res.get("resultado")).isEqualTo(30.0);
+        assertThat((Double) res.get("L")).isEqualTo(20.0);
+        assertThat(res.get("formulaPropia")).isEqualTo(true);
+    }
+
+    @Test
     @DisplayName("calcularPrecio sin fórmula devuelve error")
     void calcular_sinFormula_devuelveError() {
         Ruta rutaVacia = new Ruta();
         rutaVacia.setNombre("Sin tarifa");
         rutaVacia.setEstado(EstadoRuta.PLANIFICADA);
-        Ruta guardada = rutaService.crear(rutaVacia, null);
+        Ruta guardada = crearRuta(rutaVacia);
 
         rtService.asignar(guardada.getId(),
             new RutaTransportistaInputDTO(transportista1.getId(), null, null));
