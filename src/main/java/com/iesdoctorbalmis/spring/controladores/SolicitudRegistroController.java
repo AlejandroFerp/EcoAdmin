@@ -52,15 +52,15 @@ public class SolicitudRegistroController {
     @PostMapping("/{id}/aprobar")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Aprobar solicitud y crear usuario (ADMIN)")
-    public ResponseEntity<Usuario> aprobar(@PathVariable Long id,
-                                            @RequestBody Map<String, String> body) {
+    public ResponseEntity<Void> aprobar(@PathVariable Long id,
+                                         @RequestBody Map<String, String> body) {
         String password = body.get("password");
         if (password == null || password.length() < 6) {
             throw new IllegalArgumentException("La contrasena debe tener al menos 6 caracteres");
         }
         Usuario admin = authService.obtenerUsuarioActual();
-        Usuario nuevo = service.aprobar(id, password, admin);
-        return ResponseEntity.ok(nuevo);
+        service.aprobar(id, password, admin);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/rechazar")

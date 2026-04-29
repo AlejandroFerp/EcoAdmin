@@ -72,8 +72,14 @@ public class RutaTransportistaService {
         rt.setRuta(ruta);
         rt.setTransportista(trans);
         rt.setActivo(true);
-        if (dto.formulaTarifa() != null)
-            rt.setFormulaTarifa(dto.formulaTarifa().isBlank() ? null : dto.formulaTarifa().trim());
+        if (dto.formulaTarifa() != null && !dto.formulaTarifa().isBlank()) {
+            TarifaValidator.ResultadoValidacion rv = tarifaValidator.validar(dto.formulaTarifa());
+            if (!rv.valido())
+                throw new IllegalArgumentException(rv.mensaje());
+            rt.setFormulaTarifa(dto.formulaTarifa().trim());
+        } else if (dto.formulaTarifa() != null) {
+            rt.setFormulaTarifa(null);
+        }
         if (dto.unidadTarifa() != null)
             rt.setUnidadTarifa(dto.unidadTarifa().isBlank() ? null : dto.unidadTarifa().trim());
         return rtRepo.save(rt);

@@ -11,7 +11,8 @@
             <p class="page-subtitle">Gestiona las solicitudes de acceso al sistema</p>
         </div>
         <div class="page-actions">
-            <select id="filtroEstado" onchange="cargar()" class="select select-sm select-bordered">
+            <label for="filtroEstado" class="text-sm font-medium text-slate-500">Estado</label>
+            <select id="filtroEstado" onchange="cargar()" class="form-control-eco min-w-[11rem]">
                 <option value="">Todas</option>
                 <option value="PENDIENTE" selected>Pendientes</option>
                 <option value="APROBADA">Aprobadas</option>
@@ -69,19 +70,21 @@ function renderTabla(data) {
         var fecha = s.fechaSolicitud ? new Date(s.fechaSolicitud).toLocaleDateString('es-ES') : '';
         var acciones = '';
         if (s.estado === 'PENDIENTE') {
-            acciones = '<button onclick="aprobar(' + s.id + ')" class="btn btn-xs btn-success normal-case mr-1">Aprobar</button>'
-                     + '<button onclick="rechazar(' + s.id + ')" class="btn btn-xs btn-error normal-case">Rechazar</button>';
+            acciones = '<div class="inline-flex flex-wrap justify-end gap-2">'
+                     + '<button onclick="aprobar(' + s.id + ')" class="btn-primary text-sm">Aprobar</button>'
+                     + '<button onclick="rechazar(' + s.id + ')" class="btn-danger text-sm">Rechazar</button>'
+                     + '</div>';
         } else {
-            acciones = '<button onclick="verDetalle(' + s.id + ')" class="btn btn-xs btn-ghost normal-case">Ver</button>';
+            acciones = '<button onclick="verDetalle(' + s.id + ')" class="btn-ghost-eco text-sm">Ver detalle</button>';
         }
-        return '<tr>'
-            + '<td class="font-mono text-xs">' + s.id + '</td>'
-            + '<td class="font-medium">' + esc(s.nombre) + '</td>'
-            + '<td class="text-sm">' + esc(s.email) + '</td>'
+        return '<tr class="hover" ondblclick="verDetalle(' + s.id + ')" title="Doble clic para ver el detalle de la solicitud">'
+            + '<td class="text-xs font-mono text-slate-500 whitespace-nowrap">#' + s.id + '</td>'
+            + '<td class="font-medium text-slate-700">' + esc(s.nombre) + '</td>'
+            + '<td class="text-sm text-slate-500">' + esc(s.email) + '</td>'
             + '<td>' + (window.rolBadge ? rolBadge(s.rolSolicitado) : esc(s.rolSolicitado)) + '</td>'
             + '<td>' + estadoSolBadge(s.estado) + '</td>'
-            + '<td class="text-sm text-slate-500">' + fecha + '</td>'
-            + '<td class="text-right">' + acciones + '</td>'
+            + '<td class="text-sm text-slate-500 whitespace-nowrap">' + fecha + '</td>'
+            + '<td class="text-right whitespace-nowrap">' + acciones + '</td>'
             + '</tr>';
     }).join('');
 }
@@ -110,7 +113,7 @@ function aprobar(id) {
             credentials: 'same-origin',
             body: JSON.stringify({ password: result.value })
         }).then(function(r) {
-            if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || 'Error'); });
+            if (!r.ok) return r.json().then(function(j) { throw new Error(j.message || j.mensaje || 'Error'); });
             Swal.fire({ icon: 'success', title: 'Usuario creado', timer: 1500, showConfirmButton: false });
             cargar();
         }).catch(function(err) {
@@ -137,7 +140,7 @@ function rechazar(id) {
             credentials: 'same-origin',
             body: JSON.stringify({ motivo: result.value || 'Sin motivo' })
         }).then(function(r) {
-            if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || 'Error'); });
+            if (!r.ok) return r.json().then(function(j) { throw new Error(j.message || j.mensaje || 'Error'); });
             Swal.fire({ icon: 'info', title: 'Solicitud rechazada', timer: 1500, showConfirmButton: false });
             cargar();
         }).catch(function(err) {

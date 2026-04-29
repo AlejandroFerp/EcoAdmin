@@ -108,13 +108,14 @@ class SolicitudRegistroTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"password\":\"maria123\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("maria@test.com"))
-                .andExpect(jsonPath("$.rol").value("GESTOR"));
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
 
         // Verificar que la solicitud fue aprobada
         SolicitudRegistro updated = solicitudRepo.findById(sol.getId()).orElseThrow();
         assert updated.getEstado() == EstadoSolicitud.APROBADA;
+        Usuario creado = usuarioRepo.findByEmail("maria@test.com").orElseThrow();
+        assert creado.getRol() == Rol.GESTOR;
     }
 
     @Test
