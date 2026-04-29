@@ -22,7 +22,7 @@
             <thead>
                 <tr class="text-xs uppercase text-slate-400 border-b border-slate-100">
                     <th class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs" id="selAll" onclick="seleccionarTodos(this)"></th>
-                    <th class="w-12">ID</th>
+                    <th class="w-24">Codigo</th>
                     <th>Codigo LER</th>
                     <th>Descripcion</th>
                     <th>Cantidad</th>
@@ -225,6 +225,11 @@ function descripcionDeLer(codigo) {
     return item ? item.descripcion : '';
 }
 
+function descripcionVisible(r) {
+    if (!r) return '';
+    return r.descripcion || '';
+}
+
 async function cargar() {
     try {
         var res = await fetch('/api/residuos');
@@ -243,8 +248,9 @@ function filtrar() { filtro = document.getElementById('busqueda').value.toLowerC
 
 function renderTabla() {
     var lista = todos.filter(function(r) {
+        var descripcion = descripcionVisible(r).toLowerCase();
         return (r.codigoLER || '').toLowerCase().includes(filtro) ||
-               (r.descripcion || '').toLowerCase().includes(filtro) ||
+               descripcion.includes(filtro) ||
                (r.estado || '').toLowerCase().includes(filtro);
     });
     var inicio = (pagina - 1) * POR_PAGINA;
@@ -259,11 +265,12 @@ function renderTabla() {
     document.getElementById('tablaCuerpo').innerHTML = slice.length === 0
         ? '<tr><td colspan="9" class="text-center py-12 text-slate-400">Sin resultados</td></tr>'
         : slice.map(function(r) {
+            var descripcion = descripcionVisible(r);
             return '<tr class="hover" ondblclick="abrirEditar(' + r.id + ')">'
                 + '<td class="w-10 pr-0"><input type="checkbox" class="checkbox checkbox-xs batch-check" value="' + r.id + '" onchange="actualizarBatchBar()" onclick="event.stopPropagation()"></td>'
-                + '<td class="text-xs text-slate-400">' + r.id + '</td>'
+                + '<td class="text-xs text-slate-400 font-mono">' + esc(r.codigo || '\u2014') + '</td>'
                 + '<td class="font-medium font-mono text-sm">' + esc(r.codigoLER || '\u2014') + '</td>'
-                + '<td class="text-sm text-slate-500">' + esc(r.descripcion || '\u2014') + '</td>'
+                + '<td class="text-sm text-slate-500">' + esc(descripcion || '\u2014') + '</td>'
                 + '<td class="text-sm">' + (r.cantidad != null ? r.cantidad : '\u2014') + '</td>'
                 + '<td class="text-sm">' + esc(r.unidad || '\u2014') + '</td>'
                 + '<td>' + estadoResiduoPill(r.estado) + '</td>'
@@ -322,7 +329,6 @@ async function guardar() {
         unidad: document.getElementById('fUnidad').value.trim(),
         estado: document.getElementById('fEstado').value,
         codigoLER: document.getElementById('fCodigoLER').value.trim(),
-        descripcion: descripcionDeLer(document.getElementById('fCodigoLER').value.trim()),
         fechaEntradaAlmacen: document.getElementById('fFechaEntrada').value || null,
         diasMaximoAlmacenamiento: parseInt(document.getElementById('fDiasMaximo').value) || 180,
         centro: centroId ? { id: parseInt(centroId) } : null
@@ -381,7 +387,7 @@ async function borrarSeleccionados() {
 async function verDetalle(id) {
     try {
         var r = await fetch('/api/residuos/' + id).then(function(x){ return x.json(); });
-        document.getElementById('dResTitulo').textContent = (r.codigoLER || 'Residuo') + ' — ' + (r.descripcion || '');
+        document.getElementById('dResTitulo').textContent = (r.codigoLER || 'Residuo') + ' — ' + descripcionVisible(r);
         document.getElementById('dResMeta').innerHTML =
             '<div><dt class="text-xs text-slate-400">Estado</dt><dd>' + estadoResiduoPill(r.estado) + '</dd></div>'
           + '<div><dt class="text-xs text-slate-400">Cantidad</dt><dd class="font-medium">' + (r.cantidad != null ? r.cantidad : '\u2014') + ' ' + esc(r.unidad || '') + '</dd></div>'

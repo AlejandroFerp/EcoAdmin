@@ -1,13 +1,5 @@
 package com.iesdoctorbalmis.spring;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,13 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Direccion;
+import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
@@ -29,9 +29,13 @@ import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.DireccionRepository;
+import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.servicios.ResiduoService;
+
+import jakarta.persistence.EntityManager;
 
 @SpringBootTest
 @Transactional
@@ -41,12 +45,16 @@ class InformesControllerTest {
     @Autowired private WebApplicationContext context;
     @Autowired private UsuarioRepository usuarioRepo;
     @Autowired private CentroRepository centroRepo;
+        @Autowired private ListaLerRepository listaLerRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private TrasladoRepository trasladoRepo;
     @Autowired private DireccionRepository direccionRepo;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private EntityManager entityManager;
+    @Autowired private ResiduoService residuoService;
 
     private Usuario gestor;
+    private String descripcionCanonica;
 
     @BeforeEach
     void setUp() {
@@ -61,16 +69,21 @@ class InformesControllerTest {
         Centro cp = centroRepo.save(new Centro(gestor, "Productor Test", "PRODUCTOR", dir));
         Centro cg = centroRepo.save(new Centro("Gestor Test", "GESTOR", dir));
 
+        descripcionCanonica = listaLerRepo.findByCodigo("17 04 05")
+            .orElseGet(() -> listaLerRepo.save(new ListaLer("17 04 05", "Descripcion canonica LER")))
+            .getDescripcion();
+
         Residuo r = new Residuo(100.0, "kg", "PENDIENTE", cp);
         r.setCodigoLER("170405");
-        r.setDescripcion("Hierro y acero");
-        residuoRepo.save(r);
+        residuoService.save(r);
 
         Usuario trans = usuarioRepo.save(new Usuario("Trans", "trans-inf@test.com",
                 passwordEncoder.encode("pass"), Rol.TRANSPORTISTA));
         Traslado t = new Traslado(cp, cg, r, trans);
         t.setEstado(EstadoTraslado.COMPLETADO);
         trasladoRepo.save(t);
+        entityManager.flush();
+        entityManager.clear();
     }
 
     // ─── Informe genérico (traslados) ─────────────────────────────────────────
@@ -106,6 +119,16 @@ class InformesControllerTest {
                 .andExpect(jsonPath("$.resumen").exists())
                 .andExpect(jsonPath("$.resumen.total").isNumber());
     }
+
+        @Test
+        @DisplayName("GET /api/informes/residuos usa descripcion canonica de lista LER")
+        void informeResiduos_usaDescripcionCanonica() throws Exception {
+                mockMvc.perform(get("/api/informes/residuos")
+                                .with(user(gestor.getEmail()).roles("GESTOR")))
+                                .andExpect(status().isOk())
+                                                .andExpect(jsonPath("$.rows[0][1]").value("17 04 05"))
+                                                .andExpect(jsonPath("$.rows[0][2]").value(descripcionCanonica));
+        }
 
     // ─── Final de gestión ─────────────────────────────────────────────────────
 

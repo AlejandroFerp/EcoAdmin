@@ -1,7 +1,6 @@
 package com.iesdoctorbalmis.spring;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Documento;
+import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
@@ -22,6 +22,7 @@ import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
+import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
@@ -45,6 +46,7 @@ class DocumentoServiceTest {
     @Autowired private TrasladoService trasladoService;
     @Autowired private TrasladoRepository trasladoRepo;
     @Autowired private CentroRepository centroRepo;
+    @Autowired private ListaLerRepository listaLerRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private UsuarioRepository usuarioRepo;
     @Autowired private DireccionRepository direccionRepo;
@@ -64,6 +66,7 @@ class DocumentoServiceTest {
 
         Centro centroProductor = centroRepo.save(new Centro(productor, "Centro Prod Doc", "PRODUCTOR", dir1));
         Centro centroGestor = centroRepo.save(new Centro("Centro Gest Doc", "GESTOR", dir2));
+        listaLerRepo.save(new ListaLer("160107", "Filtros de aceite"));
 
         Residuo residuo = residuoRepo.save(new Residuo(50.0, "kg", "PENDIENTE", centroProductor));
         residuo.setCodigoLER("160107");

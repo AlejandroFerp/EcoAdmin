@@ -3,8 +3,12 @@ package com.iesdoctorbalmis.spring.modelo;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,8 +39,13 @@ public class Residuo {
     private double cantidad;
     private String unidad;
     private String estado;
+    @Column(name = "codigo_ler")
     private String codigoLER;
-    private String descripcion;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "codigo_ler", referencedColumnName = "codigo", insertable = false, updatable = false)
+    private ListaLer listaLer;
 
     private LocalDateTime fechaEntradaAlmacen;
     private LocalDateTime fechaSalidaAlmacen;
@@ -75,10 +84,23 @@ public class Residuo {
     public void setUnidad(String unidad) { this.unidad = unidad; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
-    public String getCodigoLER() { return codigoLER; }
-    public void setCodigoLER(String codigoLER) { this.codigoLER = codigoLER; }
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getCodigoLER() {
+        return listaLer != null ? listaLer.getCodigo() : codigoLER;
+    }
+    public void setCodigoLER(String codigoLER) {
+        this.codigoLER = codigoLER;
+        this.listaLer = null;
+    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getDescripcion() {
+        return listaLer != null ? listaLer.getDescripcion() : null;
+    }
+    public void setListaLer(ListaLer listaLer) {
+        this.listaLer = listaLer;
+        if (listaLer != null) {
+            this.codigoLER = listaLer.getCodigo();
+        }
+    }
     public LocalDateTime getFechaEntradaAlmacen() { return fechaEntradaAlmacen; }
     public void setFechaEntradaAlmacen(LocalDateTime fechaEntradaAlmacen) { this.fechaEntradaAlmacen = fechaEntradaAlmacen; }
     public LocalDateTime getFechaSalidaAlmacen() { return fechaSalidaAlmacen; }

@@ -3,6 +3,7 @@ package com.iesdoctorbalmis.spring.servicios;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
@@ -10,15 +11,24 @@ import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 
+import jakarta.persistence.EntityManager;
+
 @Service
 public class ResiduoServiceDB implements ResiduoService {
 
     private final ResiduoRepository repo;
     private final CentroRepository centroRepo;
+    private final EntityManager entityManager;
+    private final LerCodeResolver lerCodeResolver;
 
-    public ResiduoServiceDB(ResiduoRepository repo, CentroRepository centroRepo) {
+    public ResiduoServiceDB(ResiduoRepository repo,
+            CentroRepository centroRepo,
+            EntityManager entityManager,
+            LerCodeResolver lerCodeResolver) {
         this.repo = repo;
         this.centroRepo = centroRepo;
+        this.entityManager = entityManager;
+        this.lerCodeResolver = lerCodeResolver;
     }
 
     @Override
@@ -39,10 +49,12 @@ public class ResiduoServiceDB implements ResiduoService {
     }
 
     @Override
+    @Transactional
     public Residuo save(Residuo r) {
         CodigoInmutableSupport.conservarSiAusente(r.getId(), r.getCodigo(), repo::findById, Residuo::getCodigo, r::setCodigo);
         if (r.getCentro() != null && r.getCentro().getId() != null)
             r.setCentro(centroRepo.findById(r.getCentro().getId()).orElseThrow());
+        r.setCodigoLER(lerCodeResolver.requireCanonicalCode(r.getCodigoLER()));
 
         // Defaults para FIFO
         if (r.getDiasMaximoAlmacenamiento() == null) {
@@ -58,7 +70,10 @@ public class ResiduoServiceDB implements ResiduoService {
                 && r.getFechaSalidaAlmacen() == null && r.getFechaEntradaAlmacen() != null) {
             r.setFechaSalidaAlmacen(java.time.LocalDateTime.now());
         }
-        return repo.save(r);
+        Residuo saved = repo.save(r);
+        entityManager.flush();
+        entityManager.clear();
+        return saved.getId() == null ? saved : repo.findById(saved.getId()).orElse(saved);
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.iesdoctorbalmis.spring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
 import com.iesdoctorbalmis.spring.excepciones.TransicionEstadoInvalidaException;
 import com.iesdoctorbalmis.spring.modelo.Centro;
+import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
+import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
@@ -29,6 +30,7 @@ class TrasladoEndpointQrTest {
 
     @Autowired private TrasladoService trasladoService;
     @Autowired private CentroRepository centroRepo;
+    @Autowired private ListaLerRepository listaLerRepo;
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private UsuarioRepository usuarioRepo;
 
@@ -40,9 +42,11 @@ class TrasladoEndpointQrTest {
         transportista = usuarioRepo.save(
             new Usuario("Trans QR", "transqr@test.com", "pass", Rol.TRANSPORTISTA));
 
+        listaLerRepo.save(new ListaLer("08 01 11*", "Residuos de pintura y barniz"));
+
         Centro productor = centroRepo.save(crearCentro("Productor QR"));
         Centro gestor = centroRepo.save(crearCentro("Gestor QR"));
-        Residuo residuo = residuoRepo.save(crearResiduo("Residuo QR"));
+        Residuo residuo = residuoRepo.save(crearResiduo());
 
         Traslado datos = new Traslado(productor, gestor, residuo, transportista);
         traslado = trasladoService.save(datos);
@@ -110,9 +114,8 @@ class TrasladoEndpointQrTest {
         return c;
     }
 
-    private Residuo crearResiduo(String desc) {
+    private Residuo crearResiduo() {
         Residuo r = new Residuo();
-        r.setDescripcion(desc);
         r.setCodigoLER("08 01 11*");
         return r;
     }

@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +12,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +51,7 @@ import com.iesdoctorbalmis.spring.repository.RutaRepository;
 import com.iesdoctorbalmis.spring.repository.SolicitudRegistroRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.servicios.LerCodeResolver;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
 
 @Component
@@ -80,6 +84,7 @@ public class DataInitializer implements ApplicationRunner {
     private final RutaRepository rutaRepository;
         private final SolicitudRegistroRepository solicitudRegistroRepository;
     private final TrasladoService trasladoService;
+        private final LerCodeResolver lerCodeResolver;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
 
@@ -96,6 +101,7 @@ public class DataInitializer implements ApplicationRunner {
             RutaRepository rutaRepository,
             SolicitudRegistroRepository solicitudRegistroRepository,
             TrasladoService trasladoService,
+            LerCodeResolver lerCodeResolver,
             PasswordEncoder passwordEncoder,
             JdbcTemplate jdbcTemplate) {
         this.usuarioRepository = usuarioRepository;
@@ -111,6 +117,7 @@ public class DataInitializer implements ApplicationRunner {
         this.rutaRepository = rutaRepository;
         this.solicitudRegistroRepository = solicitudRegistroRepository;
         this.trasladoService = trasladoService;
+                this.lerCodeResolver = lerCodeResolver;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -118,6 +125,7 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         cargarListaLer();
+        migrarResiduosALerCanonico();
                 if (!seedEnabled) {
                         return;
                 }
@@ -384,155 +392,133 @@ public class DataInitializer implements ApplicationRunner {
         LocalDateTime now = LocalDateTime.now();
 
         Residuo r1 = new Residuo(1500.0, "kg", "ALMACENADO", cp1);
-        r1.setCodigoLER("200301");
-        r1.setDescripcion("Mezclas de residuos municipales");
+        r1.setCodigoLER(codigoLerCanonico("200301"));
         r1.setFechaEntradaAlmacen(now.minusDays(200));
         r1.setDiasMaximoAlmacenamiento(180);
         r1 = residuoRepository.save(r1);
 
         Residuo r2 = new Residuo(800.0, "kg", "ALMACENADO", cp1);
-        r2.setCodigoLER("150101");
-        r2.setDescripcion("Envases de papel y cartón");
+        r2.setCodigoLER(codigoLerCanonico("150101"));
         r2.setFechaEntradaAlmacen(now.minusDays(45));
         r2.setDiasMaximoAlmacenamiento(180);
         r2 = residuoRepository.save(r2);
 
         Residuo r3 = new Residuo(350.0, "kg", "ALMACENADO", cp2);
-        r3.setCodigoLER("040199");
-        r3.setDescripcion("Residuos industria del cuero");
+        r3.setCodigoLER(codigoLerCanonico("040199"));
         r3.setFechaEntradaAlmacen(now.minusDays(190));
         r3.setDiasMaximoAlmacenamiento(180);
         r3 = residuoRepository.save(r3);
 
         Residuo r4 = new Residuo(120.0, "litros", "ALMACENADO", cp2);
-        r4.setCodigoLER("140603");
-        r4.setDescripcion("Disolventes y mezclas orgánicas");
+        r4.setCodigoLER(codigoLerCanonico("140603"));
         r4.setFechaEntradaAlmacen(now.minusDays(30));
         r4.setDiasMaximoAlmacenamiento(180);
         r4 = residuoRepository.save(r4);
 
         Residuo r5 = new Residuo(2000.0, "kg", "ALMACENADO", cp3);
-        r5.setCodigoLER("040222");
-        r5.setDescripcion("Residuos de fibras textiles");
+        r5.setCodigoLER(codigoLerCanonico("040222"));
         r5.setFechaEntradaAlmacen(now.minusDays(60));
         r5.setDiasMaximoAlmacenamiento(180);
         r5 = residuoRepository.save(r5);
 
         Residuo r6 = new Residuo(450.0, "kg", "ALMACENADO", cp3);
-        r6.setCodigoLER("150102");
-        r6.setDescripcion("Envases de plástico");
+        r6.setCodigoLER(codigoLerCanonico("150102"));
         r6.setFechaEntradaAlmacen(now.minusDays(15));
         r6.setDiasMaximoAlmacenamiento(180);
         r6 = residuoRepository.save(r6);
 
         Residuo r7 = new Residuo(600.0, "kg", "ALMACENADO", cp4);
-        r7.setCodigoLER("020204");
-        r7.setDescripcion("Lodos del tratamiento de efluentes");
+        r7.setCodigoLER(codigoLerCanonico("020204"));
         r7.setFechaEntradaAlmacen(now.minusDays(185));
         r7.setDiasMaximoAlmacenamiento(180);
         r7 = residuoRepository.save(r7);
 
         Residuo r8 = new Residuo(250.0, "kg", "ALMACENADO", cp4);
-        r8.setCodigoLER("150104");
-        r8.setDescripcion("Envases metálicos");
+        r8.setCodigoLER(codigoLerCanonico("150104"));
         r8.setFechaEntradaAlmacen(now.minusDays(10));
         r8.setDiasMaximoAlmacenamiento(180);
         r8 = residuoRepository.save(r8);
 
         Residuo r9 = new Residuo(80.0, "kg", "ALMACENADO", cp5);
-        r9.setCodigoLER("180103");
-        r9.setDescripcion("Residuos sanitarios infecciosos");
+        r9.setCodigoLER(codigoLerCanonico("180103"));
         r9.setFechaEntradaAlmacen(now.minusDays(5));
         r9.setDiasMaximoAlmacenamiento(30);
         r9 = residuoRepository.save(r9);
 
         Residuo r10 = new Residuo(35.0, "kg", "ALMACENADO", cp5);
-        r10.setCodigoLER("180106");
-        r10.setDescripcion("Productos químicos de laboratorio");
+        r10.setCodigoLER(codigoLerCanonico("180106"));
         r10.setFechaEntradaAlmacen(now.minusDays(25));
         r10.setDiasMaximoAlmacenamiento(90);
         r10 = residuoRepository.save(r10);
 
         Residuo r11 = new Residuo(1200.0, "kg", "ALMACENADO", cp6);
-        r11.setCodigoLER("070213");
-        r11.setDescripcion("Residuos de plástico");
+        r11.setCodigoLER(codigoLerCanonico("070213"));
         r11.setFechaEntradaAlmacen(now.minusDays(75));
         r11.setDiasMaximoAlmacenamiento(180);
         r11 = residuoRepository.save(r11);
 
         Residuo r12 = new Residuo(90.0, "litros", "ALMACENADO", cp6);
-        r12.setCodigoLER("080111");
-        r12.setDescripcion("Residuos de pintura y barniz");
+        r12.setCodigoLER(codigoLerCanonico("080111"));
         r12.setFechaEntradaAlmacen(now.minusDays(40));
         r12.setDiasMaximoAlmacenamiento(180);
         r12 = residuoRepository.save(r12);
 
         Residuo r13 = new Residuo(3000.0, "kg", "ALMACENADO", cp7);
-        r13.setCodigoLER("020304");
-        r13.setDescripcion("Materias no aptas para consumo");
+        r13.setCodigoLER(codigoLerCanonico("020304"));
         r13.setFechaEntradaAlmacen(now.minusDays(20));
         r13.setDiasMaximoAlmacenamiento(90);
         r13 = residuoRepository.save(r13);
 
         Residuo r14 = new Residuo(500.0, "kg", "ALMACENADO", cp7);
-        r14.setCodigoLER("150106");
-        r14.setDescripcion("Envases mezclados");
+        r14.setCodigoLER(codigoLerCanonico("150106"));
         r14.setFechaEntradaAlmacen(now.minusDays(55));
         r14.setDiasMaximoAlmacenamiento(180);
         r14 = residuoRepository.save(r14);
 
         Residuo r15 = new Residuo(700.0, "kg", "ALMACENADO", cp1);
-        r15.setCodigoLER("200108");
-        r15.setDescripcion("Residuos biodegradables de cocina");
+        r15.setCodigoLER(codigoLerCanonico("200108"));
         r15.setFechaEntradaAlmacen(now.minusDays(8));
         r15.setDiasMaximoAlmacenamiento(30);
         r15 = residuoRepository.save(r15);
 
         Residuo r16 = new Residuo(160.0, "kg", "ALMACENADO", cp2);
-        r16.setCodigoLER("120105");
-        r16.setDescripcion("Virutas y torneados plásticos");
+        r16.setCodigoLER(codigoLerCanonico("120105"));
         r16.setFechaEntradaAlmacen(now.minusDays(100));
         r16.setDiasMaximoAlmacenamiento(180);
         r16 = residuoRepository.save(r16);
 
         Residuo r17 = new Residuo(420.0, "kg", "ALMACENADO", cp3);
-        r17.setCodigoLER("040209");
-        r17.setDescripcion("Residuos de materiales compuestos textiles");
+        r17.setCodigoLER(codigoLerCanonico("040209"));
         r17.setFechaEntradaAlmacen(now.minusDays(130));
         r17.setDiasMaximoAlmacenamiento(180);
         r17 = residuoRepository.save(r17);
 
         Residuo r18 = new Residuo(55.0, "litros", "ALMACENADO", cp5);
-        r18.setCodigoLER("180102");
-        r18.setDescripcion("Restos anatómicos y órganos");
+        r18.setCodigoLER(codigoLerCanonico("180102"));
         r18.setFechaEntradaAlmacen(now.minusDays(2));
         r18.setDiasMaximoAlmacenamiento(7);
         r18 = residuoRepository.save(r18);
 
         Residuo r19 = new Residuo(1800.0, "kg", "ALMACENADO", cp6);
-        r19.setCodigoLER("170201");
-        r19.setDescripcion("Madera de embalajes");
+        r19.setCodigoLER(codigoLerCanonico("170201"));
         r19.setFechaEntradaAlmacen(now.minusDays(65));
         r19.setDiasMaximoAlmacenamiento(180);
         r19 = residuoRepository.save(r19);
 
         Residuo r20 = new Residuo(300.0, "kg", "ALMACENADO", cp4);
-        r20.setCodigoLER("020501");
-        r20.setDescripcion("Materias no aptas para consumo - lácteos");
+        r20.setCodigoLER(codigoLerCanonico("020501"));
         r20.setFechaEntradaAlmacen(now.minusDays(12));
         r20.setDiasMaximoAlmacenamiento(60);
         r20 = residuoRepository.save(r20);
 
         Residuo r21 = new Residuo(950.0, "kg", "ALMACENADO", cp7);
-        r21.setCodigoLER("020106");
-        r21.setDescripcion("Heces, orina y estiércol animal");
+        r21.setCodigoLER(codigoLerCanonico("020106"));
         r21.setFechaEntradaAlmacen(now.minusDays(35));
         r21.setDiasMaximoAlmacenamiento(90);
         r21 = residuoRepository.save(r21);
 
         Residuo r22 = new Residuo(200.0, "kg", "ALMACENADO", cp1);
-        r22.setCodigoLER("200121");
-        r22.setDescripcion("Tubos fluorescentes con mercurio");
+        r22.setCodigoLER(codigoLerCanonico("200121"));
         r22.setFechaEntradaAlmacen(now.minusDays(192));
         r22.setDiasMaximoAlmacenamiento(180);
         r22 = residuoRepository.save(r22);
@@ -1086,5 +1072,127 @@ public class DataInitializer implements ApplicationRunner {
         d.setLongitud(lon);
         return direccionRepository.save(d);
     }
+
+        private void migrarResiduosALerCanonico() {
+                if (!tablaExiste("residuos")) {
+                        return;
+                }
+
+                boolean tieneCodigoLer = columnaExiste("residuos", "codigo_ler");
+                boolean tieneCodigoLerLegacy = columnaExiste("residuos", "codigoler");
+                boolean tieneDescripcionLegacy = columnaExiste("residuos", "descripcion");
+
+                if (!tieneCodigoLer && !tieneCodigoLerLegacy) {
+                        return;
+                }
+
+                if (!tieneCodigoLer) {
+                        jdbcTemplate.execute("ALTER TABLE residuos ADD COLUMN codigo_ler varchar(255)");
+                        tieneCodigoLer = true;
+                }
+
+                StringBuilder select = new StringBuilder("SELECT id, codigo_ler");
+                if (tieneCodigoLerLegacy) {
+                        select.append(", codigoler");
+                }
+                if (tieneDescripcionLegacy) {
+                        select.append(", descripcion");
+                }
+                select.append(" FROM residuos");
+
+                List<Map<String, Object>> filas = jdbcTemplate.queryForList(
+                                select.toString());
+
+                int normalizados = 0;
+                List<Long> sinResolver = new java.util.ArrayList<>();
+
+                for (Map<String, Object> fila : filas) {
+                        Long id = ((Number) fila.get("id")).longValue();
+                        String codigoActual = valorTexto(fila.get("codigo_ler"));
+                        String codigoLegacy = tieneCodigoLerLegacy ? valorTexto(fila.get("codigoler")) : null;
+                        String descripcionLegacy = tieneDescripcionLegacy ? valorTexto(fila.get("descripcion")) : null;
+
+                        if (!StringUtils.hasText(codigoActual) && StringUtils.hasText(codigoLegacy)) {
+                                codigoActual = codigoLegacy;
+                        }
+
+                        var codigoCanonico = lerCodeResolver.resolveCanonicalCode(codigoActual, descripcionLegacy);
+                        if (codigoCanonico.isPresent()) {
+                                String nuevoCodigo = codigoCanonico.get();
+                                String codigoPersistido = valorTexto(fila.get("codigo_ler"));
+                                if (!nuevoCodigo.equals(codigoPersistido)) {
+                                        jdbcTemplate.update("UPDATE residuos SET codigo_ler = ? WHERE id = ?", nuevoCodigo, id);
+                                        normalizados++;
+                                }
+                        } else if (StringUtils.hasText(codigoActual) || StringUtils.hasText(descripcionLegacy)) {
+                                sinResolver.add(id);
+                                log.error("No se pudo resolver un codigo LER canonico para residuo {} (codigo='{}', descripcion='{}')",
+                                                id, codigoActual, descripcionLegacy);
+                        }
+                }
+
+                if (!sinResolver.isEmpty()) {
+                        throw new IllegalStateException(
+                                        "No se pudieron migrar residuos sin equivalencia LER canonica: " + sinResolver);
+                }
+
+                if (normalizados > 0) {
+                        log.info("Normalizados {} residuos hacia el codigo LER canonico", normalizados);
+                }
+
+                if (tieneCodigoLerLegacy) {
+                        eliminarColumnaResiduo("codigoler");
+                }
+
+                if (tieneDescripcionLegacy) {
+                        eliminarColumnaResiduo("descripcion");
+                }
+        }
+
+        private String codigoLerCanonico(String codigo) {
+                return lerCodeResolver.requireCanonicalCode(codigo);
+        }
+
+        private boolean tablaExiste(String nombreTabla) {
+                try {
+                        return jdbcTemplate.query("SELECT * FROM " + nombreTabla + " WHERE 1 = 0", rs -> true);
+                } catch (DataAccessException ex) {
+                        return false;
+                }
+        }
+
+        private boolean columnaExiste(String nombreTabla, String nombreColumna) {
+                try {
+                        return jdbcTemplate.query("SELECT * FROM " + nombreTabla + " WHERE 1 = 0", rs -> {
+                                var metadata = rs.getMetaData();
+                                for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                                        if (nombreColumna.equalsIgnoreCase(metadata.getColumnLabel(i))) {
+                                                return true;
+                                        }
+                                }
+                                return false;
+                        });
+                } catch (DataAccessException ex) {
+                        return false;
+                }
+        }
+
+        private void eliminarColumnaResiduo(String nombreColumna) {
+                try {
+                        jdbcTemplate.execute("ALTER TABLE residuos DROP COLUMN " + nombreColumna);
+                        log.info("Eliminada la columna legacy residuos.{}", nombreColumna);
+                } catch (DataAccessException ex) {
+                        throw new IllegalStateException(
+                                        "No se pudo eliminar la columna legacy residuos." + nombreColumna + ". Revise el esquema SQLite.", ex);
+                }
+        }
+
+        private String valorTexto(Object valor) {
+                if (valor == null) {
+                        return null;
+                }
+                String texto = valor.toString().trim();
+                return texto.isEmpty() ? null : texto;
+        }
 
 }

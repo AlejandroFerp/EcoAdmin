@@ -1,10 +1,11 @@
 package com.iesdoctorbalmis.spring;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Direccion;
+import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
@@ -20,6 +22,7 @@ import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.repository.DireccionRepository;
+import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
@@ -34,6 +37,7 @@ class PdfServiceTest {
     @Autowired private ResiduoRepository residuoRepo;
     @Autowired private CentroRepository centroRepo;
     @Autowired private DireccionRepository direccionRepo;
+    @Autowired private ListaLerRepository listaLerRepo;
     @Autowired private UsuarioRepository usuarioRepo;
 
     private Traslado crearTrasladoCompleto() {
@@ -42,9 +46,9 @@ class PdfServiceTest {
         Usuario gestor = usuarioRepo.save(new Usuario("Gestor PDF", "gestor-pdf@test.com", "pass", Rol.GESTOR));
         Centro cp = centroRepo.save(new Centro(gestor, "Productor PDF", "PRODUCTOR", dir));
         Centro cg = centroRepo.save(new Centro("Gestor PDF SL", "GESTOR", dir));
+        listaLerRepo.save(new ListaLer("170405", "Hierro y acero"));
         Residuo r = new Residuo(500.0, "kg", "PENDIENTE", cp);
         r.setCodigoLER("170405");
-        r.setDescripcion("Hierro y acero");
         residuoRepo.save(r);
         Traslado t = new Traslado(cp, cg, r, trans);
         t.setEstado(EstadoTraslado.COMPLETADO);

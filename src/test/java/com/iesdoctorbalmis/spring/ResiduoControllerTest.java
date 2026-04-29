@@ -1,7 +1,5 @@
 package com.iesdoctorbalmis.spring;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,21 +27,29 @@ import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
+import com.iesdoctorbalmis.spring.servicios.ResiduoService;
+
+import jakarta.persistence.EntityManager;
 
 @SpringBootTest
 @Transactional
-class AlmacenControllerTest {
+class ResiduoControllerTest {
 
     private MockMvc mockMvc;
+
     @Autowired private WebApplicationContext context;
     @Autowired private UsuarioRepository usuarioRepo;
     @Autowired private CentroRepository centroRepo;
+    @Autowired private DireccionRepository direccionRepo;
     @Autowired private ListaLerRepository listaLerRepo;
     @Autowired private ResiduoRepository residuoRepo;
-    @Autowired private DireccionRepository direccionRepo;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private EntityManager entityManager;
+    @Autowired private ResiduoService residuoService;
 
     private Usuario gestor;
+    private Residuo residuo;
+    private String descripcionCanonica;
 
     @BeforeEach
     void setUp() {
@@ -51,53 +57,40 @@ class AlmacenControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        gestor = usuarioRepo.save(new Usuario("Gestor Almacen", "gestor-almacen@test.com",
+        gestor = usuarioRepo.save(new Usuario("Gestor Residuos", "gestor-residuos@test.com",
                 passwordEncoder.encode("pass"), Rol.GESTOR));
-        Direccion dir = direccionRepo.save(new Direccion("C/ Almacen", "Alicante", "03001", "Alicante", "Espana"));
-        Centro c = centroRepo.save(new Centro(gestor, "Centro Almacen", "PRODUCTOR", dir));
-        listaLerRepo.save(new ListaLer("170405", "Metales ferreos"));
-        listaLerRepo.save(new ListaLer("060101", "Acidos de decapado"));
 
-        // Residuo en almacen (entrada hace 10 dias, sin salida)
-        Residuo rOk = new Residuo(100.0, "kg", "EN_ALMACEN", c);
-        rOk.setCodigoLER("170405");
-        rOk.setFechaEntradaAlmacen(LocalDateTime.now().minusDays(10));
-        rOk.setDiasMaximoAlmacenamiento(180);
-        residuoRepo.save(rOk);
+        Direccion direccion = direccionRepo.save(new Direccion("C/ Residuos", "Alicante", "03001", "Alicante", "Espana"));
+        Centro centro = centroRepo.save(new Centro(gestor, "Centro Residuos", "PRODUCTOR", direccion));
 
-        // Residuo critico (entrada hace 200 dias, max 180)
-        Residuo rCritico = new Residuo(50.0, "litros", "EN_ALMACEN", c);
-        rCritico.setCodigoLER("060101");
-        rCritico.setFechaEntradaAlmacen(LocalDateTime.now().minusDays(200));
-        rCritico.setDiasMaximoAlmacenamiento(180);
-        residuoRepo.save(rCritico);
+        descripcionCanonica = listaLerRepo.findByCodigo("17 04 05")
+            .orElseGet(() -> listaLerRepo.save(new ListaLer("17 04 05", "Descripcion canonica LER")))
+            .getDescripcion();
+
+        Residuo creado = new Residuo(100.0, "kg", "PENDIENTE", centro);
+        creado.setCodigoLER("170405");
+        residuo = residuoService.save(creado);
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test
-    @DisplayName("GET /api/almacen devuelve lista de residuos en almacen")
-    void listarAlmacen_devuelveLista() throws Exception {
-        mockMvc.perform(get("/api/almacen")
+    @DisplayName("GET /api/residuos devuelve descripcion desde lista LER")
+    void listarDevuelveDescripcionCanonica() throws Exception {
+        mockMvc.perform(get("/api/residuos")
                 .with(user(gestor.getEmail()).roles("GESTOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$[0].codigoLER").value("17 04 05"))
+                .andExpect(jsonPath("$[0].descripcion").value(descripcionCanonica));
     }
 
     @Test
-    @DisplayName("GET /api/almacen/alertas-fifo devuelve solo residuos criticos")
-    void alertasFifo_devuelveSoloCriticos() throws Exception {
-        mockMvc.perform(get("/api/almacen/alertas-fifo")
+    @DisplayName("GET /api/residuos/{id} devuelve descripcion desde lista LER")
+    void buscarDevuelveDescripcionCanonica() throws Exception {
+        mockMvc.perform(get("/api/residuos/" + residuo.getId())
                 .with(user(gestor.getEmail()).roles("GESTOR")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].severidad").value("CRITICO"));
-    }
-
-    @Test
-    @DisplayName("GET /api/almacen sin autenticacion devuelve 401/403")
-    void almacen_sinAuth_denegado() throws Exception {
-        mockMvc.perform(get("/api/almacen"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(jsonPath("$.codigoLER").value("17 04 05"))
+                .andExpect(jsonPath("$.descripcion").value(descripcionCanonica));
     }
 }

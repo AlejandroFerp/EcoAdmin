@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,10 +31,13 @@ import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 import com.iesdoctorbalmis.spring.servicios.CentroServiceDB;
 import com.iesdoctorbalmis.spring.servicios.DireccionServiceDB;
 import com.iesdoctorbalmis.spring.servicios.DocumentoServiceDB;
+import com.iesdoctorbalmis.spring.servicios.LerCodeResolver;
 import com.iesdoctorbalmis.spring.servicios.RecogidaService;
 import com.iesdoctorbalmis.spring.servicios.ResiduoServiceDB;
 import com.iesdoctorbalmis.spring.servicios.TrasladoServiceDB;
 import com.iesdoctorbalmis.spring.servicios.UsuarioServiceDB;
+
+import jakarta.persistence.EntityManager;
 
 class CodigoInmutableServiceTest {
 
@@ -83,16 +87,20 @@ class CodigoInmutableServiceTest {
     void residuoSave_conservaCodigoExistente() {
         ResiduoRepository repo = mock(ResiduoRepository.class);
         CentroRepository centroRepo = mock(CentroRepository.class);
-        ResiduoServiceDB service = new ResiduoServiceDB(repo, centroRepo);
+        EntityManager entityManager = mock(EntityManager.class);
+        LerCodeResolver lerCodeResolver = mock(LerCodeResolver.class);
+        ResiduoServiceDB service = new ResiduoServiceDB(repo, centroRepo, entityManager, lerCodeResolver);
 
         Residuo existente = new Residuo();
         existente.setId(3L);
         existente.setCodigo("RES-001");
         when(repo.findById(3L)).thenReturn(Optional.of(existente));
         when(repo.save(any(Residuo.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(lerCodeResolver.requireCanonicalCode(anyString())).thenReturn("17 04 05");
 
         Residuo editado = new Residuo();
         editado.setId(3L);
+        editado.setCodigoLER("170405");
 
         Residuo guardado = service.save(editado);
 
