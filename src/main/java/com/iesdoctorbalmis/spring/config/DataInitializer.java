@@ -126,6 +126,8 @@ public class DataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         cargarListaLer();
         migrarResiduosALerCanonico();
+        migrarTrasladosAFechaDerivable();
+        migrarEmpresaADireccionNormalizada();
                 if (!seedEnabled) {
                         return;
                 }
@@ -1073,6 +1075,134 @@ public class DataInitializer implements ApplicationRunner {
         return direccionRepository.save(d);
     }
 
+        private void migrarTrasladosAFechaDerivable() {
+                if (!tablaExiste("traslados") || !tablaExiste("eventos_traslado")) {
+                        return;
+                }
+
+                String columnaLegacy = columnaLegacyExistente("traslados", "fecha_ultimo_cambio_estado", "fechaUltimoCambioEstado");
+                if (columnaLegacy == null) {
+                        return;
+                }
+
+                List<Map<String, Object>> filas = jdbcTemplate.queryForList(
+                                "SELECT t.id, t.estado, t." + columnaLegacy + " AS fecha_legacy, "
+                                                + "(SELECT MAX(e.fecha) FROM eventos_traslado e WHERE e.traslado_id = t.id) AS fecha_evento "
+                                                + "FROM traslados t WHERE t." + columnaLegacy + " IS NOT NULL");
+
+                int backfills = 0;
+                for (Map<String, Object> fila : filas) {
+                        Long id = ((Number) fila.get("id")).longValue();
+                        LocalDateTime fechaLegacy = valorFecha(fila.get("fecha_legacy"));
+                        LocalDateTime fechaEvento = valorFecha(fila.get("fecha_evento"));
+                        String estado = valorTexto(fila.get("estado"));
+
+                        if (fechaLegacy == null || (fechaEvento != null && !fechaLegacy.isAfter(fechaEvento))) {
+                                continue;
+                        }
+
+                        jdbcTemplate.update(
+                                        "INSERT INTO eventos_traslado (traslado_id, estado_anterior, estado_nuevo, fecha, comentario, usuario_id) VALUES (?, ?, ?, ?, ?, ?)",
+                                        id,
+                                        null,
+                                        estado,
+                                        java.sql.Timestamp.valueOf(fechaLegacy),
+                                        "Backfill automatico desde fecha_ultimo_cambio_estado",
+                                        null);
+                        backfills++;
+                }
+
+                if (backfills > 0) {
+                        log.info("Backfill de {} eventos de traslado desde la fecha legacy de ultimo cambio", backfills);
+                }
+
+                eliminarColumna("traslados", columnaLegacy, "legacy traslados.");
+        }
+
+        private void migrarEmpresaADireccionNormalizada() {
+                if (!tablaExiste("empresa")) {
+                        return;
+                }
+
+                String direccionCol = columnaLegacyExistente("empresa", "direccion");
+                String ciudadCol = columnaLegacyExistente("empresa", "ciudad");
+                String codigoPostalCol = columnaLegacyExistente("empresa", "codigo_postal", "codigoPostal");
+                String provinciaCol = columnaLegacyExistente("empresa", "provincia");
+                String paisCol = columnaLegacyExistente("empresa", "pais");
+
+                if (direccionCol == null && ciudadCol == null && codigoPostalCol == null && provinciaCol == null && paisCol == null) {
+                        return;
+                }
+
+                if (!columnaExiste("empresa", "direccion_id")) {
+                        return;
+                }
+
+                StringBuilder select = new StringBuilder("SELECT id, nombre, direccion_id");
+                if (direccionCol != null) select.append(", ").append(direccionCol).append(" AS direccion_legacy");
+                if (ciudadCol != null) select.append(", ").append(ciudadCol).append(" AS ciudad_legacy");
+                if (codigoPostalCol != null) select.append(", ").append(codigoPostalCol).append(" AS codigo_postal_legacy");
+                if (provinciaCol != null) select.append(", ").append(provinciaCol).append(" AS provincia_legacy");
+                if (paisCol != null) select.append(", ").append(paisCol).append(" AS pais_legacy");
+                select.append(" FROM empresa");
+
+                List<Map<String, Object>> filas = jdbcTemplate.queryForList(select.toString());
+                int migradas = 0;
+
+                for (Map<String, Object> fila : filas) {
+                        String direccion = valorTexto(fila.get("direccion_legacy"));
+                        String ciudad = valorTexto(fila.get("ciudad_legacy"));
+                        String codigoPostal = valorTexto(fila.get("codigo_postal_legacy"));
+                        String provincia = valorTexto(fila.get("provincia_legacy"));
+                        String pais = valorTexto(fila.get("pais_legacy"));
+
+                        if (!StringUtils.hasText(direccion)
+                                        && !StringUtils.hasText(ciudad)
+                                        && !StringUtils.hasText(codigoPostal)
+                                        && !StringUtils.hasText(provincia)
+                                        && !StringUtils.hasText(pais)) {
+                                continue;
+                        }
+
+                        Long empresaId = ((Number) fila.get("id")).longValue();
+                        Long direccionId = fila.get("direccion_id") instanceof Number numero
+                                        ? numero.longValue()
+                                        : null;
+
+                        Direccion direccionFiscal = direccionId != null
+                                        ? direccionRepository.findById(direccionId).orElseGet(Direccion::new)
+                                        : new Direccion();
+
+                        if (!StringUtils.hasText(direccionFiscal.getNombre())) {
+                                String nombreEmpresa = valorTexto(fila.get("nombre"));
+                                direccionFiscal.setNombre(StringUtils.hasText(nombreEmpresa)
+                                                ? "Direccion fiscal " + nombreEmpresa
+                                                : "Direccion fiscal empresa");
+                        }
+                        direccionFiscal.setCalle(direccion);
+                        direccionFiscal.setCiudad(ciudad);
+                        direccionFiscal.setCodigoPostal(codigoPostal);
+                        direccionFiscal.setProvincia(provincia);
+                        direccionFiscal.setPais(StringUtils.hasText(pais) ? pais : "España");
+                        direccionFiscal = direccionRepository.save(direccionFiscal);
+
+                        if (direccionId == null || !direccionFiscal.getId().equals(direccionId)) {
+                                jdbcTemplate.update("UPDATE empresa SET direccion_id = ? WHERE id = ?", direccionFiscal.getId(), empresaId);
+                        }
+                        migradas++;
+                }
+
+                if (migradas > 0) {
+                        log.info("Migradas {} empresas hacia la direccion fiscal normalizada", migradas);
+                }
+
+                if (direccionCol != null) eliminarColumna("empresa", direccionCol, "legacy empresa.");
+                if (ciudadCol != null) eliminarColumna("empresa", ciudadCol, "legacy empresa.");
+                if (codigoPostalCol != null) eliminarColumna("empresa", codigoPostalCol, "legacy empresa.");
+                if (provinciaCol != null) eliminarColumna("empresa", provinciaCol, "legacy empresa.");
+                if (paisCol != null) eliminarColumna("empresa", paisCol, "legacy empresa.");
+        }
+
         private void migrarResiduosALerCanonico() {
                 if (!tablaExiste("residuos")) {
                         return;
@@ -1177,14 +1307,53 @@ public class DataInitializer implements ApplicationRunner {
                 }
         }
 
+        private String columnaLegacyExistente(String nombreTabla, String... candidatos) {
+                for (String candidato : candidatos) {
+                        if (columnaExiste(nombreTabla, candidato)) {
+                                return candidato;
+                        }
+                }
+                return null;
+        }
+
         private void eliminarColumnaResiduo(String nombreColumna) {
+                eliminarColumna("residuos", nombreColumna, "legacy residuos.");
+        }
+
+        private void eliminarColumna(String nombreTabla, String nombreColumna, String prefijoLog) {
                 try {
-                        jdbcTemplate.execute("ALTER TABLE residuos DROP COLUMN " + nombreColumna);
-                        log.info("Eliminada la columna legacy residuos.{}", nombreColumna);
+                        jdbcTemplate.execute("ALTER TABLE " + nombreTabla + " DROP COLUMN " + nombreColumna);
+                        log.info("Eliminada la columna {}{}", prefijoLog, nombreColumna);
                 } catch (DataAccessException ex) {
                         throw new IllegalStateException(
-                                        "No se pudo eliminar la columna legacy residuos." + nombreColumna + ". Revise el esquema SQLite.", ex);
+                                        "No se pudo eliminar la columna " + nombreTabla + "." + nombreColumna + ". Revise el esquema SQLite.", ex);
                 }
+        }
+
+        private LocalDateTime valorFecha(Object valor) {
+                if (valor == null) {
+                        return null;
+                }
+                if (valor instanceof LocalDateTime localDateTime) {
+                        return localDateTime;
+                }
+                if (valor instanceof java.sql.Timestamp timestamp) {
+                        return timestamp.toLocalDateTime();
+                }
+                if (valor instanceof java.util.Date fecha) {
+                        return new java.sql.Timestamp(fecha.getTime()).toLocalDateTime();
+                }
+                if (valor instanceof Number numero) {
+                        long epoch = numero.longValue();
+                        if (Math.abs(epoch) < 100_000_000_000L) {
+                                epoch *= 1000;
+                        }
+                        return LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(epoch), java.time.ZoneId.systemDefault());
+                }
+                if (valor instanceof String texto && StringUtils.hasText(texto)) {
+                        return java.sql.Timestamp.valueOf(texto.trim().replace('T', ' ')).toLocalDateTime();
+                }
+                throw new IllegalArgumentException("Tipo de fecha no soportado en migracion: " + valor.getClass());
         }
 
         private String valorTexto(Object valor) {

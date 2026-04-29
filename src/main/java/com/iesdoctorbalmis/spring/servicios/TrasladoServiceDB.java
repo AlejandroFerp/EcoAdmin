@@ -25,6 +25,8 @@ import com.iesdoctorbalmis.spring.repository.RutaTransportistaRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 
+import jakarta.persistence.EntityManager;
+
 @Service
 public class TrasladoServiceDB implements TrasladoService {
 
@@ -36,6 +38,7 @@ public class TrasladoServiceDB implements TrasladoService {
     private final DocumentoRepository documentoRepo;
     private final RutaRepository rutaRepo;
     private final RutaTransportistaRepository rtRepo;
+    private final EntityManager entityManager;
 
     /**
      * Lock de proceso para serializar la generacion de referencias DI.
@@ -51,7 +54,8 @@ public class TrasladoServiceDB implements TrasladoService {
                              UsuarioRepository usuarioRepo,
                              DocumentoRepository documentoRepo,
                              RutaRepository rutaRepo,
-                             RutaTransportistaRepository rtRepo) {
+                             RutaTransportistaRepository rtRepo,
+                             EntityManager entityManager) {
         this.trasladoRepo = trasladoRepo;
         this.eventoRepo = eventoRepo;
         this.centroRepo = centroRepo;
@@ -60,6 +64,7 @@ public class TrasladoServiceDB implements TrasladoService {
         this.documentoRepo = documentoRepo;
         this.rutaRepo = rutaRepo;
         this.rtRepo = rtRepo;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -102,7 +107,10 @@ public class TrasladoServiceDB implements TrasladoService {
                     + "'. Asigna primero el transportista a la ruta en el m\u00f3dulo Rutas.");
             }
         }
-        return trasladoRepo.save(t);
+        Traslado guardado = trasladoRepo.save(t);
+        entityManager.flush();
+        entityManager.clear();
+        return guardado.getId() == null ? guardado : trasladoRepo.findById(guardado.getId()).orElse(guardado);
     }
 
     @Override
@@ -133,7 +141,6 @@ public class TrasladoServiceDB implements TrasladoService {
         eventoRepo.save(evento);
 
         traslado.setEstado(nuevoEstado);
-        traslado.setFechaUltimoCambioEstado(LocalDateTime.now());
 
         if (nuevoEstado == EstadoTraslado.EN_TRANSITO && traslado.getFechaInicioTransporte() == null) {
             traslado.setFechaInicioTransporte(LocalDateTime.now());
@@ -147,14 +154,16 @@ public class TrasladoServiceDB implements TrasladoService {
         // Al completar: marcar salida del residuo y generar DI + Archivo Cronologico automaticos
         if (nuevoEstado == EstadoTraslado.COMPLETADO) {
             if (traslado.getResiduo() != null) {
-                traslado.getResiduo().setFechaSalidaAlmacen(LocalDateTime.now());
+                ResiduoAlmacenLifecycle.registrarSalidaPorTraslado(traslado.getResiduo(), LocalDateTime.now());
                 residuoRepo.save(traslado.getResiduo());
             }
             generarDocumentoIdentificacionSiNoExiste(guardado);
             generarArchivoCronologicoSiNoExiste(guardado);
         }
 
-        return guardado;
+        entityManager.flush();
+        entityManager.clear();
+        return guardado.getId() == null ? guardado : trasladoRepo.findById(guardado.getId()).orElse(guardado);
     }
 
     /**

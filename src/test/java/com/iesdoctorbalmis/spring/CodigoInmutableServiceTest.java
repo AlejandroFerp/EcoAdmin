@@ -118,8 +118,9 @@ class CodigoInmutableServiceTest {
         DocumentoRepository documentoRepo = mock(DocumentoRepository.class);
         RutaRepository rutaRepo = mock(RutaRepository.class);
         RutaTransportistaRepository rtRepo = mock(RutaTransportistaRepository.class);
+        EntityManager entityManager = mock(EntityManager.class);
         TrasladoServiceDB service = new TrasladoServiceDB(
-            trasladoRepo, eventoRepo, centroRepo, residuoRepo, usuarioRepo, documentoRepo, rutaRepo, rtRepo);
+            trasladoRepo, eventoRepo, centroRepo, residuoRepo, usuarioRepo, documentoRepo, rutaRepo, rtRepo, entityManager);
 
         Traslado existente = new Traslado();
         existente.setId(4L);

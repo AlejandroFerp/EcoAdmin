@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 /**
  * Relación M:N entre Ruta y transportistas (Usuario con rol TRANSPORTISTA).
@@ -20,10 +19,7 @@ import jakarta.persistence.UniqueConstraint;
  * como fallback.
  */
 @Entity
-@Table(
-    name = "ruta_transportistas",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"ruta_id", "transportista_id"})
-)
+@Table(name = "ruta_transportistas")
 public class RutaTransportista {
 
     @Id

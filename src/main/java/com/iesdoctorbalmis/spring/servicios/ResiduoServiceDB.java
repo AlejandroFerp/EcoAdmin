@@ -1,5 +1,6 @@
 package com.iesdoctorbalmis.spring.servicios;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -60,16 +61,7 @@ public class ResiduoServiceDB implements ResiduoService {
         if (r.getDiasMaximoAlmacenamiento() == null) {
             r.setDiasMaximoAlmacenamiento(180);
         }
-        // Auto entrada al almacen cuando un residuo pasa a ALMACENADO
-        String estado = r.getEstado() == null ? "" : r.getEstado().toUpperCase();
-        if ("ALMACENADO".equals(estado) && r.getFechaEntradaAlmacen() == null) {
-            r.setFechaEntradaAlmacen(java.time.LocalDateTime.now());
-        }
-        // Auto salida cuando ya no esta en almacen ni transito (TRATADO, ELIMINADO)
-        if (("TRATADO".equals(estado) || "ELIMINADO".equals(estado))
-                && r.getFechaSalidaAlmacen() == null && r.getFechaEntradaAlmacen() != null) {
-            r.setFechaSalidaAlmacen(java.time.LocalDateTime.now());
-        }
+        ResiduoAlmacenLifecycle.aplicarReglasEnGuardado(r, LocalDateTime.now());
         Residuo saved = repo.save(r);
         entityManager.flush();
         entityManager.clear();

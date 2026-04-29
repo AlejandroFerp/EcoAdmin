@@ -44,6 +44,7 @@ public class EmpresaService {
         actual.setAutorizacionProductor(nuevo.getAutorizacionProductor());
         actual.setLogoUrl(nuevo.getLogoUrl());
         actual.setObservaciones(nuevo.getObservaciones());
+        actual.normalizarDireccionFiscal();
         return repo.save(actual);
     }
 

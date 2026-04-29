@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.Formula;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
@@ -82,7 +83,11 @@ public class Traslado {
     /** Fin planificado del traslado (para calendario). */
     private LocalDateTime fechaProgramadaFin;
 
-    /** Fecha del ultimo cambio de estado (denormalizada, se actualiza en TrasladoService.cambiarEstado). */
+    /**
+     * Fecha derivada del ultimo evento del historial. Si aun no existen eventos,
+     * cae a la fecha de creacion del traslado.
+     */
+    @Formula("coalesce((select max(e.fecha) from eventos_traslado e where e.traslado_id = id), fecha_creacion)")
     private LocalDateTime fechaUltimoCambioEstado;
 
     private String observaciones;
@@ -126,7 +131,6 @@ public class Traslado {
     public LocalDateTime getFechaProgramadaFin() { return fechaProgramadaFin; }
     public void setFechaProgramadaFin(LocalDateTime f) { this.fechaProgramadaFin = f; }
     public LocalDateTime getFechaUltimoCambioEstado() { return fechaUltimoCambioEstado; }
-    public void setFechaUltimoCambioEstado(LocalDateTime f) { this.fechaUltimoCambioEstado = f; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
     public List<EventoTraslado> getHistorial() { return historial; }
