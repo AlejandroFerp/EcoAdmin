@@ -111,21 +111,32 @@ public class RutaTransportistaService {
     }
 
     public Map<String, Object> calcularPrecio(Long rutaId, Long transId, double w, Double distanciaKm) {
+        return calcularPrecio(rutaId, transId, w, distanciaKm, null);
+    }
+
+    public Map<String, Object> calcularPrecio(Long rutaId, Long transId, double w, Double distanciaKm,
+            String formulaTemporal) {
         Ruta ruta = rutaRepo.findById(rutaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + rutaId));
         RutaTransportista rt = rtRepo.findByRutaIdAndTransportistaId(rutaId, transId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Asignación no encontrada"));
 
         String formulaPropia = rt.getFormulaTarifa();
-        String formula = (formulaPropia != null && !formulaPropia.isBlank())
-            ? formulaPropia
-            : ruta.getFormulaTarifa();
+        String formula = formulaTemporal != null
+            ? formulaTemporal
+            : (formulaPropia != null && !formulaPropia.isBlank())
+                        ? formulaPropia
+                        : ruta.getFormulaTarifa();
         String moneda = (rt.getUnidadTarifa() != null && !rt.getUnidadTarifa().isBlank())
-            ? rt.getUnidadTarifa()
-            : (ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR");
+                ? rt.getUnidadTarifa()
+                : (ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR");
 
         if (formula == null || formula.isBlank()) {
             return Map.of("error", "Sin tarifa definida para esta ruta.");
+        }
+        TarifaValidator.ResultadoValidacion validacion = tarifaValidator.validar(formula);
+        if (!validacion.valido()) {
+            return Map.of("error", validacion.mensaje());
         }
         double L = distanciaKm != null ? distanciaKm : (ruta.getDistanciaKm() != null ? ruta.getDistanciaKm() : 0.0);
         try {

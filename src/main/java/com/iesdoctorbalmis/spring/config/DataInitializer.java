@@ -10,8 +10,10 @@ import com.iesdoctorbalmis.spring.modelo.ListaLer;
 import com.iesdoctorbalmis.spring.modelo.Recogida;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Ruta;
+import com.iesdoctorbalmis.spring.modelo.SolicitudRegistro;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoSolicitud;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRecogida;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
@@ -26,6 +28,7 @@ import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
 import com.iesdoctorbalmis.spring.repository.RecogidaRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.RutaRepository;
+import com.iesdoctorbalmis.spring.repository.SolicitudRegistroRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
@@ -71,6 +74,7 @@ public class DataInitializer implements ApplicationRunner {
     private final EmpresaRepository empresaRepository;
     private final RecogidaRepository recogidaRepository;
     private final RutaRepository rutaRepository;
+        private final SolicitudRegistroRepository solicitudRegistroRepository;
     private final TrasladoService trasladoService;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
@@ -85,6 +89,7 @@ public class DataInitializer implements ApplicationRunner {
             EmpresaRepository empresaRepository,
             RecogidaRepository recogidaRepository,
             RutaRepository rutaRepository,
+            SolicitudRegistroRepository solicitudRegistroRepository,
             TrasladoService trasladoService,
             PasswordEncoder passwordEncoder,
             JdbcTemplate jdbcTemplate) {
@@ -98,6 +103,7 @@ public class DataInitializer implements ApplicationRunner {
         this.empresaRepository = empresaRepository;
         this.recogidaRepository = recogidaRepository;
         this.rutaRepository = rutaRepository;
+        this.solicitudRegistroRepository = solicitudRegistroRepository;
         this.trasladoService = trasladoService;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
@@ -106,11 +112,15 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         cargarListaLer();
-        if (seedEnabled && usuarioRepository.count() == 0) {
+                if (!seedEnabled) {
+                        return;
+                }
+                if (usuarioRepository.count() == 0) {
             log.info("Iniciando carga de datos semilla...");
             seedDatos();
             log.info("Datos semilla cargados correctamente.");
         }
+                asegurarSolicitudesDemo();
     }
 
     private void cargarListaLer() {
@@ -906,6 +916,104 @@ public class DataInitializer implements ApplicationRunner {
 
         log.info(
                 "Seed completado: 10 usuarios, 16 direcciones, 13 centros, 1 empresa, 22 residuos, 16 traslados, 12 recogidas, 10 documentos, 6 rutas");
+    }
+
+    private void asegurarSolicitudesDemo() {
+        long solicitudesExistentes = solicitudRegistroRepository.count();
+        if (solicitudesExistentes > 0) {
+            log.info("Solicitudes de registro ya cargadas ({})", solicitudesExistentes);
+            return;
+        }
+
+        Usuario adminResolutor = usuarioRepository.findByRol(Rol.ADMIN).stream().findFirst().orElse(null);
+        LocalDateTime now = LocalDateTime.now();
+
+        SolicitudRegistro pendienteProductor = nuevaSolicitudDemo(
+                "Lucia Morales",
+                "lucia.morales.demo@ecoadmin.com",
+                Rol.PRODUCTOR,
+                EstadoSolicitud.PENDIENTE,
+                now.minusDays(2),
+                null,
+                null,
+                null);
+        pendienteProductor.setTelefono("600123123");
+        pendienteProductor.setDni("11111111A");
+        pendienteProductor.setEmpresa("Conservas Costa Azul");
+        pendienteProductor.setNima("03/98765");
+        pendienteProductor.setCentroPrincipal("Planta San Vicente");
+
+        SolicitudRegistro pendienteTransportista = nuevaSolicitudDemo(
+                "Sergio Vera",
+                "sergio.vera.demo@ecoadmin.com",
+                Rol.TRANSPORTISTA,
+                EstadoSolicitud.PENDIENTE,
+                now.minusDays(1),
+                null,
+                null,
+                null);
+        pendienteTransportista.setTelefono("600456456");
+        pendienteTransportista.setDni("22222222B");
+        pendienteTransportista.setEmpresa("Logistica Verde Levante");
+        pendienteTransportista.setMatricula("1234MNL");
+        pendienteTransportista.setCertificadoAdr("ADR-2026-7781");
+
+        SolicitudRegistro aprobadaGestor = nuevaSolicitudDemo(
+                "Marta Iborra",
+                "marta.iborra.demo@ecoadmin.com",
+                Rol.GESTOR,
+                EstadoSolicitud.APROBADA,
+                now.minusDays(5),
+                now.minusDays(3),
+                adminResolutor,
+                null);
+        aprobadaGestor.setTelefono("600789789");
+        aprobadaGestor.setDni("33333333C");
+        aprobadaGestor.setEmpresa("Reciclajes del Sureste");
+        aprobadaGestor.setAutorizacionGestor("AUT-G-2048");
+
+        SolicitudRegistro rechazadaProductor = nuevaSolicitudDemo(
+                "Raul Pastor",
+                "raul.pastor.demo@ecoadmin.com",
+                Rol.PRODUCTOR,
+                EstadoSolicitud.RECHAZADA,
+                now.minusDays(7),
+                now.minusDays(6),
+                adminResolutor,
+                "Falta acreditar el NIMA del centro solicitado");
+        rechazadaProductor.setTelefono("600987987");
+        rechazadaProductor.setDni("44444444D");
+        rechazadaProductor.setEmpresa("Talleres Pastor");
+        rechazadaProductor.setNima("03/12345");
+        rechazadaProductor.setCentroPrincipal("Nave Elche Parque Empresarial");
+
+        solicitudRegistroRepository.saveAll(List.of(
+                pendienteProductor,
+                pendienteTransportista,
+                aprobadaGestor,
+                rechazadaProductor));
+
+        log.info("Cargadas 4 solicitudes de registro de prueba");
+    }
+
+    private SolicitudRegistro nuevaSolicitudDemo(String nombre,
+            String email,
+            Rol rolSolicitado,
+            EstadoSolicitud estado,
+            LocalDateTime fechaSolicitud,
+            LocalDateTime fechaResolucion,
+            Usuario resueltoPor,
+            String motivoRechazo) {
+        SolicitudRegistro solicitud = new SolicitudRegistro();
+        solicitud.setNombre(nombre);
+        solicitud.setEmail(email);
+        solicitud.setRolSolicitado(rolSolicitado);
+        solicitud.setEstado(estado);
+        solicitud.setFechaSolicitud(fechaSolicitud);
+        solicitud.setFechaResolucion(fechaResolucion);
+        solicitud.setResueltoPor(resueltoPor);
+        solicitud.setMotivoRechazo(motivoRechazo);
+        return solicitud;
     }
 
     private void programar(Traslado t, LocalDateTime inicio, LocalDateTime fin) {

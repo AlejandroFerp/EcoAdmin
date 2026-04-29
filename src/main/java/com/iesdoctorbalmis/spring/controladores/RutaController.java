@@ -120,19 +120,25 @@ public class RutaController {
     @GetMapping("/{id}/calcular")
     public ResponseEntity<?> calcular(@PathVariable Long id,
             @RequestParam(defaultValue = "0") double w,
-            @RequestParam(defaultValue = "0") double L) {
+            @RequestParam(defaultValue = "0") double L,
+            @RequestParam(required = false) String formula) {
         Ruta ruta = rutaService.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Ruta no encontrada: " + id));
-        if (ruta.getFormulaTarifa() == null || ruta.getFormulaTarifa().isBlank()) {
+        String formulaActiva = formula != null ? formula : ruta.getFormulaTarifa();
+        if (formulaActiva == null || formulaActiva.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Esta ruta no tiene formula de tarifa definida."));
         }
+        TarifaValidator.ResultadoValidacion validacion = validator.validar(formulaActiva);
+        if (!validacion.valido()) {
+            return ResponseEntity.badRequest().body(Map.of("error", validacion.mensaje()));
+        }
         try {
-            double resultado = validator.calcular(ruta.getFormulaTarifa(), w, L);
+            double resultado = validator.calcular(formulaActiva, w, L);
             if (!Double.isFinite(resultado)) {
                 return ResponseEntity.badRequest().body(Map.of("error", "La formula produce un resultado no finito."));
             }
             return ResponseEntity.ok(Map.of(
-                    "formula", ruta.getFormulaTarifa(),
+                    "formula", formulaActiva,
                     "w", w, "L", L,
                     "resultado", Math.round(resultado * 100.0) / 100.0,
                     "moneda", ruta.getUnidadTarifa() != null ? ruta.getUnidadTarifa() : "EUR"));
@@ -193,8 +199,9 @@ public class RutaController {
     public ResponseEntity<?> calcularPorTransportista(
             @PathVariable Long id, @PathVariable Long transId,
             @RequestParam(defaultValue = "0") double w,
-            @RequestParam(required = false) Double L) {
-        Map<String, Object> resultado = rtService.calcularPrecio(id, transId, w, L);
+            @RequestParam(required = false) Double L,
+            @RequestParam(required = false) String formula) {
+        Map<String, Object> resultado = rtService.calcularPrecio(id, transId, w, L, formula);
         if (resultado.containsKey("error")) {
             return ResponseEntity.badRequest().body(resultado);
         }

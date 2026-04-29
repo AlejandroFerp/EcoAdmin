@@ -174,8 +174,14 @@
               <h3 class="font-semibold text-slate-800 mb-1" id="calcNombre">-</h3>
               <p class="text-xs text-slate-400 mb-4" id="calcRuta">-</p>
 
-              <div class="bg-slate-50 rounded-lg p-3 mb-4 font-mono text-sm text-slate-700">
-                Formula: <span id="calcFormula" class="font-bold text-[#3b82f6]">-</span>
+              <div class="bg-slate-50 rounded-lg p-3 mb-4">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                  <label for="calcFormulaInput" class="text-sm font-medium text-slate-700 whitespace-nowrap">Formula</label>
+                  <input type="text" id="calcFormulaInput" class="form-control-eco flex-1 font-mono text-sm"
+                    placeholder="w * 0.5 + L * 0.1" oninput="calcularTarifa()">
+                  <button type="button" id="btnGuardarFormula" onclick="guardarFormulaTarifa()"
+                    class="btn-primary whitespace-nowrap" style="display:none">Guardar formula</button>
+                </div>
               </div>
 
               <div class="grid grid-cols-2 gap-3 mb-4">
@@ -411,6 +417,7 @@
       var todos = [], filtro = '', filtroEst = '', filtroTrans = '', pagina = 1, POR_PAGINA = 10;
       var idBorrar = null, rolActual = null, idActual = null;
       var rutaSeleccionadaId = null, rutaSeleccionadaTransId = null, edicionAsignacionTransId = null;
+      var calculoTarifaRequestId = 0;
       var mapa = null, capasRuta = [];
 
       var ESTADO_LABELS = { PLANIFICADA: 'Planificada', EN_CURSO: 'En curso', COMPLETADA: 'Completada', CANCELADA: 'Cancelada' };
@@ -551,6 +558,18 @@
         className: '', iconSize: [12, 12], iconAnchor: [6, 6]
       });
 
+      function formatearDireccionMapa(punto) {
+        if (!punto) return '-';
+        var direccion = [punto.calle, punto.ciudad, punto.provincia].filter(function (valor) {
+          return valor != null && String(valor).trim() !== '';
+        }).join(', ');
+        return direccion || punto.nombre || '-';
+      }
+
+      function crearTooltipRuta(nombreRuta) {
+        return esc(nombreRuta || 'Ruta sin nombre');
+      }
+
       function dibujarRutasEnMapa(lista) {
         if (!mapa) return;
         capasRuta.forEach(function (c) { try { mapa.removeLayer(c); } catch (e) { } });
@@ -563,6 +582,9 @@
           if (!tieneCoords) { sinCoords = true; return; }
 
           var oLat = r.origen.latitud, oLon = r.origen.longitud, dLat = r.destino.latitud, dLon = r.destino.longitud;
+          var nombreRutaTooltip = crearTooltipRuta(r.nombre);
+          var origenDireccion = formatearDireccionMapa(r.origen);
+          var destinoDireccion = formatearDireccionMapa(r.destino);
           var popupHtml = '<b>' + esc(r.nombre || '') + '</b>'
             + '<br><span style="color:#64748b;font-size:12px">Varios transp. posibles</span>'
             + '<br><span style="font-size:12px">' + (ESTADO_LABELS[r.estado] || r.estado) + '</span>'
@@ -582,6 +604,7 @@
               var line = e.routes[0] && e.routes[0].coordinates;
               if (line) {
                 var poly = L.polyline(line, { color: '#3b82f6', weight: 4, opacity: 0.75 })
+                  .bindTooltip(nombreRutaTooltip, { sticky: true, direction: 'top' })
                   .bindPopup(popupHtml).addTo(mapa);
                 capasRuta.push(poly);
                 try { mapa.removeControl(control); } catch (e) { }
@@ -591,14 +614,17 @@
             capasRuta.push(control);
           } else {
             var linea = L.polyline([[oLat, oLon], [dLat, dLon]], { color: '#3b82f6', weight: 3, opacity: 0.7 })
+              .bindTooltip(nombreRutaTooltip, { sticky: true, direction: 'top' })
               .bindPopup(popupHtml).addTo(mapa);
             capasRuta.push(linea);
           }
 
           var mO = L.marker([oLat, oLon], { icon: iconOrigen })
-            .bindPopup('<b>Origen</b><br>' + esc(r.origen.nombre || r.origen.calle || '')).addTo(mapa);
+            .bindTooltip(esc(origenDireccion), { sticky: true, direction: 'top' })
+            .bindPopup('<b>Origen</b><br>' + esc(origenDireccion)).addTo(mapa);
           var mD = L.marker([dLat, dLon], { icon: iconDestino })
-            .bindPopup('<b>Destino</b><br>' + esc(r.destino.nombre || r.destino.calle || '')).addTo(mapa);
+            .bindTooltip(esc(destinoDireccion), { sticky: true, direction: 'top' })
+            .bindPopup('<b>Destino</b><br>' + esc(destinoDireccion)).addTo(mapa);
           capasRuta.push(mO, mD);
         });
 
@@ -738,7 +764,8 @@
           detalleRuta += ' \u00b7 ' + asig.transportista.nombre;
         }
         document.getElementById('calcRuta').textContent = detalleRuta;
-        document.getElementById('calcFormula').textContent = obtenerFormulaEfectiva(r, asig) || '-';
+        document.getElementById('calcFormulaInput').value = obtenerFormulaEfectiva(r, asig) || '';
+        document.getElementById('btnGuardarFormula').style.display = (rolActual === 'ADMIN' || rolActual === 'GESTOR') ? '' : 'none';
         document.getElementById('calcW').value = '';
         document.getElementById('calcL').value = r.distanciaKm != null ? r.distanciaKm : '';
         document.getElementById('calcResultado').textContent = '-';
@@ -756,26 +783,88 @@
 
       async function calcularTarifa() {
         if (!rutaSeleccionadaId) return;
+        var requestId = ++calculoTarifaRequestId;
         var w = parseFloat(document.getElementById('calcW').value) || 0;
         var L = parseFloat(document.getElementById('calcL').value) || 0;
+        var formula = document.getElementById('calcFormulaInput').value;
         try {
+          var params = new URLSearchParams();
+          params.set('w', w);
+          params.set('L', L);
+          params.set('formula', formula);
           var url = rutaSeleccionadaTransId != null
-            ? '/api/rutas/' + rutaSeleccionadaId + '/calcular/' + rutaSeleccionadaTransId + '?w=' + w + '&L=' + L
-            : '/api/rutas/' + rutaSeleccionadaId + '/calcular?w=' + w + '&L=' + L;
+            ? '/api/rutas/' + rutaSeleccionadaId + '/calcular/' + rutaSeleccionadaTransId + '?' + params.toString()
+            : '/api/rutas/' + rutaSeleccionadaId + '/calcular?' + params.toString();
           var res = await fetch(url);
           var data = await res.json();
+          if (requestId !== calculoTarifaRequestId) return;
           var errorEl = document.getElementById('calcError');
-          if (data.error) {
+          if (!res.ok || data.error) {
             document.getElementById('calcResultado').textContent = '-';
             errorEl.textContent = data.error;
             errorEl.style.display = '';
           } else {
-            document.getElementById('calcFormula').textContent = data.formula || document.getElementById('calcFormula').textContent;
             document.getElementById('calcResultado').textContent = data.resultado.toFixed(2) + ' ' + (data.moneda || 'EUR');
             errorEl.style.display = 'none';
           }
         } catch (e) {
+          if (requestId !== calculoTarifaRequestId) return;
           document.getElementById('calcResultado').textContent = '-';
+        }
+      }
+
+      async function guardarFormulaTarifa() {
+        if (!rutaSeleccionadaId) return;
+        if (rolActual !== 'ADMIN' && rolActual !== 'GESTOR') return;
+
+        var formula = document.getElementById('calcFormulaInput').value.trim();
+        if (!formula) {
+          if (window.Swal) Swal.fire({ icon: 'warning', title: 'Introduce una formula', text: 'Escribe la formula antes de guardarla.' });
+          return;
+        }
+
+        var ruta = todos.find(function (x) { return x.id === rutaSeleccionadaId; });
+        if (!ruta) return;
+        var asig = buscarAsignacionActiva(ruta, rutaSeleccionadaTransId);
+        var url = rutaSeleccionadaTransId != null
+          ? '/api/rutas/' + rutaSeleccionadaId + '/transportistas/' + rutaSeleccionadaTransId
+          : '/api/rutas/' + rutaSeleccionadaId;
+        var body = rutaSeleccionadaTransId != null
+          ? {
+            transportistaId: rutaSeleccionadaTransId,
+            formulaTarifa: formula,
+            unidadTarifa: asig && asig.unidadTarifa != null ? asig.unidadTarifa : null
+          }
+          : { formulaTarifa: formula };
+
+        try {
+          var res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          if (!res.ok) {
+            var msg = await res.text();
+            try {
+              var err = JSON.parse(msg);
+              msg = err.message || err.error || msg;
+            } catch (_) { }
+            if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: msg || 'No se pudo guardar la formula.' });
+            return;
+          }
+
+          await cargar();
+          await seleccionarRutaTarifa(rutaSeleccionadaId, rutaSeleccionadaTransId);
+          if (window.Swal) Swal.fire({
+            icon: 'success',
+            title: rutaSeleccionadaTransId != null ? 'Formula guardada para el transportista' : 'Formula guardada para la ruta',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+          });
+        } catch (e) {
+          if (window.Swal) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
         }
       }
 
