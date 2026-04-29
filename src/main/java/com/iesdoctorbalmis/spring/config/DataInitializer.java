@@ -7,6 +7,7 @@ import com.iesdoctorbalmis.spring.modelo.Direccion;
 import com.iesdoctorbalmis.spring.modelo.Documento;
 import com.iesdoctorbalmis.spring.modelo.Empresa;
 import com.iesdoctorbalmis.spring.modelo.ListaLer;
+import com.iesdoctorbalmis.spring.modelo.Notificacion;
 import com.iesdoctorbalmis.spring.modelo.Recogida;
 import com.iesdoctorbalmis.spring.modelo.Residuo;
 import com.iesdoctorbalmis.spring.modelo.Ruta;
@@ -25,6 +26,7 @@ import com.iesdoctorbalmis.spring.repository.DireccionRepository;
 import com.iesdoctorbalmis.spring.repository.DocumentoRepository;
 import com.iesdoctorbalmis.spring.repository.EmpresaRepository;
 import com.iesdoctorbalmis.spring.repository.ListaLerRepository;
+import com.iesdoctorbalmis.spring.repository.NotificacionRepository;
 import com.iesdoctorbalmis.spring.repository.RecogidaRepository;
 import com.iesdoctorbalmis.spring.repository.ResiduoRepository;
 import com.iesdoctorbalmis.spring.repository.RutaRepository;
@@ -70,6 +72,7 @@ public class DataInitializer implements ApplicationRunner {
     private final ResiduoRepository residuoRepository;
     private final TrasladoRepository trasladoRepository;
     private final ListaLerRepository listaLerRepository;
+        private final NotificacionRepository notificacionRepository;
     private final DocumentoRepository documentoRepository;
     private final EmpresaRepository empresaRepository;
     private final RecogidaRepository recogidaRepository;
@@ -85,6 +88,7 @@ public class DataInitializer implements ApplicationRunner {
             ResiduoRepository residuoRepository,
             TrasladoRepository trasladoRepository,
             ListaLerRepository listaLerRepository,
+            NotificacionRepository notificacionRepository,
             DocumentoRepository documentoRepository,
             EmpresaRepository empresaRepository,
             RecogidaRepository recogidaRepository,
@@ -99,6 +103,7 @@ public class DataInitializer implements ApplicationRunner {
         this.residuoRepository = residuoRepository;
         this.trasladoRepository = trasladoRepository;
         this.listaLerRepository = listaLerRepository;
+        this.notificacionRepository = notificacionRepository;
         this.documentoRepository = documentoRepository;
         this.empresaRepository = empresaRepository;
         this.recogidaRepository = recogidaRepository;
@@ -121,6 +126,7 @@ public class DataInitializer implements ApplicationRunner {
             log.info("Datos semilla cargados correctamente.");
         }
                 asegurarSolicitudesDemo();
+                                asegurarNotificacionesDemo();
     }
 
     private void cargarListaLer() {
@@ -996,6 +1002,44 @@ public class DataInitializer implements ApplicationRunner {
         log.info("Cargadas 4 solicitudes de registro de prueba");
     }
 
+        private void asegurarNotificacionesDemo() {
+                Usuario adminDemo = usuarioRepository.findByEmail(adminEmail)
+                                .orElseGet(() -> usuarioRepository.findByRol(Rol.ADMIN).stream().findFirst().orElse(null));
+                if (adminDemo == null) {
+                        log.info("No hay admin disponible para cargar notificaciones demo");
+                        return;
+                }
+
+                long pendientes = notificacionRepository.countByDestinatarioAndLeidaFalse(adminDemo);
+                if (pendientes > 0) {
+                        log.info("Notificaciones demo ya cargadas para {} ({})", adminDemo.getEmail(), pendientes);
+                        return;
+                }
+
+                LocalDateTime now = LocalDateTime.now();
+                notificacionRepository.saveAll(List.of(
+                                nuevaNotificacionDemo(
+                                                adminDemo,
+                                                "Nueva solicitud pendiente",
+                                                "Revisa una solicitud de registro nueva para validar el flujo de notificaciones.",
+                                                "/users",
+                                                now.minusHours(2)),
+                                nuevaNotificacionDemo(
+                                                adminDemo,
+                                                "Traslado pendiente de seguimiento",
+                                                "Hay un traslado de prueba esperando revision en la vista de envios.",
+                                                "/shipments",
+                                                now.minusMinutes(45)),
+                                nuevaNotificacionDemo(
+                                                adminDemo,
+                                                "Resumen diario disponible",
+                                                "Abre el dashboard para comprobar que la notificacion desaparece al marcarla como leida.",
+                                                "/dashboard",
+                                                now.minusMinutes(10))));
+
+                log.info("Cargadas 3 notificaciones demo para {}", adminDemo.getEmail());
+        }
+
     private SolicitudRegistro nuevaSolicitudDemo(String nombre,
             String email,
             Rol rolSolicitado,
@@ -1015,6 +1059,17 @@ public class DataInitializer implements ApplicationRunner {
         solicitud.setMotivoRechazo(motivoRechazo);
         return solicitud;
     }
+
+        private Notificacion nuevaNotificacionDemo(Usuario destinatario,
+                        String titulo,
+                        String mensaje,
+                        String enlace,
+                        LocalDateTime fecha) {
+                Notificacion notificacion = new Notificacion(destinatario, titulo, mensaje, enlace);
+                notificacion.setFecha(fecha);
+                notificacion.setLeida(false);
+                return notificacion;
+        }
 
     private void programar(Traslado t, LocalDateTime inicio, LocalDateTime fin) {
         t.setFechaProgramadaInicio(inicio);

@@ -28,6 +28,7 @@ public class DireccionServiceDB implements DireccionService {
 
     @Override
     public Direccion save(Direccion d) {
+        CodigoInmutableSupport.conservarSiAusente(d.getId(), d.getCodigo(), repo::findById, Direccion::getCodigo, d::setCodigo);
         return repo.save(d);
     }
 

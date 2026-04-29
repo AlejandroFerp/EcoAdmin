@@ -45,6 +45,12 @@ public class NotificacionService {
         return repo.save(n);
     }
 
+    @Transactional
+    public void marcarTodasLeidas(Usuario usuario) {
+        repo.findByDestinatarioAndLeidaFalseOrderByFechaDesc(usuario)
+                .forEach(notificacion -> notificacion.setLeida(true));
+    }
+
     public void notificarAdmins(String titulo, String mensaje, String enlace) {
         List<Usuario> admins = usuarioRepo.findByRol(Rol.ADMIN);
         for (Usuario admin : admins) {

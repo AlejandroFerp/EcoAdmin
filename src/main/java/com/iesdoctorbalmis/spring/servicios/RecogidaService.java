@@ -30,6 +30,7 @@ public class RecogidaService {
     }
 
     public Recogida save(Recogida r) {
+        CodigoInmutableSupport.conservarSiAusente(r.getId(), r.getCodigo(), repo::findById, Recogida::getCodigo, r::setCodigo);
         if (r.getEstado() == null) r.setEstado(EstadoRecogida.PROGRAMADA);
         if (r.getEstado() == EstadoRecogida.COMPLETADA && r.getFechaRealizada() == null) {
             r.setFechaRealizada(LocalDate.now());

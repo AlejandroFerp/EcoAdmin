@@ -36,6 +36,7 @@ public class DocumentoServiceDB implements DocumentoService {
 
     @Override
     public Documento save(Documento d) {
+        CodigoInmutableSupport.conservarSiAusente(d.getId(), d.getCodigo(), repo::findById, Documento::getCodigo, d::setCodigo);
         if (d.getTraslado() != null && d.getTraslado().getId() != null)
             d.setTraslado(trasladoRepo.findById(d.getTraslado().getId()).orElse(null));
         return repo.save(d);

@@ -27,6 +27,7 @@ public class UsuarioServiceDB implements UsuarioService {
 
     @Override
     public Usuario save(Usuario u) {
+        CodigoInmutableSupport.conservarSiAusente(u.getId(), u.getCodigo(), repo::findById, Usuario::getCodigo, u::setCodigo);
         // Solo cifrar si viene una password en claro (sin prefijo BCrypt).
         // Evita re-cifrar el hash existente al editar un usuario.
         String pwd = u.getPassword();

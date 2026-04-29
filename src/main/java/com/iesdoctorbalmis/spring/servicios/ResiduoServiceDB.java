@@ -40,6 +40,7 @@ public class ResiduoServiceDB implements ResiduoService {
 
     @Override
     public Residuo save(Residuo r) {
+        CodigoInmutableSupport.conservarSiAusente(r.getId(), r.getCodigo(), repo::findById, Residuo::getCodigo, r::setCodigo);
         if (r.getCentro() != null && r.getCentro().getId() != null)
             r.setCentro(centroRepo.findById(r.getCentro().getId()).orElseThrow());
 

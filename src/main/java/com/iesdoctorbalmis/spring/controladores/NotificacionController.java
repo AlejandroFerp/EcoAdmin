@@ -25,10 +25,10 @@ public class NotificacionController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar mis notificaciones")
+    @Operation(summary = "Listar mis notificaciones sin leer")
     public List<Notificacion> listar() {
         Usuario u = authService.obtenerUsuarioActual();
-        return service.listar(u);
+        return service.noLeidas(u);
     }
 
     @GetMapping("/no-leidas")
@@ -43,5 +43,13 @@ public class NotificacionController {
     public ResponseEntity<Notificacion> marcarLeida(@PathVariable Long id) {
         Usuario u = authService.obtenerUsuarioActual();
         return ResponseEntity.ok(service.marcarLeida(id, u));
+    }
+
+    @PatchMapping("/leer-todas")
+    @Operation(summary = "Marcar todas mis notificaciones como leidas")
+    public ResponseEntity<Void> marcarTodasLeidas() {
+        Usuario u = authService.obtenerUsuarioActual();
+        service.marcarTodasLeidas(u);
+        return ResponseEntity.noContent().build();
     }
 }

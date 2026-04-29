@@ -37,6 +37,7 @@ public class CentroServiceDB implements CentroService {
 
     @Override
     public Centro save(Centro c) {
+        CodigoInmutableSupport.conservarSiAusente(c.getId(), c.getCodigo(), repo::findById, Centro::getCodigo, c::setCodigo);
         if (c.getDireccion() != null && c.getDireccion().getId() != null) {
             c.setDireccion(direccionRepo.findById(c.getDireccion().getId()).orElseThrow());
         }

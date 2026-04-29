@@ -75,6 +75,7 @@ public class TrasladoServiceDB implements TrasladoService {
     @Override
     @Transactional
     public Traslado save(Traslado t) {
+        CodigoInmutableSupport.conservarSiAusente(t.getId(), t.getCodigo(), trasladoRepo::findById, Traslado::getCodigo, t::setCodigo);
         if (t.getCentroProductor() != null && t.getCentroProductor().getId() != null)
             t.setCentroProductor(centroRepo.findById(t.getCentroProductor().getId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Centro productor no encontrado")));
