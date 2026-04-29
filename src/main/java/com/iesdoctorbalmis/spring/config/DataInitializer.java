@@ -1,5 +1,20 @@
 package com.iesdoctorbalmis.spring.config;
 
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iesdoctorbalmis.spring.modelo.Centro;
@@ -14,10 +29,10 @@ import com.iesdoctorbalmis.spring.modelo.Ruta;
 import com.iesdoctorbalmis.spring.modelo.SolicitudRegistro;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
 import com.iesdoctorbalmis.spring.modelo.Usuario;
-import com.iesdoctorbalmis.spring.modelo.enums.EstadoSolicitud;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRecogida;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoRuta;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoSolicitud;
 import com.iesdoctorbalmis.spring.modelo.enums.EstadoTraslado;
 import com.iesdoctorbalmis.spring.modelo.enums.Rol;
 import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
@@ -34,20 +49,6 @@ import com.iesdoctorbalmis.spring.repository.SolicitudRegistroRepository;
 import com.iesdoctorbalmis.spring.repository.TrasladoRepository;
 import com.iesdoctorbalmis.spring.repository.UsuarioRepository;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 public class DataInitializer implements ApplicationRunner {
