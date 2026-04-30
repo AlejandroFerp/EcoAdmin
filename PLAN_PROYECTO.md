@@ -243,6 +243,37 @@ Esta seccion queda inaugurada como memoria operativa del proyecto para incidenci
 ### 6. Thymeleaf cache en desarrollo
 **Bug:** Cambios en templates HTML no se reflejan sin reiniciar si el servidor uso la version compilada anterior.
 **Solucion:** `spring.thymeleaf.cache=false` (ya configurado). Si persiste, recompilar con `mvnw compile`.
+
+### 7. Runtime local desalineado con el stack del proyecto
+**Bug:** `application.properties` habia quedado apuntando por defecto a PostgreSQL en `localhost:5432`, asi que el proyecto no arrancaba en este equipo si no habia un servidor PostgreSQL local levantado.
+**Causa raiz:** La configuracion base dejo de reflejar el stack declarado del proyecto (`SQLite dev / H2 test / PostgreSQL prod`) y el perfil por defecto dejo de ser usable para desarrollo local.
+**Solucion confirmada:** Restaurar `application.properties` para que use `jdbc:sqlite:ecoadmin.db` por defecto y mantener PostgreSQL en `application-prod.properties`.
+**Precaucion:** Si se activa `SPRING_PROFILES_ACTIVE=prod`, el arranque vuelve a requerir PostgreSQL disponible. Ademas, `mvn spring-boot:run` sigue pasando por compilacion de tests y hoy puede fallar por `DocumentoE2ETest`; para trabajar localmente aqui, usar la ejecucion directa de la aplicacion o lanzar Maven con `-Dmaven.test.skip=true` mientras ese test se adapta.
+
+## Plan operativo de entornos
+
+### Entorno actual (este equipo) — seguir con SQLite
+- Objetivo: poder continuar desarrollo sin depender de PostgreSQL local.
+- Configuracion: `application.properties` usa SQLite por defecto en `ServidorApiRest/ecoadmin.db`.
+- Requisito: JDK 25 en `C:\Users\afp5\.jdk\jdk-25`.
+- Ejecucion recomendada: arrancar la aplicacion sin perfil `prod`, desde el modulo `ServidorApiRest`.
+- Resultado esperado: la aplicacion crea o reutiliza `ecoadmin.db` y no intenta conectar a `localhost:5432`.
+
+### Entorno de casa — PostgreSQL local
+- Objetivo: probar el mismo stack de produccion, pero en local.
+- Activar perfil: `SPRING_PROFILES_ACTIVE=prod`.
+- Variables minimas: `DATABASE_URL=jdbc:postgresql://localhost:5432/ecoadmin`, `DATABASE_USER`, `DATABASE_PASSWORD`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+- Requisito previo: tener PostgreSQL escuchando realmente en `localhost:5432` y con la base `ecoadmin` creada.
+- Efecto: `application-prod.properties` sobreescribe el datasource y deja de usarse el archivo SQLite.
+
+### Checklist de migracion a PostgreSQL local
+1. Instalar o arrancar PostgreSQL local.
+2. Crear base de datos `ecoadmin` y un usuario con permisos sobre ella.
+3. Exportar `SPRING_PROFILES_ACTIVE=prod`.
+4. Exportar `DATABASE_URL`, `DATABASE_USER` y `DATABASE_PASSWORD`.
+5. Mantener `ADMIN_EMAIL` y `ADMIN_PASSWORD` definidos.
+6. Arrancar la aplicacion y verificar que Hibernate conecta a PostgreSQL en lugar de `jdbc:sqlite:ecoadmin.db`.
+7. Si el arranque se hace con Maven y falla en `DocumentoE2ETest`, migrar ese test fuera de `AutoConfigureMockMvc` o usar temporalmente `-Dmaven.test.skip=true` solo para el run local.
 **Precaucion:** Verificar que el target/classes tiene la version actualizada del template.
 
 ### 7. Archivo login.html duplicado

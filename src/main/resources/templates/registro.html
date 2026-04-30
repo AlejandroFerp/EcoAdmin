@@ -172,14 +172,7 @@ function enviarSolicitud(e) {
         if (!r.ok) return r.json().then(function(j) { throw new Error(j.mensaje || j.message || 'Error'); });
         return r.json();
     }).then(function() {
-        document.getElementById('msgOk').textContent = 'Solicitud enviada correctamente. Un administrador la revisara pronto.';
-        document.getElementById('msgOk').classList.remove('hidden');
-        form.reset();
-        document.querySelectorAll('.role-btn').forEach(function(b) { b.classList.remove('active'); });
-        document.querySelector('[data-rol="PRODUCTOR"]').classList.add('active');
-        document.getElementById('rolSolicitado').value = 'PRODUCTOR';
-        document.getElementById('gestorFields').classList.add('hidden');
-        document.getElementById('transportistaFields').classList.add('hidden');
+            window.location.assign('/login?registro=ok');
     }).catch(function(err) {
         document.getElementById('msgErr').textContent = err.message;
         document.getElementById('msgErr').classList.remove('hidden');
