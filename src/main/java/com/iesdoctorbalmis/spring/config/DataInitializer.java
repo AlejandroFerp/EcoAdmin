@@ -999,9 +999,9 @@ public class DataInitializer implements ApplicationRunner {
                         return;
                 }
 
-                long pendientes = notificacionRepository.countByDestinatarioAndLeidaFalse(adminDemo);
-                if (pendientes > 0) {
-                        log.info("Notificaciones demo ya cargadas para {} ({})", adminDemo.getEmail(), pendientes);
+                long existentes = notificacionRepository.findByDestinatarioOrderByFechaDesc(adminDemo).size();
+                if (existentes > 0) {
+                        log.info("Notificaciones demo ya cargadas para {} ({})", adminDemo.getEmail(), existentes);
                         return;
                 }
 

@@ -1,5 +1,6 @@
 package com.iesdoctorbalmis.spring;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -90,8 +91,8 @@ class NotificacionControllerTest {
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
-        assert notificacionRepo.countByDestinatarioAndLeidaFalse(admin) == 0;
-        assert notificacionRepo.countByDestinatarioAndLeidaFalse(otroAdmin) == 1;
+        assertThat(notificacionRepo.countByDestinatarioAndLeidaFalse(admin)).isZero();
+        assertThat(notificacionRepo.countByDestinatarioAndLeidaFalse(otroAdmin)).isEqualTo(1);
     }
 
     private Notificacion crearNotificacion(Usuario destinatario, String titulo, boolean leida, String enlace) {

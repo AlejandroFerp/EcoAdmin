@@ -37,8 +37,8 @@ class DataInitializerNotificacionSeedTest {
     }
 
     @Test
-    @DisplayName("Repuebla notificaciones demo cuando el admin no tiene pendientes y evita duplicados")
-    void repueblaNotificacionesDemoCuandoNoExisten() throws Exception {
+    @DisplayName("No repuebla notificaciones demo cuando el admin ya tuvo notificaciones, aunque esten leidas")
+    void noRepueblaNotificacionesDemoSiYaExisten() throws Exception {
         Usuario admin = usuarioRepository.findByEmail(adminEmail).orElseThrow();
         assertThat(notificacionRepository.countByDestinatarioAndLeidaFalse(admin)).isZero();
 
@@ -53,8 +53,12 @@ class DataInitializerNotificacionSeedTest {
                         "Traslado pendiente de seguimiento",
                         "Nueva solicitud pendiente");
 
+        notificaciones.forEach(notificacion -> notificacion.setLeida(true));
+        notificacionRepository.saveAll(notificaciones);
+
         dataInitializer.run(new DefaultApplicationArguments(new String[0]));
 
-        assertThat(notificacionRepository.countByDestinatarioAndLeidaFalse(admin)).isEqualTo(3);
+        assertThat(notificacionRepository.findByDestinatarioOrderByFechaDesc(admin)).hasSize(3);
+        assertThat(notificacionRepository.countByDestinatarioAndLeidaFalse(admin)).isZero();
     }
 }
