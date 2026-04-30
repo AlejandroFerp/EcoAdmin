@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ecoadmin-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ecoadmin}
+      POSTGRES_USER: ${DATABASE_USER:-ecoadmin}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-ecoadmin} -d ${DB_NAME:-ecoadmin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  db-backup:
+    image: prodrigestivill/postgres-backup-local:16
+    container_name: ecoadmin-db-backup
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${DB_NAME:-ecoadmin}
+      POSTGRES_USER: ${DATABASE_USER:-ecoadmin}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 3
+      BACKUP_DIR: /backups
+    volumes:
+      - postgres_backups:/backups
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecoadmin-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DATABASE_URL: jdbc:postgresql://db:5432/${DB_NAME:-ecoadmin}
+      DATABASE_USER: ${DATABASE_USER:-ecoadmin}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ecoadmin.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+  postgres_backups:
