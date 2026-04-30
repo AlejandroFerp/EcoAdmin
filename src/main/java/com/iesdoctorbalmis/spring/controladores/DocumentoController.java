@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,10 +31,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.iesdoctorbalmis.spring.dto.DocumentoDraftCreateDTO;
+import com.iesdoctorbalmis.spring.dto.DocumentoWorkflowDTO;
 import com.iesdoctorbalmis.spring.excepciones.RecursoNoEncontradoException;
+import com.iesdoctorbalmis.spring.modelo.Centro;
 import com.iesdoctorbalmis.spring.modelo.Documento;
 import com.iesdoctorbalmis.spring.modelo.Traslado;
+import com.iesdoctorbalmis.spring.modelo.enums.EstadoDocumento;
 import com.iesdoctorbalmis.spring.modelo.enums.TipoDocumento;
+import com.iesdoctorbalmis.spring.repository.CentroRepository;
 import com.iesdoctorbalmis.spring.servicios.DocumentoService;
 import com.iesdoctorbalmis.spring.servicios.PdfService;
 import com.iesdoctorbalmis.spring.servicios.TrasladoService;
@@ -48,15 +54,17 @@ public class DocumentoController {
     private final DocumentoService service;
     private final TrasladoService trasladoService;
     private final PdfService pdfService;
+    private final CentroRepository centroRepo;
 
     @Value("${ecoadmin.uploads.documentos:uploads/documentos}")
     private String directorioUploads;
 
     public DocumentoController(DocumentoService service, TrasladoService trasladoService,
-                               PdfService pdfService) {
+                               PdfService pdfService, CentroRepository centroRepo) {
         this.service = service;
         this.trasladoService = trasladoService;
         this.pdfService = pdfService;
+        this.centroRepo = centroRepo;
     }
 
     @GetMapping
@@ -81,7 +89,51 @@ public class DocumentoController {
     @PostMapping
     public ResponseEntity<Documento> crear(@RequestBody Documento d) {
         d.setArchivoUrl(null);
+        if (requiereAdjuntoManual(d.getTipo())) {
+            d.setEstado(EstadoDocumento.PENDIENTE_ADJUNTO);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(d));
+    }
+
+    @PostMapping("/drafts")
+    public ResponseEntity<DocumentoWorkflowDTO> crearDraft(@RequestBody DocumentoDraftCreateDTO draft) {
+        // Validar draft: tipo requerido, restricciones por tipo, metadatos si aplica
+        validarDraft(draft);
+
+        Documento documento = new Documento();
+        documento.setTipo(draft.tipo());
+        documento.setNumeroReferencia(trimOrNull(draft.numeroReferencia()));
+        documento.setFechaEmision(draft.fechaEmision());
+        documento.setFechaVencimiento(draft.fechaVencimiento());
+        documento.setObservaciones(trimOrNull(draft.observaciones()));
+        documento.setArchivoUrl(null);
+
+        if (draft.trasladoId() != null) {
+            Traslado traslado = trasladoService.findById(draft.trasladoId());
+            if (traslado == null) {
+                throw new IllegalArgumentException("Traslado no encontrado: " + draft.trasladoId());
+            }
+            documento.setTraslado(traslado);
+        }
+
+        if (draft.centroId() != null) {
+            Centro centro = centroRepo.findById(draft.centroId())
+                    .orElseThrow(() -> new IllegalArgumentException("Centro no encontrado: " + draft.centroId()));
+            documento.setCentro(centro);
+        }
+
+        // Estado automático según tipo
+        if (requiereAdjuntoManual(draft.tipo())) {
+            // Tipos que necesitan PDF externo: CONTRATO, FICHA, HOJA, INFORME
+            documento.setEstado(EstadoDocumento.PENDIENTE_ADJUNTO);
+        } else {
+            // Tipos generables: DOCUMENTO_IDENTIFICACION, NOTIFICACION_PREVIA, etc.
+            documento.setEstado(EstadoDocumento.BORRADOR);
+        }
+
+        Documento guardado = service.save(documento);
+        // Devolver workflow con siguiente acción clara para el cliente
+        return ResponseEntity.status(HttpStatus.CREATED).body(aWorkflow(guardado));
     }
 
     @PutMapping("/{id}")
@@ -149,7 +201,64 @@ public class DocumentoController {
             Files.copy(in, destino, StandardCopyOption.REPLACE_EXISTING);
         }
         d.setArchivoUrl("/uploads/documentos/" + nombre);
+        if (d.getEstado() == EstadoDocumento.PENDIENTE_ADJUNTO || d.getEstado() == EstadoDocumento.BORRADOR) {
+            d.setEstado(EstadoDocumento.EMITIDO);
+            if (d.getFechaEmision() == null) {
+                d.setFechaEmision(LocalDate.now());
+            }
+        }
         return ResponseEntity.ok(service.save(d));
+    }
+
+    @GetMapping("/{id}/workflow")
+    public ResponseEntity<DocumentoWorkflowDTO> workflow(@PathVariable Long id) {
+        Documento d = service.findById(id);
+        if (d == null) throw new RecursoNoEncontradoException("Documento no encontrado: " + id);
+        return ResponseEntity.ok(aWorkflow(d));
+    }
+
+    /**
+     * Genera PDF server-side para documentos que nacen del dominio (DI, NP, etc.).\n
+     * Solo aplica a tipos que no requieren adjunto manual.\n
+     * Documentos adjuntos externamente (CONTRATO, FICHA_ACEPTACION) NO se pueden generar aquí.\n
+     * \n
+     * POST /{id}/generar marca el documento como EMITIDO y devuelve workflow actualizado + URL del PDF.\n
+     */
+    @PostMapping("/{id}/generar")
+    public ResponseEntity<Map<String, Object>> generarDocumento(@PathVariable Long id) {
+        Documento d = service.findById(id);
+        if (d == null) throw new RecursoNoEncontradoException("Documento no encontrado: " + id);
+        
+        // Tipos que no son generables manualmente
+        if (d.getTipo() == TipoDocumento.ARCHIVO_CRONOLOGICO) {
+            throw new IllegalArgumentException("ARCHIVO_CRONOLOGICO se genera automaticamente del sistema, no manualmente");
+        }
+        if (requiereAdjuntoManual(d.getTipo())) {
+            throw new IllegalArgumentException("Este tipo documental requiere adjuntar un PDF externo, no se genera desde el servidor");
+        }
+        if (d.getTraslado() == null) {
+            throw new IllegalArgumentException("Este tipo documental requiere un traslado asociado para generar el PDF");
+        }
+
+        // Generar PDF: todos los tipos generables pasan aquí
+        try {
+            generarPdf(d.getTipo(), d.getTraslado());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error al generar PDF para tipo " + d.getTipo() + ": " + e.getMessage(), e);
+        }
+
+        // Marcar como EMITIDO y establecer fecha de emisión si no existe
+        d.setEstado(EstadoDocumento.EMITIDO);
+        if (d.getFechaEmision() == null) {
+            d.setFechaEmision(LocalDate.now());
+        }
+        Documento actualizado = service.save(d);
+
+        // Respuesta con workflow actualizado y URL del PDF
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("workflow", aWorkflow(actualizado));
+        body.put("pdfUrl", "/api/documentos/" + id + "/pdf?inline=true");
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping("/{id}/archivo")
@@ -191,5 +300,144 @@ public class DocumentoController {
                     return m;
                 })
                 .toList();
+    }
+
+    /**
+     * Valida el draft de creación según tipo documental.
+     * Ensures: tipo es requerido, ciertos tipos requieren trasladoId/centroId,
+     * metadatos cumplen esquema básico por tipo.
+     */
+    private void validarDraft(DocumentoDraftCreateDTO draft) {
+        if (draft == null || draft.tipo() == null) {
+            throw new IllegalArgumentException("El tipo de documento es obligatorio");
+        }
+        if (draft.tipo() == TipoDocumento.ARCHIVO_CRONOLOGICO) {
+            throw new IllegalArgumentException("ARCHIVO_CRONOLOGICO no se crea manualmente desde este flujo");
+        }
+        if ((draft.tipo() == TipoDocumento.DOCUMENTO_IDENTIFICACION
+                || draft.tipo() == TipoDocumento.NOTIFICACION_PREVIA)
+                && draft.trasladoId() == null) {
+            throw new IllegalArgumentException("Este tipo documental requiere trasladoId");
+        }
+        if (draft.tipo() == TipoDocumento.CONTRATO && draft.centroId() == null) {
+            throw new IllegalArgumentException("CONTRATO requiere centroId");
+        }
+        // Validar metadatos según tipo si están presentes
+        if (draft.metadatos() != null && !draft.metadatos().isEmpty()) {
+            validarMetadatos(draft.tipo(), draft.metadatos());
+        }
+    }
+
+    /**
+     * Valida contenido de metadatos según tipo documental.
+     * Para DI: ler y cantidad son campos auxiliares sin validación obligatoria en esta fase.
+     * Para NP: fechaPrevista y diasAntelacion deben ser valores numéricos/fechas coherentes si se envían.
+     * Para CONTRATO: contraparte es opcional; fechaFirma debe ser fecha válida si se envía.
+     */
+    private void validarMetadatos(TipoDocumento tipo, Map<String, Object> metadatos) {
+        if (tipo == null || metadatos == null) {
+            return;
+        }
+        try {
+            switch (tipo) {
+                case DOCUMENTO_IDENTIFICACION -> {
+                    // ler y cantidad son informativos; no son obligatorios
+                    Object ler = metadatos.get("ler");
+                    Object cantidad = metadatos.get("cantidad");
+                    if (cantidad != null && !(cantidad instanceof Number)) {
+                        throw new IllegalArgumentException("DI.cantidad debe ser numérico");
+                    }
+                }
+                case NOTIFICACION_PREVIA -> {
+                    Object diasAntelacion = metadatos.get("diasAntelacion");
+                    if (diasAntelacion != null && !(diasAntelacion instanceof Number)) {
+                        throw new IllegalArgumentException("NP.diasAntelacion debe ser numérico");
+                    }
+                    // fechaPrevista será string del input date HTML, se tolera
+                }
+                case CONTRATO -> {
+                    // contraparte y fechaFirma son informativos; se toleran strings
+                }
+                default -> {
+                    // Otros tipos no procesan metadatos en esta fase
+                }
+            }
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Metadatos malformados para tipo " + tipo + ": " + e.getMessage(), e);
+        }
+    }
+
+    private boolean requiereAdjuntoManual(TipoDocumento tipo) {
+        if (tipo == null) {
+            return false;
+        }
+        return switch (tipo) {
+            case CONTRATO, FICHA_ACEPTACION, HOJA_SEGUIMIENTO, INFORME_FINAL -> true;
+            case DOCUMENTO_IDENTIFICACION, NOTIFICACION_PREVIA, ARCHIVO_CRONOLOGICO -> false;
+        };
+    }
+
+    private DocumentoWorkflowDTO aWorkflow(Documento d) {
+        boolean tieneArchivo = d.getArchivoUrl() != null && !d.getArchivoUrl().isBlank();
+        boolean requiereAdjunto = requiereAdjuntoManual(d.getTipo());
+        String siguienteAccion;
+        if (requiereAdjunto && !tieneArchivo) {
+            siguienteAccion = "SUBIR_PDF";
+        } else if (!requiereAdjunto && d.getEstado() != EstadoDocumento.EMITIDO) {
+            siguienteAccion = "GENERAR_PDF";
+        } else {
+            siguienteAccion = "LISTO";
+        }
+        return new DocumentoWorkflowDTO(
+                d.getId(),
+                d.getCodigo(),
+                d.getTipo(),
+                d.getEstado(),
+                d.getNumeroReferencia(),
+                requiereAdjunto,
+                tieneArchivo,
+                d.getArchivoUrl(),
+                siguienteAccion
+        );
+    }
+
+    /**
+     * Genera PDF según tipo documental.
+     * Cada tipo de documento genera su propio PDF con título y contenido específico.
+     * 
+     * Mapeo de tipos a generadores:
+     * - DOCUMENTO_IDENTIFICACION → CartaDePorte
+     * - NOTIFICACION_PREVIA → NotificacionTraslado
+     * - FICHA_ACEPTACION → FichaAceptacion
+     * - INFORME_FINAL → Informe de Traslado
+     * - HOJA_SEGUIMIENTO → HojaSeguimiento
+     * - CONTRATO → Contrato/Acuerdo
+     * - ARCHIVO_CRONOLOGICO → CartaDePorte (fallback)
+     * 
+     * @param tipo TipoDocumento
+     * @param t Traslado asociado (requerido)
+     * @return byte[] del PDF generado
+     */
+    private byte[] generarPdf(TipoDocumento tipo, Traslado t) {
+        if (t == null) {
+            throw new IllegalArgumentException("No se puede generar PDF sin traslado asociado");
+        }
+        return switch (tipo) {
+            case DOCUMENTO_IDENTIFICACION -> pdfService.generarCartaDePorte(t);
+            case NOTIFICACION_PREVIA -> pdfService.generarNotificacionTraslado(t);
+            case FICHA_ACEPTACION -> pdfService.generarFichaAceptacion(t);
+            case INFORME_FINAL -> pdfService.generarInformeDocumento(t);
+            case HOJA_SEGUIMIENTO -> pdfService.generarHojaSeguimiento(t);
+            case CONTRATO -> pdfService.generarDocumentoContrato(t);
+            case ARCHIVO_CRONOLOGICO -> pdfService.generarCartaDePorte(t); // fallback
+        };
+    }
+
+    private String trimOrNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

@@ -58,6 +58,22 @@ public class PdfService {
         return generarDocumento("CERTIFICADO DE RECEPCIÓN", traslado, false);
     }
 
+    public byte[] generarFichaAceptacion(Traslado traslado) {
+        return generarDocumento("FICHA DE ACEPTACIÓN", traslado, false);
+    }
+
+    public byte[] generarHojaSeguimiento(Traslado traslado) {
+        return generarDocumento("HOJA DE SEGUIMIENTO", traslado, true);
+    }
+
+    public byte[] generarInformeDocumento(Traslado traslado) {
+        return generarDocumento("INFORME DEL TRASLADO", traslado, false);
+    }
+
+    public byte[] generarDocumentoContrato(Traslado traslado) {
+        return generarDocumento("CONTRATO / ACUERDO", traslado, false);
+    }
+
     // -------------------------------------------------------------------------
     // Implementación interna
     // -------------------------------------------------------------------------

@@ -50,6 +50,7 @@
                     <th>Referencia</th>
                     <th>Tipo</th>
                     <th>Estado</th>
+                    <th class="hidden md:table-cell">Siguiente</th>
                     <th class="hidden md:table-cell">Traslado</th>
                     <th class="hidden lg:table-cell">Fecha emision</th>
                     <th class="hidden lg:table-cell">Vencimiento</th>
@@ -57,7 +58,7 @@
                 </tr>
             </thead>
             <tbody id="tablaCuerpo">
-                <tr><td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td></tr>
+                <tr><td colspan="9" class="text-center py-12 text-slate-400">Cargando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -74,12 +75,13 @@
                         <option value="DOCUMENTO_IDENTIFICACION">Documento de Identificacion (DI)</option>
                         <option value="CONTRATO">Contrato</option>
                         <option value="NOTIFICACION_PREVIA">Notificacion Previa</option>
-                        <option value="ARCHIVO_CRONOLOGICO">Archivo Cronologico</option>
+                        <option value="ARCHIVO_CRONOLOGICO" disabled>Archivo Cronologico (automatico)</option>
                         <option value="FICHA_ACEPTACION">Ficha de Aceptacion</option>
                         <option value="HOJA_SEGUIMIENTO">Hoja de Seguimiento</option>
                         <option value="INFORME_FINAL">Informe Final</option>
                     </select>
                 </div>
+                <div id="tipoDocInfo" class="col-span-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2"></div>
                 <div class="col-span-2">
                     <label class="label-eco">Numero de referencia</label>
                     <input type="text" id="fReferencia" class="form-control-eco" placeholder="DI-2025-001">
@@ -88,14 +90,22 @@
                     <label class="label-eco">Estado</label>
                     <select id="fEstado" class="form-control-eco">
                         <option value="BORRADOR">Borrador</option>
+                        <option value="PENDIENTE_ADJUNTO">Pendiente de adjunto</option>
                         <option value="EMITIDO">Emitido</option>
                         <option value="CERRADO">Cerrado</option>
                         <option value="VENCIDO">Vencido</option>
                     </select>
                 </div>
                 <div>
-                    <label class="label-eco">Traslado ID</label>
+                    <label id="lblTraslado" class="label-eco">Traslado ID</label>
                     <input type="number" id="fTrasladoId" class="form-control-eco" placeholder="(opcional)">
+                </div>
+                <div>
+                    <label id="lblCentro" class="label-eco">Centro ID</label>
+                    <input type="number" id="fCentroId" class="form-control-eco" placeholder="(opcional)">
+                </div>
+                <div id="estadoAutoInfo" class="col-span-2 hidden text-xs text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                    El estado se asigna automáticamente durante la creación según el tipo y el adjunto.
                 </div>
                 <div>
                     <label class="label-eco">Fecha emision</label>
@@ -108,6 +118,45 @@
                 <div class="col-span-2">
                     <label class="label-eco">Observaciones</label>
                     <textarea id="fObservaciones" class="form-control-eco h-20 resize-none" placeholder="Notas adicionales..."></textarea>
+                </div>
+                <div id="seccionMetaDI" class="col-span-2 hidden border border-slate-200 rounded-lg p-3 bg-slate-50">
+                    <p class="text-xs font-semibold text-slate-700 mb-2">Datos DI</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="label-eco">Codigo LER</label>
+                            <input type="text" id="mDiLer" class="form-control-eco" placeholder="16 06 01*">
+                        </div>
+                        <div>
+                            <label class="label-eco">Cantidad</label>
+                            <input type="number" id="mDiCantidad" class="form-control-eco" placeholder="0" min="0" step="any">
+                        </div>
+                    </div>
+                </div>
+                <div id="seccionMetaNP" class="col-span-2 hidden border border-slate-200 rounded-lg p-3 bg-slate-50">
+                    <p class="text-xs font-semibold text-slate-700 mb-2">Datos Notificacion Previa</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="label-eco">Fecha prevista</label>
+                            <input type="date" id="mNpFechaPrevista" class="form-control-eco">
+                        </div>
+                        <div>
+                            <label class="label-eco">Dias de antelacion</label>
+                            <input type="number" id="mNpDiasAntelacion" class="form-control-eco" min="0" step="1" placeholder="10">
+                        </div>
+                    </div>
+                </div>
+                <div id="seccionMetaContrato" class="col-span-2 hidden border border-slate-200 rounded-lg p-3 bg-slate-50">
+                    <p class="text-xs font-semibold text-slate-700 mb-2">Datos Contrato</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="label-eco">Contraparte</label>
+                            <input type="text" id="mContratoParte" class="form-control-eco" placeholder="Empresa / proveedor">
+                        </div>
+                        <div>
+                            <label class="label-eco">Fecha de firma</label>
+                            <input type="date" id="mContratoFirma" class="form-control-eco">
+                        </div>
+                    </div>
                 </div>
     </th:block>
 </div>
@@ -161,6 +210,7 @@ const TIPO_LABELS = {
 
 const ESTADO_CLASES = {
     BORRADOR: 'badge-ghost',
+    PENDIENTE_ADJUNTO: 'badge-warning',
     EMITIDO: 'badge-success',
     CERRADO: 'badge-neutral',
     VENCIDO: 'badge-error'
@@ -224,22 +274,25 @@ function renderTabla() {
     const tbody = document.getElementById('tablaCuerpo');
 
     if (pagina_items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-12 text-slate-400">Sin resultados</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400">Sin resultados</td></tr>`;
         actualizarPaginacion(0, 0, 0);
         return;
     }
 
     tbody.innerHTML = pagina_items.map(d => `
-        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" ondblclick="emitirPdf(${d.id})" title="Doble clic: vista previa">
+        <tr class="${claseFilaDocumento(d)} transition-colors cursor-pointer" ondblclick="emitirPdf(${d.id})" title="Doble clic: vista previa">
             <td class="font-mono text-xs text-slate-500">${d.id}</td>
             <td class="font-medium text-slate-800">${d.numeroReferencia || '<span class="text-slate-400">—</span>'}</td>
             <td>${window.tipoDocBadge ? window.tipoDocBadge(d.tipo) : (TIPO_LABELS[d.tipo] || d.tipo)}</td>
-            <td>${window.estadoDocBadge ? window.estadoDocBadge(d.estado) : d.estado}</td>
+            <td>${window.estadoDocBadge ? window.estadoDocBadge(d.estado) : estadoDocBadgeLocal(d.estado)}</td>
+                <td class="hidden md:table-cell text-xs">${siguienteAccionBadge(d)}</td>
             <td class="hidden md:table-cell text-slate-600 text-sm">${d.traslado ? '#' + d.traslado.id : '<span class="text-slate-400">—</span>'}</td>
             <td class="hidden lg:table-cell text-slate-500 text-xs">${d.fechaEmision ? formatFecha(d.fechaEmision) : '—'}</td>
             <td class="hidden lg:table-cell text-slate-500 text-xs">${vencimientoBadge(d)}</td>
             <td class="text-right">
                 <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()" ondblclick="event.stopPropagation()">
+                    ${necesitaAdjunto(d) ? `<button onclick="seleccionarYSubirPdf(${d.id})" title="Completar adjunto" class="btn btn-ghost btn-xs text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200 px-2">Completar adjunto</button>` : ''}
+                    ${necesitaGenerar(d) ? `<button onclick="generarDocumentoDesdeFila(${d.id})" title="Generar PDF" class="btn btn-ghost btn-xs text-blue-700 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-2">Generar</button>` : ''}
                     <button onclick="emitirPdf(${d.id})" title="Emitir PDF"
                             ${d.traslado ? '' : 'disabled'}
                             class="btn btn-ghost btn-xs text-slate-600 hover:text-emerald-600 p-1 disabled:opacity-30">
@@ -310,9 +363,12 @@ function abrirCrear() {
     document.getElementById('fReferencia').value = '';
     document.getElementById('fEstado').value = 'BORRADOR';
     document.getElementById('fTrasladoId').value = '';
+    document.getElementById('fCentroId').value = '';
     document.getElementById('fFechaEmision').value = '';
     document.getElementById('fFechaVencimiento').value = '';
     document.getElementById('fObservaciones').value = '';
+    actualizarFormularioSegunTipo();
+    actualizarModoEstado();
     if (window.refreshChoices) {
         window.refreshChoices(document.getElementById('fTipo'));
         window.refreshChoices(document.getElementById('fEstado'));
@@ -329,9 +385,12 @@ async function abrirEditar(id) {
     document.getElementById('fReferencia').value = d.numeroReferencia || '';
     document.getElementById('fEstado').value = d.estado;
     document.getElementById('fTrasladoId').value = d.traslado ? d.traslado.id : '';
+    document.getElementById('fCentroId').value = d.centro ? d.centro.id : '';
     document.getElementById('fFechaEmision').value = fechaParaInput(d.fechaEmision);
     document.getElementById('fFechaVencimiento').value = fechaParaInput(d.fechaVencimiento);
     document.getElementById('fObservaciones').value = d.observaciones || '';
+    actualizarFormularioSegunTipo();
+    actualizarModoEstado();
     if (window.refreshChoices) {
         window.refreshChoices(document.getElementById('fTipo'));
         window.refreshChoices(document.getElementById('fEstado'));
@@ -348,32 +407,109 @@ function fechaParaInput(arr) {
 async function guardar() {
     const id = document.getElementById('itemId').value;
     const trasladoIdVal = document.getElementById('fTrasladoId').value;
-    const payload = {
-        tipo: document.getElementById('fTipo').value,
-        numeroReferencia: document.getElementById('fReferencia').value.trim(),
-        estado: document.getElementById('fEstado').value,
-        traslado: trasladoIdVal ? { id: parseInt(trasladoIdVal) } : null,
-        fechaEmision: document.getElementById('fFechaEmision').value || null,
-        fechaVencimiento: document.getElementById('fFechaVencimiento').value || null,
-        observaciones: document.getElementById('fObservaciones').value.trim() || null
-    };
-    const url = id ? `${API}/${id}` : API;
-    const method = id ? 'PUT' : 'POST';
     try {
-        const r = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!r.ok) throw new Error(r.status);
+        if (!id) {
+            const draftPayload = {
+                tipo: document.getElementById('fTipo').value,
+                trasladoId: trasladoIdVal ? parseInt(trasladoIdVal) : null,
+                centroId: document.getElementById('fCentroId').value ? parseInt(document.getElementById('fCentroId').value) : null,
+                numeroReferencia: document.getElementById('fReferencia').value.trim() || null,
+                fechaEmision: document.getElementById('fFechaEmision').value || null,
+                fechaVencimiento: document.getElementById('fFechaVencimiento').value || null,
+                observaciones: document.getElementById('fObservaciones').value.trim() || null,
+                metadatos: leerMetadatosPorTipo()
+            };
+            const draftRes = await fetch(`${API}/drafts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(draftPayload)
+            });
+            if (!draftRes.ok) {
+                const msg = await leerMensajeError(draftRes);
+                throw new Error(msg);
+            }
+            const workflow = await draftRes.json();
+            await gestionarPostCreacionWorkflow(workflow);
+        } else {
+            const payload = {
+                tipo: document.getElementById('fTipo').value,
+                numeroReferencia: document.getElementById('fReferencia').value.trim(),
+                estado: document.getElementById('fEstado').value,
+                traslado: trasladoIdVal ? { id: parseInt(trasladoIdVal) } : null,
+                centro: document.getElementById('fCentroId').value ? { id: parseInt(document.getElementById('fCentroId').value) } : null,
+                fechaEmision: document.getElementById('fFechaEmision').value || null,
+                fechaVencimiento: document.getElementById('fFechaVencimiento').value || null,
+                observaciones: document.getElementById('fObservaciones').value.trim() || null
+            };
+            const r = await fetch(`${API}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!r.ok) {
+                const msg = await leerMensajeError(r);
+                throw new Error(msg);
+            }
+            Swal.fire({ icon: 'success', title: 'Documento actualizado', toast: true, position: 'top-end',
+                showConfirmButton: false, timer: 2200 });
+        }
         if (mForm) mForm.hide(); else document.getElementById('modalForm').classList.add('hidden');
         await cargar();
-        Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end',
-            showConfirmButton: false, timer: 2000 });
-    } catch {
-        Swal.fire({ icon: 'error', title: 'Error al guardar', toast: true, position: 'top-end',
-            showConfirmButton: false, timer: 3000 });
+    } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error al guardar', text: err.message || 'No se pudo guardar el documento.' });
     }
+}
+
+async function gestionarPostCreacionWorkflow(workflow) {
+    if (!workflow || !workflow.id) {
+        throw new Error('No se pudo interpretar la respuesta del workflow.');
+    }
+    if (workflow.siguienteAccion === 'GENERAR_PDF') {
+        const res = await fetch(`${API}/${workflow.id}/generar`, { method: 'POST' });
+        if (!res.ok) {
+            const msg = await leerMensajeError(res);
+            throw new Error(msg || 'No se pudo generar el PDF del documento.');
+        }
+        Swal.fire({ icon: 'success', title: 'Documento creado y generado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2200 });
+        return;
+    }
+    if (workflow.siguienteAccion === 'SUBIR_PDF') {
+        Swal.fire({
+            icon: 'info',
+            title: 'Documento creado',
+            text: 'Ahora selecciona el PDF para completar el alta.',
+            confirmButtonText: 'Seleccionar PDF'
+        });
+        seleccionarYSubirPdf(workflow.id);
+        return;
+    }
+    Swal.fire({ icon: 'success', title: 'Documento creado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2200 });
+}
+
+async function generarDocumentoDesdeFila(id) {
+    const res = await fetch(`${API}/${id}/generar`, { method: 'POST' });
+    if (!res.ok) {
+        const msg = await leerMensajeError(res);
+        Swal.fire({ icon: 'error', title: 'No se pudo generar', text: msg || 'Error al generar PDF.' });
+        return;
+    }
+    await cargar();
+    Swal.fire({ icon: 'success', title: 'PDF generado', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+}
+
+function seleccionarYSubirPdf(id) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.className = 'hidden';
+    input.onchange = async function() {
+        await subirPdfArchivo(id, input, false);
+        if (input.parentNode) {
+            input.parentNode.removeChild(input);
+        }
+    };
+    document.body.appendChild(input);
+    input.click();
 }
 
 async function eliminar(id) {
@@ -431,7 +567,7 @@ function cerrarPreviewDoc() {
 }
 
 /* === Fase 19.5 — Upload de PDF === */
-async function subirPdfArchivo(id, input) {
+async function subirPdfArchivo(id, input, silencioso) {
     var file = input.files && input.files[0];
     input.value = '';
     if (!file) return;
@@ -447,13 +583,144 @@ async function subirPdfArchivo(id, input) {
     form.append('archivo', file);
     try {
         var res = await fetch(`${API}/${id}/upload`, { method: 'POST', body: form });
-        if (!res.ok) throw new Error(res.status);
-        Swal.fire({ icon: 'success', title: 'PDF subido', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        if (!res.ok) {
+            const msg = await leerMensajeError(res);
+            throw new Error(msg);
+        }
+        if (!silencioso) {
+            Swal.fire({ icon: 'success', title: 'PDF subido', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        }
         await cargar();
     } catch (e) {
-        Swal.fire({ icon: 'error', title: 'No se pudo subir', text: 'Error al subir el archivo.' });
+        Swal.fire({ icon: 'error', title: 'No se pudo subir', text: e.message || 'Error al subir el archivo.' });
     }
 }
+
+function actualizarFormularioSegunTipo() {
+    const tipo = document.getElementById('fTipo').value;
+    const traslado = document.getElementById('fTrasladoId');
+    const centro = document.getElementById('fCentroId');
+    const lblTraslado = document.getElementById('lblTraslado');
+    const lblCentro = document.getElementById('lblCentro');
+    const info = document.getElementById('tipoDocInfo');
+    const trasladoReq = tipo === 'DOCUMENTO_IDENTIFICACION' || tipo === 'NOTIFICACION_PREVIA';
+    const centroReq = tipo === 'CONTRATO';
+    traslado.required = trasladoReq;
+    centro.required = centroReq;
+    lblTraslado.textContent = trasladoReq ? 'Traslado ID *' : 'Traslado ID';
+    lblCentro.textContent = centroReq ? 'Centro ID *' : 'Centro ID';
+    if (trasladoReq) {
+        traslado.placeholder = tipo === 'NOTIFICACION_PREVIA' ? 'Requerido para N.P.' : 'Requerido para D.I.';
+    } else {
+        traslado.placeholder = '(opcional)';
+    }
+    if (centroReq) {
+        centro.placeholder = 'Requerido para CONTRATO';
+    } else {
+        centro.placeholder = '(opcional)';
+    }
+    if (tipo === 'DOCUMENTO_IDENTIFICACION') {
+        info.textContent = 'DI: requiere traslado y puede autogenerar PDF con datos de origen/destino.';
+    } else if (tipo === 'NOTIFICACION_PREVIA') {
+        info.textContent = 'NP: requiere traslado previsto y se valida la ventana temporal legal.';
+    } else if (tipo === 'CONTRATO') {
+        info.textContent = 'CONTRATO: requiere centro y normalmente adjunto PDF externo firmado.';
+    } else if (tipo === 'ARCHIVO_CRONOLOGICO') {
+        info.textContent = 'Archivo cronologico: se genera automaticamente desde eventos del sistema.';
+    } else {
+        info.textContent = 'Documento manual: revisa campos requeridos y adjunta PDF si corresponde.';
+    }
+
+    document.getElementById('seccionMetaDI').classList.toggle('hidden', tipo !== 'DOCUMENTO_IDENTIFICACION');
+    document.getElementById('seccionMetaNP').classList.toggle('hidden', tipo !== 'NOTIFICACION_PREVIA');
+    document.getElementById('seccionMetaContrato').classList.toggle('hidden', tipo !== 'CONTRATO');
+}
+
+function actualizarModoEstado() {
+    const creando = !document.getElementById('itemId').value;
+    const estado = document.getElementById('fEstado');
+    const info = document.getElementById('estadoAutoInfo');
+    estado.disabled = creando;
+    info.classList.toggle('hidden', !creando);
+}
+
+async function leerMensajeError(res) {
+    try {
+        const data = await res.json();
+        if (data && data.message) return data.message;
+    } catch (_) {
+        try {
+            const txt = await res.text();
+            if (txt) return txt;
+        } catch (__){ }
+    }
+    return `HTTP ${res.status}`;
+}
+
+function claseFilaDocumento(d) {
+    if (necesitaAdjunto(d)) {
+        return 'bg-amber-50 hover:bg-amber-100';
+    }
+    return 'hover:bg-slate-50';
+}
+
+function necesitaAdjunto(d) {
+    return d && d.estado === 'PENDIENTE_ADJUNTO' && !d.archivoUrl;
+}
+
+function necesitaGenerar(d) {
+    if (!d || !d.traslado || d.archivoUrl) return false;
+    const generables = ['DOCUMENTO_IDENTIFICACION', 'NOTIFICACION_PREVIA'];
+    return generables.includes(d.tipo) && (d.estado === 'BORRADOR' || d.estado === 'PENDIENTE_ADJUNTO');
+}
+
+function siguienteAccionBadge(d) {
+    if (necesitaAdjunto(d)) {
+        return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">SUBIR PDF</span>`;
+    }
+    if (necesitaGenerar(d)) {
+        return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">GENERAR PDF</span>`;
+    }
+    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">LISTO</span>`;
+}
+
+function leerMetadatosPorTipo() {
+    const tipo = document.getElementById('fTipo').value;
+    if (tipo === 'DOCUMENTO_IDENTIFICACION') {
+        return {
+            ler: document.getElementById('mDiLer').value.trim() || null,
+            cantidad: document.getElementById('mDiCantidad').value ? Number(document.getElementById('mDiCantidad').value) : null
+        };
+    }
+    if (tipo === 'NOTIFICACION_PREVIA') {
+        return {
+            fechaPrevista: document.getElementById('mNpFechaPrevista').value || null,
+            diasAntelacion: document.getElementById('mNpDiasAntelacion').value ? Number(document.getElementById('mNpDiasAntelacion').value) : null
+        };
+    }
+    if (tipo === 'CONTRATO') {
+        return {
+            contraparte: document.getElementById('mContratoParte').value.trim() || null,
+            fechaFirma: document.getElementById('mContratoFirma').value || null
+        };
+    }
+    return {};
+}
+
+function estadoDocBadgeLocal(estado) {
+    if (!estado) return '—';
+    const map = {
+        BORRADOR: 'bg-slate-100 text-slate-700',
+        PENDIENTE_ADJUNTO: 'bg-amber-100 text-amber-800',
+        EMITIDO: 'bg-emerald-100 text-emerald-700',
+        CERRADO: 'bg-slate-800 text-white',
+        VENCIDO: 'bg-red-100 text-red-700'
+    };
+    const cls = map[estado] || 'bg-slate-100 text-slate-700';
+    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}">${estado.replaceAll('_', ' ')}</span>`;
+}
+
+document.getElementById('fTipo')?.addEventListener('change', actualizarFormularioSegunTipo);
 
 cargar();
 </script>

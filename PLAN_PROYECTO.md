@@ -444,6 +444,133 @@ Documento {
        - `POST /api/documentos/{id}/archivo` (subir PDF)
        - `GET /api/documentos/archivo-cronologico` (exportar)
 - [x] 19.10 Tests: DocumentoService, generacion DI, alertas NP
+- [ ] 19.11 Replantear la usabilidad real del modulo Documentos
+       - El formulario de alta NO puede ser unico para todos los tipos de documento
+       - Cada tipo (DI, NP, contrato, archivo cronologico, FA, etc.) debe mostrar sus propios campos
+       - Los campos visibles y obligatorios deben cambiar segun `TipoDocumento`
+- [ ] 19.12 Flujo guiado de creacion + adjunto PDF en la misma experiencia
+       - Al enviar el formulario de creacion debe abrirse el paso de subida del PDF o incorporarse en el mismo wizard
+       - Si el documento requiere PDF, no puede quedar en un estado ambiguo donde "no pasa nada"
+       - El usuario debe recibir feedback claro: creado, pendiente de adjunto, adjuntado o error
+- [ ] 19.13 Consistencia entre creacion, persistencia y tabla
+       - Tras crear un documento debe aparecer inmediatamente en la lista `/documentos`
+       - El alta no puede depender de un refresco manual ni de una subida posterior silenciosa para "existir"
+       - Si falla la subida del PDF, el sistema debe mostrar el error y dejar un estado recuperable (`BORRADOR` o `PENDIENTE_ADJUNTO`)
+- [ ] 19.14 Formularios especializados por tipo documental
+       - DI: datos de traslado, origen, destino, transportista, cantidades, fechas
+       - NP: fechas previstas, antelacion legal, residuos y agentes afectados
+       - Contrato / FA / otros: campos legales y de referencia propios, no un formulario generico reciclado
+
+**Rediseño propuesto del modulo Documentos (pendiente de ejecucion):**
+
+**Diagnostico confirmado sobre la implementacion actual:**
+- La vista actual `documents.html` usa un unico modal con los mismos campos para todos los `TipoDocumento`.
+- El alta real depende de dos pasos desconectados: primero `POST /api/documentos`, despues subida manual del PDF.
+- El usuario no percibe un estado transaccional claro: puede guardar metadatos, pero si no adjunta PDF el documento queda en una situacion ambigua.
+- La generacion PDF por tipo esta acoplada de forma provisional en `DocumentoController`: varios tipos distintos reutilizan la misma salida base aunque por dominio no deberian compartir formulario ni plantilla.
+
+**Implementacion objetivo (MVP serio, no parche):**
+
+1. **Selector de tipo como primer paso del alta**
+       - Al pulsar "Nuevo Documento", primero se elige `TipoDocumento`.
+       - Ese selector gobierna el formulario que aparece despues, no solo una lista `select` dentro de un modal generico.
+
+2. **Formularios por tipo documental**
+       - **DI**: asociado obligatoriamente a un traslado; campos de referencia, fechas, observaciones y datos calculados/arrastrados del traslado.
+       - **NP**: traslado o recogida prevista, fecha objetivo, fecha limite legal, agentes implicados, observaciones de cumplimiento.
+       - **Contrato**: contraparte, vigencia, referencias legales, centro/empresa, observaciones.
+       - **Ficha de aceptacion / Hoja de seguimiento / Informe final**: formularios especificos o al menos variantes con validaciones propias.
+       - **Archivo cronologico**: no debe crearse con el mismo flujo manual si su naturaleza es automatica; debe tratarse como documento derivado del sistema.
+
+3. **Wizard de alta real en 2 pasos**
+       - **Paso 1:** crear metadatos del documento.
+       - **Paso 2:** adjuntar PDF inmediatamente, en el mismo flujo visual.
+       - Resultado visible al finalizar: documento persistido y fila actualizada en tabla con estado y acciones disponibles.
+
+4. **Estados funcionales explicitos**
+       - Introducir semantica de flujo: `BORRADOR`, `PENDIENTE_ADJUNTO`, `EMITIDO`, `CERRADO`, `VENCIDO`.
+       - Si no se sube PDF, el documento debe quedar visible como `PENDIENTE_ADJUNTO`, no desaparecer del mapa mental del usuario.
+       - La tabla `/documentos` debe permitir filtrar y resolver facilmente los documentos pendientes de adjunto.
+
+5. **Persistencia y feedback inmediatos**
+       - Tras `POST /api/documentos`, la nueva fila debe insertarse/mostrarse inmediatamente.
+       - Si la subida del PDF falla, mostrar error accionable y mantener el documento creado con CTA clara para reintentar.
+       - El alta no puede depender de un refresco posterior ni de que el usuario intuya que debe usar un icono de upload en otro momento.
+
+6. **Separacion entre documentos generados y documentos subidos**
+       - **Generados por el sistema**: DI, NP, certificados, archivo cronologico cuando proceda.
+       - **Subidos externamente**: contratos firmados, fichas, anexos, versiones selladas.
+       - El formulario debe dejar claro si se va a generar un PDF desde datos estructurados o si se espera la subida de un PDF externo.
+
+7. **Backend a introducir para soportar la UX**
+       - DTO de alta por tipo o DTO base + payload especializado por `TipoDocumento`.
+       - Endpoint explicito de creacion de borrador/documento inicial.
+       - Endpoint de adjunto desacoplado pero enlazado al flujo (`POST /api/documentos/{id}/archivo` o unificado), con respuesta rica para refrescar tabla.
+       - Validaciones por tipo en backend, no solo ocultacion de campos en frontend.
+
+8. **Criterio de aceptacion funcional**
+       - Crear un documento debe producir una entidad visible en la tabla en todos los casos de exito parcial o total.
+       - Cada tipo documental debe tener al menos un formulario distinguible y validado segun su dominio.
+       - El usuario debe entender en todo momento si el documento fue creado, generado, adjuntado o quedo pendiente de completar.
+
+**Contrato backend propuesto (primera iteracion):**
+
+**DTO base de creacion manual:**
+```java
+DocumentoDraftCreateDTO {
+       TipoDocumento tipo;
+       Long trasladoId;      // requerido para DI y NP si nacen de traslado
+       Long centroId;        // requerido para contratos u otros documentos de centro
+       String numeroReferencia;
+       LocalDate fechaEmision;
+       LocalDate fechaVencimiento;
+       String observaciones;
+       Map<String, Object> metadatos; // payload especializado por tipo en la primera iteracion
+}
+```
+
+**Respuesta de creacion:**
+```java
+DocumentoWorkflowDTO {
+       Long id;
+       String codigo;
+       TipoDocumento tipo;
+       EstadoDocumento estado;   // puede salir como PENDIENTE_ADJUNTO
+       String numeroReferencia;
+       boolean requiereAdjunto;
+       boolean tieneArchivo;
+       String archivoUrl;
+       String siguienteAccion;   // "SUBIR_PDF", "GENERAR_PDF", "LISTO"
+}
+```
+
+**Endpoints propuestos para soportar la UX:**
+- `POST /api/documentos/drafts`
+       Crea el documento base y devuelve `DocumentoWorkflowDTO`.
+- `POST /api/documentos/{id}/archivo`
+       Adjunta PDF a un documento ya creado y devuelve `DocumentoWorkflowDTO` actualizado.
+- `POST /api/documentos/{id}/generar`
+       Genera el PDF server-side para los tipos que nacen del dominio y devuelve estado final + URL.
+- `GET /api/documentos/{id}/workflow`
+       Recupera el estado actual del flujo para reintentos o recarga de pantalla.
+
+**Reglas de negocio minimas por tipo (primera ola):**
+- `DOCUMENTO_IDENTIFICACION`: requiere `trasladoId`; puede generarse desde datos del traslado.
+- `NOTIFICACION_PREVIA`: requiere `trasladoId` o futura `recogidaId`; debe validar ventana temporal legal.
+- `CONTRATO`: requiere `centroId` o entidad contraparte; normalmente espera PDF externo.
+- `ARCHIVO_CRONOLOGICO`: no se crea manualmente desde el alta general.
+
+**Migracion / compatibilidad de datos existentes:**
+- Todos los documentos actuales con `archivoUrl = null` y estado `BORRADOR` pueden reinterpretarse como candidatos a `PENDIENTE_ADJUNTO`.
+- No es obligatorio migrar historicamente todos los registros en la primera entrega si la UI ya resuelve ambos estados correctamente.
+- La tabla debe mostrar de forma distinguible `BORRADOR` vs `PENDIENTE_ADJUNTO` para no mezclar documentos incompletos con borradores reales.
+
+**Validacion minima a automatizar cuando se implemente:**
+- Crear `CONTRATO` sin `centroId` debe fallar con error de validacion.
+- Crear `DOCUMENTO_IDENTIFICACION` sin `trasladoId` debe fallar.
+- Crear documento manual correcto debe devolver fila visible y estado coherente.
+- Fallo en upload no debe borrar ni ocultar el documento creado.
+- Upload correcto debe reflejar `archivoUrl` y quitar el estado pendiente si aplica.
 
 **Nombre normalizado de archivos (buena practica legal):**
 `AAAA-MM-DD_TIPO_Centro-CodigoLER_Destino.pdf`
@@ -1439,6 +1566,39 @@ no guarda estado de sesion.
 - **Auto-generacion de documentos:** al pasar un Traslado a COMPLETADO se crean DI (`DI-YYYY-NNN`) y Archivo Cronologico (`AC-YYYY-NNN`) idempotentes y serializados con `DI_REFERENCIA_LOCK`.
 - **Uploads:** PDF max 10 MB, validados por mimetype, guardados en `${ecoadmin.uploads.documentos:uploads/documentos}` con nombre `{yyyyMMdd}_{id}_{uuid8}.pdf`.
 
+### Siguiente bloque sugerido — Fase 19 Documentos UX real (orden recomendado)
+1. **19.11** Separar documentos manuales vs generados por el sistema.
+       - Definir que `ARCHIVO_CRONOLOGICO` no se crea desde el mismo modal generico.
+       - Decidir que tipos admiten subida externa y cuales se generan desde datos del dominio.
+2. **Migracion minima de estado**
+       - Ampliar `EstadoDocumento` con `PENDIENTE_ADJUNTO`.
+       - Mantener compatibilidad con los estados existentes (`BORRADOR`, `EMITIDO`, `CERRADO`, `VENCIDO`).
+3. **DTO de alta real**
+       - Crear DTO base o DTOs por tipo para evitar usar `Documento` JPA como payload bruto del formulario.
+       - Validar en backend segun `TipoDocumento`.
+4. **19.12** Wizard de alta en frontend (`documents.html`)
+       - Paso 1: elegir tipo.
+       - Paso 2: rellenar formulario especifico.
+       - Paso 3: adjuntar PDF si aplica.
+5. **19.13** Persistencia visible inmediata
+       - Tras crear documento, insertar o refrescar fila en tabla con estado claro.
+       - Si falla adjunto, dejar el registro en `PENDIENTE_ADJUNTO` con accion de reintento.
+6. **19.14** Formularios especializados por tipo
+       - Empezar por los tres de mayor valor: `DOCUMENTO_IDENTIFICACION`, `NOTIFICACION_PREVIA`, `CONTRATO`.
+       - El resto puede entrar como segunda ola si mantienen una variante controlada y no un formulario universal.
+7. **Refactor backend de generacion PDF**
+       - Sacar del `DocumentoController` el `switch` provisional por tipo hacia una capa de servicio/document strategy.
+       - Evitar que varios tipos heterogeneos compartan la misma plantilla PDF por comodidad.
+8. **Cierre de la fase**
+       - Crear documento debe ser una operacion comprensible y visible para usuario final.
+       - La tabla `/documentos` debe reflejar el estado real sin depender de efectos colaterales del upload.
+
+**Secuencia tecnica minima recomendada:**
+- `EstadoDocumento` -> DTOs de alta -> servicio de creacion -> ajuste de `DocumentoController` -> rediseño `documents.html` -> validacion de tabla/preview/upload.
+
+**Riesgo principal a vigilar:**
+- No mezclar en el mismo flujo los documentos derivados del dominio (generables) con los documentos contractuales externos (subidos), porque esa mezcla es la que ha degradado la usabilidad actual.
+
 ### Siguiente bloque sugerido — Fase 20 Informes (orden recomendado)
 1. **20.1** Vista `/informes` con lista de tipos disponibles (cards con descripcion + boton "Generar").
 2. **20.2** Formulario de parametros por informe (rango fechas, centro, LER) — modal o pagina dedicada.
@@ -1613,11 +1773,14 @@ Resolver problemas de usabilidad y errores detectados en la interfaz tras la ref
    - **Solución:** Revisar el componente `crudModal` en `layouts/fragments.html` y las clases CSS asociadas (`modal-shell`). Se deben aplicar restricciones de altura máxima (`max-h-[90vh]`), desbordamiento interno (`overflow-y-auto` en el `modal-body`) y anchos responsivos (`w-full mx-4 sm:max-w-md`) para asegurar que el contenido siempre sea visible y desplazable sin salirse de la pantalla.
 
 2. **Errores en la Gestión de Documentos (`documents.html`):**
-   - **Problema:** Al crear un documento y subir el archivo adjunto, los iconos cambian repentinamente, la vista previa en el modal se rompe y el comportamiento general de la vista es inestable.
+        - **Problema:** El modulo de documentos no tiene usabilidad real. El alta usa el mismo formulario para todos los tipos documentales, aunque por dominio cada documento necesita campos distintos. Ademas, al crear un documento y subir el archivo adjunto, los iconos cambian repentinamente, la vista previa en el modal se rompe y el comportamiento general de la vista es inestable. En la practica, si no se completa bien la subida del PDF, el documento no aparece en lista ni se percibe como creado realmente.
    - **Solución:** 
-     - Investigar el script de carga de archivos y el re-renderizado de la tabla en `documents.html`. 
-     - Es muy probable que la inyección dinámica de HTML tras el guardado no esté respetando el marcado original o los eventos de `onclick` del visor PDF. 
-     - Garantizar que la llamada a `openIframePreviewModal` pase las URLs correctas del archivo recién creado.
+               - Sustituir el formulario generico actual por formularios o secciones dinamicas por `TipoDocumento`.
+               - Convertir la creacion en un flujo consistente: metadatos del documento -> subida de PDF -> confirmacion visual en tabla.
+               - Investigar el script de carga de archivos y el re-renderizado de la tabla en `documents.html`.
+               - Es muy probable que la inyección dinámica de HTML tras el guardado no esté respetando el marcado original o los eventos de `onclick` del visor PDF.
+               - Garantizar que la llamada a `openIframePreviewModal` pase las URLs correctas del archivo recién creado.
+               - Garantizar que un documento recien creado quede persistido y visible aunque el paso de adjunto falle, con un estado recuperable y accionable.
 
 3. **Botón "Limpiar" en Informes (`reports.html`):**
    - **Problema:** El botón de limpiar los filtros no ejecuta ninguna acción.
