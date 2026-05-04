@@ -8,20 +8,34 @@ import org.springframework.stereotype.Service;
 import com.alejandrofernandez.ecoadmin.excepciones.RecursoNoEncontradoException;
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Recogida;
+import com.alejandrofernandez.ecoadmin.modelo.Usuario;
 import com.alejandrofernandez.ecoadmin.modelo.enums.EstadoRecogida;
+import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.RecogidaRepository;
+import com.alejandrofernandez.ecoadmin.servicios.specifications.RecogidaSpecifications;
 
 @Service
 public class RecogidaService {
 
     private final RecogidaRepository repo;
+    private final OwnershipService ownershipService;
 
-    public RecogidaService(RecogidaRepository repo) {
+    public RecogidaService(RecogidaRepository repo, OwnershipService ownershipService) {
         this.repo = repo;
+        this.ownershipService = ownershipService;
     }
 
     public List<Recogida> findAll() {
         return repo.findAll();
+    }
+
+    public List<Recogida> findAllForUsuario(Usuario usuario) {
+        if (usuario.getRol() == Rol.ADMIN) {
+            return repo.findAll();
+        }
+        var centroIds = ownershipService.getCentrosPermitidos(usuario).stream()
+                .map(Centro::getId).toList();
+        return repo.findAll(RecogidaSpecifications.deUsuario(usuario, centroIds));
     }
 
     public Recogida findById(Long id) {

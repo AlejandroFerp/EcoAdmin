@@ -26,7 +26,7 @@ class RecogidaServiceTest {
     @BeforeEach
     void setUp() {
         repo = mock(RecogidaRepository.class);
-        service = new RecogidaService(repo);
+        service = new RecogidaService(repo, mock(com.alejandrofernandez.ecoadmin.servicios.OwnershipService.class));
     }
 
     @Test

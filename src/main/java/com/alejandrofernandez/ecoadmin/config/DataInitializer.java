@@ -24,6 +24,7 @@ import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Direccion;
 import com.alejandrofernandez.ecoadmin.modelo.Documento;
 import com.alejandrofernandez.ecoadmin.modelo.Empresa;
+import com.alejandrofernandez.ecoadmin.modelo.GestorCentro;
 import com.alejandrofernandez.ecoadmin.modelo.ListaLer;
 import com.alejandrofernandez.ecoadmin.modelo.Notificacion;
 import com.alejandrofernandez.ecoadmin.modelo.Recogida;
@@ -43,6 +44,7 @@ import com.alejandrofernandez.ecoadmin.repository.CentroRepository;
 import com.alejandrofernandez.ecoadmin.repository.DireccionRepository;
 import com.alejandrofernandez.ecoadmin.repository.DocumentoRepository;
 import com.alejandrofernandez.ecoadmin.repository.EmpresaRepository;
+import com.alejandrofernandez.ecoadmin.repository.GestorCentroRepository;
 import com.alejandrofernandez.ecoadmin.repository.ListaLerRepository;
 import com.alejandrofernandez.ecoadmin.repository.NotificacionRepository;
 import com.alejandrofernandez.ecoadmin.repository.RecogidaRepository;
@@ -84,6 +86,7 @@ public class DataInitializer implements ApplicationRunner {
     private final RutaRepository rutaRepository;
         private final SolicitudRegistroRepository solicitudRegistroRepository;
     private final TrasladoService trasladoService;
+    private final GestorCentroRepository gestorCentroRepository;
         private final LerCodeResolver lerCodeResolver;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
@@ -101,6 +104,7 @@ public class DataInitializer implements ApplicationRunner {
             RutaRepository rutaRepository,
             SolicitudRegistroRepository solicitudRegistroRepository,
             TrasladoService trasladoService,
+            GestorCentroRepository gestorCentroRepository,
             LerCodeResolver lerCodeResolver,
             PasswordEncoder passwordEncoder,
             JdbcTemplate jdbcTemplate) {
@@ -117,6 +121,7 @@ public class DataInitializer implements ApplicationRunner {
         this.rutaRepository = rutaRepository;
         this.solicitudRegistroRepository = solicitudRegistroRepository;
         this.trasladoService = trasladoService;
+        this.gestorCentroRepository = gestorCentroRepository;
                 this.lerCodeResolver = lerCodeResolver;
         this.passwordEncoder = passwordEncoder;
         this.jdbcTemplate = jdbcTemplate;
@@ -371,6 +376,14 @@ public class DataInitializer implements ApplicationRunner {
         cg6.setEmail("medio@puertojavea.com");
         cg6.setNombreContacto("Carlos Ruiz");
         cg6 = centroRepository.save(cg6);
+
+        // == 3b. ASIGNACIONES GESTOR-CENTRO ==
+        gestorCentroRepository.save(new GestorCentro(gestor1, cg1));
+        gestorCentroRepository.save(new GestorCentro(gestor1, cg2));
+        gestorCentroRepository.save(new GestorCentro(gestor1, cg5));
+        gestorCentroRepository.save(new GestorCentro(gestor2, cg3));
+        gestorCentroRepository.save(new GestorCentro(gestor2, cg4));
+        gestorCentroRepository.save(new GestorCentro(gestor2, cg6));
 
         // == 4. EMPRESA ==
         Empresa emp = new Empresa();

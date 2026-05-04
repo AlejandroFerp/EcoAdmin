@@ -24,6 +24,7 @@ import com.alejandrofernandez.ecoadmin.modelo.Usuario;
 import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.TrasladoRepository;
 import com.alejandrofernandez.ecoadmin.servicios.CentroService;
+import com.alejandrofernandez.ecoadmin.servicios.OwnershipService;
 import com.alejandrofernandez.ecoadmin.servicios.ResiduoService;
 import com.alejandrofernandez.ecoadmin.servicios.UsuarioAutenticadoService;
 
@@ -37,13 +38,16 @@ public class ResiduoController {
     private final ResiduoService service;
     private final CentroService centroService;
     private final UsuarioAutenticadoService authService;
+    private final OwnershipService ownershipService;
     private final TrasladoRepository trasladoRepo;
 
     public ResiduoController(ResiduoService service, CentroService centroService,
-                             UsuarioAutenticadoService authService, TrasladoRepository trasladoRepo) {
+                             UsuarioAutenticadoService authService, OwnershipService ownershipService,
+                             TrasladoRepository trasladoRepo) {
         this.service = service;
         this.centroService = centroService;
         this.authService = authService;
+        this.ownershipService = ownershipService;
         this.trasladoRepo = trasladoRepo;
     }
 
@@ -51,14 +55,7 @@ public class ResiduoController {
     public List<ResiduoDTO> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) return List.of();
-
-        List<Residuo> residuos;
-        if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) {
-            residuos = service.findAll();
-        } else {
-            residuos = service.findByUsuario(usuario);
-        }
-        return residuos.stream().map(ResiduoDTO::from).toList();
+        return service.findAllForUsuario(usuario).stream().map(ResiduoDTO::from).toList();
     }
 
     @GetMapping("/{id}")
@@ -121,10 +118,10 @@ public class ResiduoController {
     private void verificarAccesoResiduo(Residuo residuo) {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) throw new AccesoDenegadoException("No autenticado");
-        if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) return;
+        if (authService.esAdmin(usuario)) return;
 
-        if (residuo.getCentro() == null || residuo.getCentro().getUsuario() == null
-                || !residuo.getCentro().getUsuario().getId().equals(usuario.getId())) {
+        if (residuo.getCentro() == null
+                || !ownershipService.canAccessCentro(usuario, residuo.getCentro().getId())) {
             throw new AccesoDenegadoException("No tiene acceso a este residuo");
         }
     }

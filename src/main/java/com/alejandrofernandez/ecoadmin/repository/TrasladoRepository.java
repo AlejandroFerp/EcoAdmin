@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Residuo;
@@ -12,7 +13,7 @@ import com.alejandrofernandez.ecoadmin.modelo.Traslado;
 import com.alejandrofernandez.ecoadmin.modelo.Usuario;
 import com.alejandrofernandez.ecoadmin.modelo.enums.EstadoTraslado;
 
-public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
+public interface TrasladoRepository extends JpaRepository<Traslado, Long>, JpaSpecificationExecutor<Traslado> {
 
     List<Traslado> findByEstado(EstadoTraslado estado);
 

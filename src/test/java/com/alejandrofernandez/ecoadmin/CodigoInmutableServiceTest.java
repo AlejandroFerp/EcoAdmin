@@ -32,6 +32,7 @@ import com.alejandrofernandez.ecoadmin.servicios.CentroServiceDB;
 import com.alejandrofernandez.ecoadmin.servicios.DireccionServiceDB;
 import com.alejandrofernandez.ecoadmin.servicios.DocumentoServiceDB;
 import com.alejandrofernandez.ecoadmin.servicios.LerCodeResolver;
+import com.alejandrofernandez.ecoadmin.servicios.OwnershipService;
 import com.alejandrofernandez.ecoadmin.servicios.RecogidaService;
 import com.alejandrofernandez.ecoadmin.servicios.ResiduoServiceDB;
 import com.alejandrofernandez.ecoadmin.servicios.TrasladoServiceDB;
@@ -46,7 +47,7 @@ class CodigoInmutableServiceTest {
     void centroSave_conservaCodigoExistente() {
         CentroRepository repo = mock(CentroRepository.class);
         DireccionRepository direccionRepo = mock(DireccionRepository.class);
-        CentroServiceDB service = new CentroServiceDB(repo, direccionRepo);
+        CentroServiceDB service = new CentroServiceDB(repo, direccionRepo, mock(OwnershipService.class));
 
         Centro existente = new Centro();
         existente.setId(1L);
@@ -89,7 +90,7 @@ class CodigoInmutableServiceTest {
         CentroRepository centroRepo = mock(CentroRepository.class);
         EntityManager entityManager = mock(EntityManager.class);
         LerCodeResolver lerCodeResolver = mock(LerCodeResolver.class);
-        ResiduoServiceDB service = new ResiduoServiceDB(repo, centroRepo, entityManager, lerCodeResolver);
+        ResiduoServiceDB service = new ResiduoServiceDB(repo, centroRepo, entityManager, lerCodeResolver, mock(OwnershipService.class));
 
         Residuo existente = new Residuo();
         existente.setId(3L);
@@ -120,7 +121,7 @@ class CodigoInmutableServiceTest {
         RutaTransportistaRepository rtRepo = mock(RutaTransportistaRepository.class);
         EntityManager entityManager = mock(EntityManager.class);
         TrasladoServiceDB service = new TrasladoServiceDB(
-            trasladoRepo, eventoRepo, centroRepo, residuoRepo, usuarioRepo, documentoRepo, rutaRepo, rtRepo, entityManager);
+            trasladoRepo, eventoRepo, centroRepo, residuoRepo, usuarioRepo, documentoRepo, rutaRepo, rtRepo, entityManager, mock(OwnershipService.class));
 
         Traslado existente = new Traslado();
         existente.setId(4L);
@@ -182,7 +183,7 @@ class CodigoInmutableServiceTest {
     @DisplayName("RecogidaService conserva el codigo existente al editar")
     void recogidaSave_conservaCodigoExistente() {
         RecogidaRepository repo = mock(RecogidaRepository.class);
-        RecogidaService service = new RecogidaService(repo);
+        RecogidaService service = new RecogidaService(repo, mock(OwnershipService.class));
 
         Recogida existente = new Recogida();
         existente.setId(7L);

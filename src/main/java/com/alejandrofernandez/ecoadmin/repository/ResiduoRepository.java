@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Residuo;
 
-public interface ResiduoRepository extends JpaRepository<Residuo, Long> {
+public interface ResiduoRepository extends JpaRepository<Residuo, Long>, JpaSpecificationExecutor<Residuo> {
 
     List<Residuo> findByCentro(Centro centro);
 

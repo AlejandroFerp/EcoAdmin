@@ -26,6 +26,7 @@ import com.alejandrofernandez.ecoadmin.repository.DireccionRepository;
 import com.alejandrofernandez.ecoadmin.repository.ResiduoRepository;
 import com.alejandrofernandez.ecoadmin.repository.TrasladoRepository;
 import com.alejandrofernandez.ecoadmin.servicios.CentroService;
+import com.alejandrofernandez.ecoadmin.servicios.OwnershipService;
 import com.alejandrofernandez.ecoadmin.servicios.UsuarioAutenticadoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,15 +39,18 @@ public class CentroController {
 
     private final CentroService service;
     private final UsuarioAutenticadoService authService;
+    private final OwnershipService ownershipService;
     private final ResiduoRepository residuoRepo;
     private final TrasladoRepository trasladoRepo;
     private final DireccionRepository direccionRepo;
 
     public CentroController(CentroService service, UsuarioAutenticadoService authService,
+                            OwnershipService ownershipService,
                             ResiduoRepository residuoRepo, TrasladoRepository trasladoRepo,
                             DireccionRepository direccionRepo) {
         this.service = service;
         this.authService = authService;
+        this.ownershipService = ownershipService;
         this.residuoRepo = residuoRepo;
         this.trasladoRepo = trasladoRepo;
         this.direccionRepo = direccionRepo;
@@ -56,14 +60,7 @@ public class CentroController {
     public List<CentroDTO> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) return List.of();
-
-        List<Centro> centros;
-        if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) {
-            centros = service.findAll();
-        } else {
-            centros = service.findByUsuario(usuario);
-        }
-        return centros.stream().map(CentroDTO::from).toList();
+        return service.findAllForUsuario(usuario).stream().map(CentroDTO::from).toList();
     }
 
     @GetMapping("/{id}")
@@ -141,9 +138,7 @@ public class CentroController {
     private void verificarAccesoCentro(Centro centro) {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) throw new AccesoDenegadoException("No autenticado");
-        if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) return;
-
-        if (centro.getUsuario() == null || !centro.getUsuario().getId().equals(usuario.getId())) {
+        if (!ownershipService.canAccessCentro(usuario, centro.getId())) {
             throw new AccesoDenegadoException("No tiene acceso a este centro");
         }
     }

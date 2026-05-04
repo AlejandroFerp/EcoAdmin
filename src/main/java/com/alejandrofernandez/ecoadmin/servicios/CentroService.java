@@ -9,6 +9,8 @@ public interface CentroService {
 
     List<Centro> findAll();
 
+    List<Centro> findAllForUsuario(Usuario usuario);
+
     List<Centro> findByUsuario(Usuario usuario);
 
     Centro findById(Long id);

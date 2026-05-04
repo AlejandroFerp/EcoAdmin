@@ -33,6 +33,7 @@ import com.alejandrofernandez.ecoadmin.modelo.enums.EstadoTraslado;
 import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.servicios.CentroService;
 import com.alejandrofernandez.ecoadmin.servicios.EmailService;
+import com.alejandrofernandez.ecoadmin.servicios.OwnershipService;
 import com.alejandrofernandez.ecoadmin.servicios.PdfService;
 import com.alejandrofernandez.ecoadmin.servicios.QrService;
 import com.alejandrofernandez.ecoadmin.servicios.ResiduoService;
@@ -56,11 +57,13 @@ public class TrasladoController {
     private final QrService qrService;
     private final UsuarioAutenticadoService authService;
     private final EmailService emailService;
+    private final OwnershipService ownershipService;
 
     public TrasladoController(TrasladoService service, CentroService centroService,
                               ResiduoService residuoService, UsuarioService usuarioService,
                               PdfService pdfService, QrService qrService,
-                              UsuarioAutenticadoService authService, EmailService emailService) {
+                              UsuarioAutenticadoService authService, EmailService emailService,
+                              OwnershipService ownershipService) {
         this.service = service;
         this.centroService = centroService;
         this.residuoService = residuoService;
@@ -69,6 +72,7 @@ public class TrasladoController {
         this.qrService = qrService;
         this.authService = authService;
         this.emailService = emailService;
+        this.ownershipService = ownershipService;
     }
 
     @Operation(summary = "Listar traslados", description = "Devuelve traslados segun el rol del usuario autenticado")
@@ -76,13 +80,7 @@ public class TrasladoController {
     public List<TrasladoDTO> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) return List.of();
-
-        List<Traslado> traslados = switch (usuario.getRol()) {
-            case ADMIN, GESTOR -> service.findAll();
-            case PRODUCTOR -> service.findByUsuario(usuario);
-            case TRANSPORTISTA -> service.findByTransportista(usuario);
-        };
-        return traslados.stream().map(TrasladoDTO::from).toList();
+        return service.findAllForUsuario(usuario).stream().map(TrasladoDTO::from).toList();
     }
 
     @GetMapping("/{id}")
@@ -122,8 +120,13 @@ public class TrasladoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<TrasladoDTO> crear(@RequestBody TrasladoInputDTO input) {
+        Usuario usuario = authService.obtenerUsuarioActual();
+        if (usuario.getRol() == Rol.GESTOR
+                && !ownershipService.canAccessCentro(usuario, input.centroProductorId())) {
+            throw new AccesoDenegadoException("No tiene acceso al centro productor indicado");
+        }
         Traslado t = mapInputToEntity(input);
         t.setEstado(EstadoTraslado.PENDIENTE);
         Traslado saved = service.save(t);
@@ -275,7 +278,10 @@ public class TrasladoController {
 
         Rol rol = usuario.getRol();
         boolean tieneAcceso = switch (rol) {
-            case GESTOR -> true;
+            case GESTOR -> (traslado.getCentroProductor() != null
+                    && ownershipService.canAccessCentro(usuario, traslado.getCentroProductor().getId()))
+                    || (traslado.getCentroGestor() != null
+                    && ownershipService.canAccessCentro(usuario, traslado.getCentroGestor().getId()));
             case PRODUCTOR -> traslado.getCentroProductor() != null
                     && traslado.getCentroProductor().getUsuario() != null
                     && traslado.getCentroProductor().getUsuario().getId().equals(usuario.getId());

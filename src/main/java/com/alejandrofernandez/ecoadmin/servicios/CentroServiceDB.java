@@ -6,23 +6,38 @@ import org.springframework.stereotype.Service;
 
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Usuario;
+import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.CentroRepository;
 import com.alejandrofernandez.ecoadmin.repository.DireccionRepository;
+import com.alejandrofernandez.ecoadmin.servicios.specifications.CentroSpecifications;
 
 @Service
 public class CentroServiceDB implements CentroService {
 
     private final CentroRepository repo;
     private final DireccionRepository direccionRepo;
+    private final OwnershipService ownershipService;
 
-    public CentroServiceDB(CentroRepository repo, DireccionRepository direccionRepo) {
+    public CentroServiceDB(CentroRepository repo, DireccionRepository direccionRepo,
+                           OwnershipService ownershipService) {
         this.repo = repo;
         this.direccionRepo = direccionRepo;
+        this.ownershipService = ownershipService;
     }
 
     @Override
     public List<Centro> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<Centro> findAllForUsuario(Usuario usuario) {
+        if (usuario.getRol() == Rol.ADMIN) {
+            return repo.findAll();
+        }
+        var centroIds = ownershipService.getCentrosPermitidos(usuario).stream()
+                .map(Centro::getId).toList();
+        return repo.findAll(CentroSpecifications.deUsuario(usuario, centroIds));
     }
 
     @Override

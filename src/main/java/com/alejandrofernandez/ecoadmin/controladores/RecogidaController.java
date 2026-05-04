@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alejandrofernandez.ecoadmin.excepciones.AccesoDenegadoException;
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Recogida;
 import com.alejandrofernandez.ecoadmin.modelo.Residuo;
@@ -25,6 +27,7 @@ import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.CentroRepository;
 import com.alejandrofernandez.ecoadmin.repository.ResiduoRepository;
 import com.alejandrofernandez.ecoadmin.repository.UsuarioRepository;
+import com.alejandrofernandez.ecoadmin.servicios.OwnershipService;
 import com.alejandrofernandez.ecoadmin.servicios.RecogidaService;
 import com.alejandrofernandez.ecoadmin.servicios.UsuarioAutenticadoService;
 
@@ -37,17 +40,20 @@ public class RecogidaController {
 
     private final RecogidaService service;
     private final UsuarioAutenticadoService authService;
+    private final OwnershipService ownershipService;
     private final ResiduoRepository residuoRepo;
     private final CentroRepository centroRepo;
     private final UsuarioRepository usuarioRepo;
 
     public RecogidaController(RecogidaService service,
                               UsuarioAutenticadoService authService,
+                              OwnershipService ownershipService,
                               ResiduoRepository residuoRepo,
                               CentroRepository centroRepo,
                               UsuarioRepository usuarioRepo) {
         this.service = service;
         this.authService = authService;
+        this.ownershipService = ownershipService;
         this.residuoRepo = residuoRepo;
         this.centroRepo = centroRepo;
         this.usuarioRepo = usuarioRepo;
@@ -79,7 +85,15 @@ public class RecogidaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<Map<String, Object>> crear(@RequestBody Map<String, Object> body) {
+        Usuario usuario = authService.obtenerUsuarioActual();
+        if (body.containsKey("centroOrigenId") && body.get("centroOrigenId") != null) {
+            Long centroOrigenId = asLong(body.get("centroOrigenId"));
+            if (!ownershipService.canCreateRecogidaDesde(usuario, centroOrigenId)) {
+                throw new AccesoDenegadoException("No tiene permiso para crear recogidas desde este centro");
+            }
+        }
         Recogida r = new Recogida();
         aplicar(r, body);
         Recogida guardado = service.save(r);
@@ -87,14 +101,21 @@ public class RecogidaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'TRANSPORTISTA')")
     public Map<String, Object> actualizar(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Recogida r = service.findById(id);
+        Usuario usuario = authService.obtenerUsuarioActual();
+        verificarAccesoRecogida(r, usuario);
         aplicar(r, body);
         return toDto(service.save(r));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        Recogida r = service.findById(id);
+        Usuario usuario = authService.obtenerUsuarioActual();
+        verificarAccesoRecogida(r, usuario);
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -104,17 +125,7 @@ public class RecogidaController {
     private List<Recogida> visibles() {
         Usuario u = authService.obtenerUsuarioActual();
         if (u == null) return List.of();
-        if (authService.esAdmin(u) || u.getRol() == Rol.GESTOR) {
-            return service.findAll();
-        }
-        if (u.getRol() == Rol.PRODUCTOR) {
-            List<Centro> centros = centroRepo.findByUsuario(u);
-            return service.findByCentros(centros);
-        }
-        // TRANSPORTISTA: solo asignadas a el
-        return service.findAll().stream()
-                .filter(r -> r.getTransportista() != null && r.getTransportista().getId().equals(u.getId()))
-                .toList();
+        return service.findAllForUsuario(u);
     }
 
     private void aplicar(Recogida r, Map<String, Object> body) {
@@ -157,6 +168,24 @@ public class RecogidaController {
     private static long asLong(Object v) {
         if (v instanceof Number n) return n.longValue();
         return Long.parseLong(v.toString());
+    }
+
+    private void verificarAccesoRecogida(Recogida r, Usuario usuario) {
+        if (usuario == null) throw new AccesoDenegadoException("No autenticado");
+        if (usuario.getRol() == Rol.ADMIN) return;
+        boolean acceso = switch (usuario.getRol()) {
+            case GESTOR -> (r.getCentroOrigen() != null
+                    && ownershipService.canAccessCentro(usuario, r.getCentroOrigen().getId()))
+                    || (r.getCentroDestino() != null
+                    && ownershipService.canAccessCentro(usuario, r.getCentroDestino().getId()));
+            case TRANSPORTISTA -> r.getTransportista() != null
+                    && r.getTransportista().getId().equals(usuario.getId());
+            case PRODUCTOR -> r.getCentroOrigen() != null
+                    && r.getCentroOrigen().getUsuario() != null
+                    && r.getCentroOrigen().getUsuario().getId().equals(usuario.getId());
+            default -> false;
+        };
+        if (!acceso) throw new AccesoDenegadoException("No tiene acceso a esta recogida");
     }
 
     private static Map<String, Object> toDto(Recogida r) {

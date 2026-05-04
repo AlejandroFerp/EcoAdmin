@@ -11,6 +11,8 @@ public interface TrasladoService {
 
     List<Traslado> findAll();
 
+    List<Traslado> findAllForUsuario(Usuario usuario);
+
     Traslado findById(Long id);
 
     Traslado save(Traslado t);

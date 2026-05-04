@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Residuo;
 import com.alejandrofernandez.ecoadmin.modelo.Usuario;
+import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.CentroRepository;
 import com.alejandrofernandez.ecoadmin.repository.ResiduoRepository;
+import com.alejandrofernandez.ecoadmin.servicios.specifications.ResiduoSpecifications;
 
 import jakarta.persistence.EntityManager;
 
@@ -21,20 +23,33 @@ public class ResiduoServiceDB implements ResiduoService {
     private final CentroRepository centroRepo;
     private final EntityManager entityManager;
     private final LerCodeResolver lerCodeResolver;
+    private final OwnershipService ownershipService;
 
     public ResiduoServiceDB(ResiduoRepository repo,
             CentroRepository centroRepo,
             EntityManager entityManager,
-            LerCodeResolver lerCodeResolver) {
+            LerCodeResolver lerCodeResolver,
+            OwnershipService ownershipService) {
         this.repo = repo;
         this.centroRepo = centroRepo;
         this.entityManager = entityManager;
         this.lerCodeResolver = lerCodeResolver;
+        this.ownershipService = ownershipService;
     }
 
     @Override
     public List<Residuo> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<Residuo> findAllForUsuario(Usuario usuario) {
+        if (usuario.getRol() == Rol.ADMIN) {
+            return repo.findAll();
+        }
+        var centroIds = ownershipService.getCentrosPermitidos(usuario).stream()
+                .map(Centro::getId).toList();
+        return repo.findAll(ResiduoSpecifications.deUsuario(usuario, centroIds));
     }
 
     @Override

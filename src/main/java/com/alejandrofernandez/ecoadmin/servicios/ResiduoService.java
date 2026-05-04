@@ -9,6 +9,8 @@ public interface ResiduoService {
 
     List<Residuo> findAll();
 
+    List<Residuo> findAllForUsuario(Usuario usuario);
+
     List<Residuo> findByUsuario(Usuario usuario);
 
     Residuo findById(Long id);

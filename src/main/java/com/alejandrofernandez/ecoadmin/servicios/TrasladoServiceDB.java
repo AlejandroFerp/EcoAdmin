@@ -24,6 +24,7 @@ import com.alejandrofernandez.ecoadmin.repository.RutaRepository;
 import com.alejandrofernandez.ecoadmin.repository.RutaTransportistaRepository;
 import com.alejandrofernandez.ecoadmin.repository.TrasladoRepository;
 import com.alejandrofernandez.ecoadmin.repository.UsuarioRepository;
+import com.alejandrofernandez.ecoadmin.servicios.specifications.TrasladoSpecifications;
 
 import jakarta.persistence.EntityManager;
 
@@ -39,6 +40,7 @@ public class TrasladoServiceDB implements TrasladoService {
     private final RutaRepository rutaRepo;
     private final RutaTransportistaRepository rtRepo;
     private final EntityManager entityManager;
+    private final OwnershipService ownershipService;
 
     /**
      * Lock de proceso para serializar la generacion de referencias DI.
@@ -55,7 +57,8 @@ public class TrasladoServiceDB implements TrasladoService {
                              DocumentoRepository documentoRepo,
                              RutaRepository rutaRepo,
                              RutaTransportistaRepository rtRepo,
-                             EntityManager entityManager) {
+                             EntityManager entityManager,
+                             OwnershipService ownershipService) {
         this.trasladoRepo = trasladoRepo;
         this.eventoRepo = eventoRepo;
         this.centroRepo = centroRepo;
@@ -65,11 +68,22 @@ public class TrasladoServiceDB implements TrasladoService {
         this.rutaRepo = rutaRepo;
         this.rtRepo = rtRepo;
         this.entityManager = entityManager;
+        this.ownershipService = ownershipService;
     }
 
     @Override
     public List<Traslado> findAll() {
         return trasladoRepo.findAll();
+    }
+
+    @Override
+    public List<Traslado> findAllForUsuario(Usuario usuario) {
+        if (usuario.getRol() == com.alejandrofernandez.ecoadmin.modelo.enums.Rol.ADMIN) {
+            return trasladoRepo.findAll();
+        }
+        var centroIds = ownershipService.getCentrosPermitidos(usuario).stream()
+                .map(com.alejandrofernandez.ecoadmin.modelo.Centro::getId).toList();
+        return trasladoRepo.findAll(TrasladoSpecifications.deUsuario(usuario, centroIds));
     }
 
     @Override
