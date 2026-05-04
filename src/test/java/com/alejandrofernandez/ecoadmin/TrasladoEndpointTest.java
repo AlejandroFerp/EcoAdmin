@@ -158,7 +158,7 @@ class TrasladoEndpointTest {
     @Test
     @DisplayName("POST /api/centros crea centro y devuelve 201")
     void crearCentro() throws Exception {
-        String json = "{\"nombre\":\"Nuevo Centro\",\"tipo\":\"PRODUCTOR\",\"direccion\":{\"id\":" + dirA.getId() + "}}";
+        String json = "{\"nombre\":\"Nuevo Centro\",\"tipo\":\"PRODUCTOR\",\"direccionId\":" + dirA.getId() + "}";
         mockMvc.perform(post("/api/centros")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json)

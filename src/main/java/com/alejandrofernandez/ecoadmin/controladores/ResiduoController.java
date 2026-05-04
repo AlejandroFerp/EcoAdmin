@@ -14,12 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alejandrofernandez.ecoadmin.dto.ResiduoDTO;
+import com.alejandrofernandez.ecoadmin.dto.ResiduoInputDTO;
 import com.alejandrofernandez.ecoadmin.excepciones.AccesoDenegadoException;
 import com.alejandrofernandez.ecoadmin.excepciones.RecursoNoEncontradoException;
+import com.alejandrofernandez.ecoadmin.modelo.Centro;
 import com.alejandrofernandez.ecoadmin.modelo.Residuo;
 import com.alejandrofernandez.ecoadmin.modelo.Usuario;
 import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 import com.alejandrofernandez.ecoadmin.repository.TrasladoRepository;
+import com.alejandrofernandez.ecoadmin.servicios.CentroService;
 import com.alejandrofernandez.ecoadmin.servicios.ResiduoService;
 import com.alejandrofernandez.ecoadmin.servicios.UsuarioAutenticadoService;
 
@@ -31,50 +35,57 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ResiduoController {
 
     private final ResiduoService service;
+    private final CentroService centroService;
     private final UsuarioAutenticadoService authService;
     private final TrasladoRepository trasladoRepo;
 
-    public ResiduoController(ResiduoService service, UsuarioAutenticadoService authService,
-                             TrasladoRepository trasladoRepo) {
+    public ResiduoController(ResiduoService service, CentroService centroService,
+                             UsuarioAutenticadoService authService, TrasladoRepository trasladoRepo) {
         this.service = service;
+        this.centroService = centroService;
         this.authService = authService;
         this.trasladoRepo = trasladoRepo;
     }
 
     @GetMapping
-    public List<Residuo> listar() {
+    public List<ResiduoDTO> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) return List.of();
 
+        List<Residuo> residuos;
         if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) {
-            return service.findAll();
+            residuos = service.findAll();
+        } else {
+            residuos = service.findByUsuario(usuario);
         }
-        return service.findByUsuario(usuario);
+        return residuos.stream().map(ResiduoDTO::from).toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Residuo> buscar(@PathVariable Long id) {
+    public ResponseEntity<ResiduoDTO> buscar(@PathVariable Long id) {
         Residuo r = service.findById(id);
         if (r == null) throw new RecursoNoEncontradoException("Residuo no encontrado: " + id);
         verificarAccesoResiduo(r);
-        return ResponseEntity.ok(r);
+        return ResponseEntity.ok(ResiduoDTO.from(r));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
-    public ResponseEntity<Residuo> crear(@RequestBody Residuo r) {
+    public ResponseEntity<ResiduoDTO> crear(@RequestBody ResiduoInputDTO input) {
+        Residuo r = mapInputToEntity(input);
         Residuo saved = service.save(r);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResiduoDTO.from(saved));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Residuo> editar(@PathVariable Long id, @RequestBody Residuo r) {
+    public ResponseEntity<ResiduoDTO> editar(@PathVariable Long id, @RequestBody ResiduoInputDTO input) {
         Residuo existing = service.findById(id);
         if (existing == null) throw new RecursoNoEncontradoException("Residuo no encontrado: " + id);
         verificarAccesoResiduo(existing);
+
+        Residuo r = mapInputToEntity(input);
         r.setId(id);
-        r.setCentro(existing.getCentro());
-        return ResponseEntity.ok(service.save(r));
+        return ResponseEntity.ok(ResiduoDTO.from(service.save(r)));
     }
 
     @DeleteMapping("/{id}")
@@ -92,6 +103,19 @@ public class ResiduoController {
 
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Residuo mapInputToEntity(ResiduoInputDTO input) {
+        Centro centro = centroService.findById(input.centroId());
+        if (centro == null) throw new RecursoNoEncontradoException("Centro no encontrado: " + input.centroId());
+
+        Residuo r = new Residuo(input.cantidad(), input.unidad(), input.estado(), centro);
+        r.setCodigoLER(input.codigoLER());
+        r.setFechaEntradaAlmacen(input.fechaEntradaAlmacen());
+        if (input.diasMaximoAlmacenamiento() != null) {
+            r.setDiasMaximoAlmacenamiento(input.diasMaximoAlmacenamiento());
+        }
+        return r;
     }
 
     private void verificarAccesoResiduo(Residuo residuo) {

@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alejandrofernandez.ecoadmin.dto.CentroDTO;
+import com.alejandrofernandez.ecoadmin.dto.CentroInputDTO;
 import com.alejandrofernandez.ecoadmin.excepciones.AccesoDenegadoException;
 import com.alejandrofernandez.ecoadmin.excepciones.RecursoNoEncontradoException;
 import com.alejandrofernandez.ecoadmin.modelo.Centro;
+import com.alejandrofernandez.ecoadmin.modelo.Direccion;
 import com.alejandrofernandez.ecoadmin.modelo.Usuario;
 import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
+import com.alejandrofernandez.ecoadmin.repository.DireccionRepository;
 import com.alejandrofernandez.ecoadmin.repository.ResiduoRepository;
 import com.alejandrofernandez.ecoadmin.repository.TrasladoRepository;
 import com.alejandrofernandez.ecoadmin.servicios.CentroService;
@@ -36,53 +40,62 @@ public class CentroController {
     private final UsuarioAutenticadoService authService;
     private final ResiduoRepository residuoRepo;
     private final TrasladoRepository trasladoRepo;
+    private final DireccionRepository direccionRepo;
 
     public CentroController(CentroService service, UsuarioAutenticadoService authService,
-                            ResiduoRepository residuoRepo, TrasladoRepository trasladoRepo) {
+                            ResiduoRepository residuoRepo, TrasladoRepository trasladoRepo,
+                            DireccionRepository direccionRepo) {
         this.service = service;
         this.authService = authService;
         this.residuoRepo = residuoRepo;
         this.trasladoRepo = trasladoRepo;
+        this.direccionRepo = direccionRepo;
     }
 
     @GetMapping
-    public List<Centro> listar() {
+    public List<CentroDTO> listar() {
         Usuario usuario = authService.obtenerUsuarioActual();
         if (usuario == null) return List.of();
 
+        List<Centro> centros;
         if (authService.esAdmin(usuario) || usuario.getRol() == Rol.GESTOR) {
-            return service.findAll();
+            centros = service.findAll();
+        } else {
+            centros = service.findByUsuario(usuario);
         }
-        return service.findByUsuario(usuario);
+        return centros.stream().map(CentroDTO::from).toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Centro> buscar(@PathVariable Long id) {
+    public ResponseEntity<CentroDTO> buscar(@PathVariable Long id) {
         Centro c = service.findById(id);
         if (c == null) throw new RecursoNoEncontradoException("Centro no encontrado: " + id);
         verificarAccesoCentro(c);
-        return ResponseEntity.ok(c);
+        return ResponseEntity.ok(CentroDTO.from(c));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR', 'PRODUCTOR')")
-    public ResponseEntity<Centro> crear(@RequestBody Centro c) {
+    public ResponseEntity<CentroDTO> crear(@RequestBody CentroInputDTO input) {
         Usuario usuario = authService.obtenerUsuarioActual();
-        if (usuario != null && c.getUsuario() == null) {
+        Centro c = mapInputToEntity(input);
+        if (usuario != null) {
             c.setUsuario(usuario);
         }
         Centro saved = service.save(c);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(CentroDTO.from(saved));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Centro> editar(@PathVariable Long id, @RequestBody Centro c) {
+    public ResponseEntity<CentroDTO> editar(@PathVariable Long id, @RequestBody CentroInputDTO input) {
         Centro existing = service.findById(id);
         if (existing == null) throw new RecursoNoEncontradoException("Centro no encontrado: " + id);
         verificarAccesoCentro(existing);
+
+        Centro c = mapInputToEntity(input);
         c.setId(id);
         c.setUsuario(existing.getUsuario());
-        return ResponseEntity.ok(service.save(c));
+        return ResponseEntity.ok(CentroDTO.from(service.save(c)));
     }
 
     @DeleteMapping("/{id}")
@@ -105,6 +118,24 @@ public class CentroController {
 
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Centro mapInputToEntity(CentroInputDTO input) {
+        Centro c = new Centro();
+        c.setNombre(input.nombre());
+        c.setTipo(input.tipo());
+        c.setNima(input.nima());
+        c.setTelefono(input.telefono());
+        c.setEmail(input.email());
+        c.setNombreContacto(input.nombreContacto());
+        c.setDetalleEnvio(input.detalleEnvio());
+
+        if (input.direccionId() != null) {
+            Direccion dir = direccionRepo.findById(input.direccionId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Direccion no encontrada: " + input.direccionId()));
+            c.setDireccion(dir);
+        }
+        return c;
     }
 
     private void verificarAccesoCentro(Centro centro) {
