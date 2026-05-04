@@ -392,11 +392,20 @@ body.dark-mode .modal-tab:hover { color: var(--eco-text-muted); }
 
 .kanban-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 0.5rem;
+  min-width: 0;
 }
-@media (min-width: 1280px) { .kanban-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 767px) {
+  .kanban-grid {
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kanban-grid > * { scroll-snap-align: start; }
+}
 
 .kanban-col-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
 

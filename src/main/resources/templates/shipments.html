@@ -82,12 +82,13 @@
                                 <th>Productor</th>
                                 <th class="hidden md:table-cell">Gestor</th>
                                 <th class="hidden lg:table-cell">Transportista</th>
+                                <th class="hidden lg:table-cell">Ruta</th>
                                 <th class="text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaCuerpo">
                             <tr>
-                                <td colspan="7" class="text-center py-12 text-slate-400">Cargando...</td>
+                                <td colspan="8" class="text-center py-12 text-slate-400">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -698,7 +699,7 @@
                 var results = await Promise.all([
                     fetch('/api/centros').then(function (r) { return r.json(); }),
                     fetch('/api/residuos').then(function (r) { return r.json(); }),
-                    fetch('/api/usuarios').then(function (r) { return r.json(); }),
+                    fetch('/api/usuarios?rol=TRANSPORTISTA').then(function (r) { return r.json(); }),
                     fetch('/api/rutas').then(function (r) { return r.json(); })
                 ]);
                 var centros = results[0], residuos = results[1], usuarios = results[2], rutasDisponibles = results[3];
@@ -870,7 +871,7 @@
                 if (!tbody) return;
                 var lista = todos.filter(coincideFiltro);
                 if (!lista.length) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-slate-400">Sin resultados.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-slate-400">Sin resultados.</td></tr>';
                     return;
                 }
                 tbody.innerHTML = lista.map(function (t) {
@@ -878,6 +879,7 @@
                     var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
                     var res = (t.residuo && (t.residuo.codigoLER || t.residuo.descripcion)) || '—';
                     var transp = (t.transportista && t.transportista.nombre) || '—';
+                    var rutaNombre = (t.ruta && t.ruta.nombre) || '—';
                     return '<tr class="hover cursor-pointer" ondblclick="abrirDetalle(' + t.id + ')">'
                         + '<td class="text-xs font-mono text-slate-500 whitespace-nowrap">' + (t.codigo || ('#' + t.id)) + '</td>'
                         + '<td class="text-sm font-medium text-slate-800 max-w-[160px] truncate">' + escHtml(res) + '</td>'
@@ -885,6 +887,7 @@
                         + '<td class="text-sm text-slate-700 max-w-[140px] truncate">' + escHtml(prod) + '</td>'
                         + '<td class="hidden md:table-cell text-sm text-slate-600 max-w-[140px] truncate">' + escHtml(gest) + '</td>'
                         + '<td class="hidden lg:table-cell text-sm text-slate-500">' + escHtml(transp) + '</td>'
+                        + '<td class="hidden lg:table-cell text-sm text-slate-500">' + escHtml(rutaNombre) + '</td>'
                         + '<td class="text-right">'
                         + '  <div class="flex items-center justify-end gap-0.5">'
                         + '    <button onclick="abrirEditar(' + t.id + ')" class="btn-icon" title="Editar"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>'
@@ -962,9 +965,9 @@
                     return;
                 }
                 var body = {
-                    centroProductor: { id: productorId },
-                    centroGestor: { id: gestorId },
-                    residuo: { id: residuoId },
+                    centroProductorId: productorId,
+                    centroGestorId: gestorId,
+                    residuoId: residuoId,
                     observaciones: document.getElementById('fObservaciones').value.trim()
                 };
                 var fpi = document.getElementById('fFechaProgramadaInicio').value;
@@ -972,15 +975,22 @@
                 if (fpi) body.fechaProgramadaInicio = fpi.length === 16 ? fpi + ':00' : fpi;
                 if (fpf) body.fechaProgramadaFin = fpf.length === 16 ? fpf + ':00' : fpf;
                 var transpId = parseInt(document.getElementById('fTransportista').value);
-                if (transpId) body.transportista = { id: transpId };
+                if (transpId) body.transportistaId = transpId;
                 var rutaId = parseInt(document.getElementById('fRuta').value);
-                if (rutaId) body.ruta = { id: rutaId };
                 var res = await fetch(id ? '/api/traslados/' + id : '/api/traslados', {
                     method: id ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
-                if (res.ok) { mForm && mForm.hide(); await cargar(); }
+                if (res.ok) {
+                    var saved = await res.json();
+                    if (rutaId) {
+                        await fetch('/api/traslados/' + saved.id + '/ruta?rutaId=' + rutaId, { method: 'PATCH' });
+                    } else if (id) {
+                        await fetch('/api/traslados/' + saved.id + '/ruta', { method: 'PATCH' });
+                    }
+                    mForm && mForm.hide(); await cargar();
+                }
                 else { Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar el traslado.' }); }
             }
 

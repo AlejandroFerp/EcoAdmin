@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.alejandrofernandez.ecoadmin.modelo.enums.Rol;
 
 import com.alejandrofernandez.ecoadmin.dto.PerfilEdicionDTO;
 import com.alejandrofernandez.ecoadmin.dto.ResetPasswordDTO;
@@ -39,9 +42,11 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<UsuarioDTO> listar() {
-        return service.findAll()
-                    .stream()
+    public List<UsuarioDTO> listar(@RequestParam(required = false) Rol rol) {
+        var lista = (rol != null)
+                ? usuarioRepo.findByRol(rol)
+                : service.findAll();
+        return lista.stream()
                     .map(UsuarioDTO::from)
                     .toList();
     }

@@ -69,7 +69,12 @@
                 </div>
                 <div>
                     <label class="label-eco">Unidad</label>
-                    <input type="text" id="fUnidad" class="form-control-eco" placeholder="kg, L, t...">
+                    <select id="fUnidad" class="form-control-eco">
+                        <option value="">Seleccionar...</option>
+                        <option value="kg">kg</option>
+                        <option value="m3">m³</option>
+                        <option value="pcs">unidades</option>
+                    </select>
                 </div>
                 <div>
                     <label class="label-eco">Estado</label>
@@ -331,7 +336,7 @@ async function guardar() {
         codigoLER: document.getElementById('fCodigoLER').value.trim(),
         fechaEntradaAlmacen: document.getElementById('fFechaEntrada').value || null,
         diasMaximoAlmacenamiento: parseInt(document.getElementById('fDiasMaximo').value) || 180,
-        centro: centroId ? { id: parseInt(centroId) } : null
+        centroId: centroId ? parseInt(centroId) : null
     };
     var res = await fetch(id ? '/api/residuos/' + id : '/api/residuos', {
         method: id ? 'PUT' : 'POST',

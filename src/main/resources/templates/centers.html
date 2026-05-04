@@ -73,7 +73,12 @@
                     </div>
                     <div class="col-span-2">
                         <label class="label-eco">Direccion *</label>
-                        <div data-combobox="fDireccion" data-placeholder="Buscar direccion (calle o ciudad)..."></div>
+                        <div class="flex gap-2 items-start">
+                            <div class="flex-1" data-combobox="fDireccion" data-placeholder="Buscar direccion (calle o ciudad)..."></div>
+                            <button type="button" onclick="abrirCrearDireccionRapida()" class="btn-secondary shrink-0 mt-0.5" title="Crear nueva direccion">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="label-eco">Contacto</label>
@@ -89,6 +94,48 @@
                     </div>
                 </div>
     </th:block>
+</div>
+
+<!-- MINI MODAL: Crear Direccion Rapida -->
+<div id="modalDireccionRapida" tabindex="-1" aria-hidden="true" class="modal-overlay hidden z-[60]">
+    <div class="modal-shell modal-shell--sm">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 class="modal-title">Nueva Direccion</h3>
+                <button type="button" onclick="cerrarCrearDireccionRapida()" class="btn-icon"><svg class="w-4 h-4" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg></button>
+            </div>
+            <div class="modal-body space-y-3">
+                <div>
+                    <label class="label-eco">Calle *</label>
+                    <input type="text" id="drCalle" class="form-control-eco" placeholder="Av. de la Estacion, 12">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="label-eco">Ciudad *</label>
+                        <input type="text" id="drCiudad" class="form-control-eco" placeholder="Alicante">
+                    </div>
+                    <div>
+                        <label class="label-eco">Codigo Postal</label>
+                        <input type="text" id="drCP" class="form-control-eco" placeholder="03001">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="label-eco">Provincia</label>
+                        <input type="text" id="drProvincia" class="form-control-eco" placeholder="Alicante">
+                    </div>
+                    <div>
+                        <label class="label-eco">Pais</label>
+                        <input type="text" id="drPais" class="form-control-eco" placeholder="Espana" value="Espana">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" onclick="cerrarCrearDireccionRapida()" class="btn-ghost-eco">Cancelar</button>
+                <button type="button" onclick="guardarDireccionRapida()" class="btn-primary">Crear Direccion</button>
+            </div>
+        </div>
+    </div>
 </div>
 </th:block>
 
@@ -219,7 +266,7 @@ async function guardar() {
     var body = {
         nombre: document.getElementById('fNombre').value.trim(),
         tipo: document.getElementById('fTipo').value,
-        direccion: dirId ? { id: parseInt(dirId) } : null,
+        direccionId: dirId ? parseInt(dirId) : null,
         nima: document.getElementById('fNima').value.trim(),
         nombreContacto: document.getElementById('fContacto').value.trim(),
         telefono: document.getElementById('fTelefono').value.trim(),
@@ -274,6 +321,47 @@ async function borrarSeleccionados() {
     limpiarSeleccion();
     await cargar();
     if (errors.length) Swal.fire({ icon: 'warning', title: 'Algunos no se pudieron eliminar', text: errors.join('\n') });
+}
+
+/* ── Crear Direccion rapida ── */
+function abrirCrearDireccionRapida() {
+    ['drCalle','drCiudad','drCP','drProvincia'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('drPais').value = 'Espana';
+    document.getElementById('modalDireccionRapida').classList.remove('hidden');
+}
+function cerrarCrearDireccionRapida() {
+    document.getElementById('modalDireccionRapida').classList.add('hidden');
+}
+async function guardarDireccionRapida() {
+    var calle = document.getElementById('drCalle').value.trim();
+    var ciudad = document.getElementById('drCiudad').value.trim();
+    if (!calle || !ciudad) {
+        Swal.fire({ icon: 'warning', text: 'Calle y ciudad son obligatorios.' });
+        return;
+    }
+    var body = {
+        calle: calle,
+        ciudad: ciudad,
+        codigoPostal: document.getElementById('drCP').value.trim() || null,
+        provincia: document.getElementById('drProvincia').value.trim() || null,
+        pais: document.getElementById('drPais').value.trim() || 'Espana'
+    };
+    var res = await fetch('/api/direcciones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    if (res.ok) {
+        var nueva = await res.json();
+        cerrarCrearDireccionRapida();
+        // Refresh direcciones y seleccionar la nueva
+        var dirsRes = await fetch('/api/direcciones');
+        direcciones = await dirsRes.json();
+        renderDirecciones();
+        Combobox.setValue('fDireccion', nueva.id);
+    } else {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear la direccion.' });
+    }
 }
 
 /* ── Leaflet: mapa general ── */
