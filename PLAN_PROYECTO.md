@@ -401,6 +401,8 @@ Recogida {
        - `DELETE /api/recogidas/{id}`
        - `GET /api/almacen/alertas-fifo` (residuos fuera de plazo)
 - [ ] 18.8 Tests: RecogidaService, alertas FIFO
+       - Estado auditado 2026-05-04: existe `RecogidaServiceTest` y `AlmacenControllerTest` ya cubre `GET /api/almacen/alertas-fifo`.
+       - Pendiente real: profundizar la validacion de la logica FIFO del servicio, no solo del endpoint/controlador.
 
 **Libreria frontend:** FullCalendar.js v6 (CDN, gratis para uso basico)
 ```html
@@ -609,7 +611,7 @@ Ejemplo: `2024-03-15_DI_CentroNorte-160107_GestorAutorizado.pdf`
 
 ---
 
-### FASE 20 — Modulo Informes
+### FASE 20 — Modulo Informes [EN PROGRESO]
 
 **Objetivo:** Generar informes de gestion para auditorias internas, inspecciones y
 cumplimiento anual. Cubrir el Informe Final de Gestion de Residuos (obligatorio legal).
@@ -627,34 +629,39 @@ cumplimiento anual. Cubrir el Informe Final de Gestion de Residuos (obligatorio 
 
 **Tareas:**
 
-- [ ] 20.1 Vista `/informes` con lista de tipos de informe disponibles
-- [ ] 20.2 Formulario de parametros por informe (rango de fechas, centro, LER)
+- [x] 20.1 Vista `/informes` con lista de tipos de informe disponibles
+- [x] 20.2 Formulario de parametros por informe (rango de fechas, centro, LER)
 - [ ] 20.3 Informe de estadisticas por periodo (extiende el dashboard actual)
        - Residuos gestionados por LER
        - Cantidad total por unidad
        - Recogidas completadas vs pendientes
        - Exportar a PDF y CSV
-- [ ] 20.4 Informe de inventario de almacen (estado actual del almacen)
+- [x] 20.4 Informe de inventario de almacen (estado actual del almacen)
        - Tabla: LER, descripcion, cantidad, dias en almacen, alerta FIFO
 - [ ] 20.5 Informe de trazabilidad por residuo
        - Timeline: entrada almacen → recogidas → destino final
        - Documentos asociados (DI, NP, FA)
+       - Estado auditado 2026-05-04: existe endpoint JSON y tests backend; falta cierre UX/timeline dedicado y exportacion PDF.
 - [ ] 20.6 Informe Final de Gestion (formato legal segun AEDED)
        - Tabla resumen cuantitativa: LER, prevision EGR, real, variacion
        - Porcentaje de valoracion/reciclaje/eliminacion
        - Agentes participantes (centros, transportistas, gestores)
        - Reflexion sobre impacto ambiental (campo de texto libre)
+       - Estado auditado 2026-05-04: ya existe JSON, PDF y tests, pero el contenido legal sigue incompleto frente al objetivo de la fase.
 - [ ] 20.7 Checklist de auditoria pre-inspeccion
        - Para cada traslado/recogida del periodo: tiene DI cerrado?, tiene NP vigente?, contrato activo?
        - Semaforo verde/amarillo/rojo por item
+       - Estado auditado 2026-05-04: ya existe salida HTML/JSON y tests; falta incluir recogidas y generar PDF.
 - [ ] 20.8 PdfService: plantillas para cada tipo de informe (usar OpenPDF)
+       - Estado auditado 2026-05-04: `PdfService` ya genera el PDF de Informe Final de Gestion; faltan inventario, trazabilidad, checklist y estadisticas por periodo.
 - [ ] 20.9 API:
-       - `GET /api/informes/estadisticas?desde=&hasta=&centroId=` (JSON para frontend)
-       - `GET /api/informes/inventario-almacen` (JSON)
-       - `GET /api/informes/trazabilidad/{residuoId}` (JSON)
-       - `GET /api/informes/final-gestion?periodo=` (genera y devuelve PDF)
-       - `GET /api/informes/checklist-auditoria?periodo=` (JSON/PDF)
+       - Pendiente: `GET /api/informes/estadisticas?desde=&hasta=&centroId=` (JSON para frontend)
+       - Hecho: `GET /api/informes/inventario-almacen` (JSON)
+       - Hecho: `GET /api/informes/trazabilidad/{residuoId}` (JSON)
+       - Parcial: `GET /api/informes/final-gestion` (JSON) y `GET /api/informes/final-gestion/pdf` ya existen
+       - Parcial: `GET /api/informes/checklist-auditoria` (JSON) ya existe; falta PDF
 - [ ] 20.10 Tests: generacion de informes, calculos de estadisticas
+       - Estado auditado 2026-05-04: existen tests backend (`InformesControllerTest`) y E2E (`tests/reports`); falta cubrir mejor estadisticas por periodo y los cierres pendientes de PDF/servicio.
 
 ---
 
@@ -1571,7 +1578,7 @@ no guarda estado de sesion.
 
 ## Handoff — 2026-04-22
 
-**Estado actual:** Fases 1–19 completas + Fase 21 (Empresa). Fase 20 (Informes) y Fase 22+ pendientes.
+**Estado actual (auditado 2026-05-04):** Fases 1–19 completas + Fase 21 (Empresa) completada. Fase 20 (Informes) ya esta implementada en buena parte y queda rematarla; Fase 22+ y M0/M1 siguen pendientes.
 
 ### Ultimas tareas cerradas en esta sesion
 - 17.8 Breadcrumb en header (mapping pageId -> grupo en `layouts/main.html`)
@@ -1630,25 +1637,23 @@ no guarda estado de sesion.
 **Riesgo principal a vigilar:**
 - No mezclar en el mismo flujo los documentos derivados del dominio (generables) con los documentos contractuales externos (subidos), porque esa mezcla es la que ha degradado la usabilidad actual.
 
-### Siguiente bloque sugerido — Fase 20 Informes (orden recomendado)
-1. **20.1** Vista `/informes` con lista de tipos disponibles (cards con descripcion + boton "Generar").
-2. **20.2** Formulario de parametros por informe (rango fechas, centro, LER) — modal o pagina dedicada.
-3. **20.8** `PdfService` con plantillas OpenPDF (ya hay `pom.xml` con OpenPDF segun el codigo de `DocumentoController`).
-4. **20.3** Informe estadisticas por periodo (reusar logica de `/api/estadisticas`).
-5. **20.4** Inventario almacen actual (reusar `/api/almacen/...`).
-6. **20.5** Trazabilidad por residuo (timeline por LER).
-7. **20.6** Informe Final de Gestion (formato AEDED — ver `RD 553/2020` art. 8).
-8. **20.7** Checklist auditoria pre-inspeccion.
-9. **20.9** API: `GET /api/informes/{tipo}?desde&hasta&centroId&ler` -> PDF.
-10. **20.10** Tests `InformeServiceTest`.
+### Siguiente bloque sugerido — Cierre real de Fase 20 Informes (orden recomendado)
+1. **20.3** Informe estadisticas por periodo (reusar `/api/estadisticas` y exponerlo desde `/api/informes`).
+2. **20.5** Cerrar la UX de trazabilidad en `/reports`: timeline legible y exportacion PDF.
+3. **20.6** Enriquecer el Informe Final de Gestion con el contenido legal que aun falta (EGR previsto vs real, porcentajes, agentes, impacto).
+4. **20.7** Extender el checklist a recogidas y anadir salida PDF.
+5. **20.8** Extender `PdfService` al resto de informes ya existentes en backend.
+6. **20.10** Cerrar cobertura de tests en estadisticas por periodo y PDFs restantes.
 
 Otras tareas pendientes notables:
-- **18.8** Tests `RecogidaService` + alertas FIFO (rapido — copiar patron de `DocumentoServiceTest`).
-- **16.5.\*** Consolidacion Tailwind/CSS (10 subtareas — bloque grande de refactor frontend).
+- **18.8** Tests `RecogidaService` + alertas FIFO (parcialmente cubiertos; falta profundizar la logica FIFO del servicio).
+- **13.4** Fotos/adjuntos en centros y traslados.
+- **15.4** Alinear formatos PDF con la referencia `myshipment`.
+- **16.2** QR mejorado con logo EcoAdmin.
 - **M0** Auth JWT para futura app Android.
 
 ### Como retomar
-> "Continua con la Fase 20 Informes segun el orden del Handoff en PLAN_PROYECTO.md. Empieza por 20.1 + 20.8 (vista + PdfService base)."
+> "Continua cerrando la Fase 20 Informes ya implementada parcialmente. Empieza por 20.3 y despues remata 20.5/20.6/20.7 con sus PDFs y tests." 
 
   con un endpoint `POST /api/auth/refresh` en el futuro
 

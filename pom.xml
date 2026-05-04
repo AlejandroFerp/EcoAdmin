@@ -8,11 +8,11 @@
 		<version>4.0.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.iesdoctorbalmis</groupId>
-	<artifactId>spring</artifactId>
+	<groupId>com.alejandrofernandez</groupId>
+	<artifactId>ecoadmin</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>spring</name>
-	<description>Demo project for Spring Boot</description>
+	<name>ecoadmin</name>
+	<description>EcoAdmin waste management platform</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -53,6 +53,11 @@
 <dependency>
 <groupId>org.springframework.security</groupId>
 <artifactId>spring-security-test</artifactId>
+<scope>test</scope>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-webmvc-test</artifactId>
 <scope>test</scope>
 </dependency>
 		<dependency>
@@ -158,7 +163,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.iesdoctorbalmis.spring.Application</mainClass><jvmArguments>--enable-native-access=ALL-UNNAMED</jvmArguments>
+					<mainClass>com.alejandrofernandez.ecoadmin.EcoadminApplication</mainClass><jvmArguments>--enable-native-access=ALL-UNNAMED</jvmArguments>
 				</configuration>
 			</plugin>
 			<plugin>

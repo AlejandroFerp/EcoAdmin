@@ -1,0 +1,62 @@
+package com.alejandrofernandez.ecoadmin.controladores;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.alejandrofernandez.ecoadmin.modelo.Notificacion;
+import com.alejandrofernandez.ecoadmin.modelo.Usuario;
+import com.alejandrofernandez.ecoadmin.servicios.NotificacionService;
+import com.alejandrofernandez.ecoadmin.servicios.UsuarioAutenticadoService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@RestController
+@RequestMapping("/api/notificaciones")
+@Tag(name = "Notificaciones", description = "Notificaciones del usuario autenticado")
+public class NotificacionController {
+
+    private final NotificacionService service;
+    private final UsuarioAutenticadoService authService;
+
+    public NotificacionController(NotificacionService service, UsuarioAutenticadoService authService) {
+        this.service = service;
+        this.authService = authService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Listar mis notificaciones sin leer")
+    public List<Notificacion> listar() {
+        Usuario u = authService.obtenerUsuarioActual();
+        return service.noLeidas(u);
+    }
+
+    @GetMapping("/no-leidas")
+    @Operation(summary = "Contador de notificaciones no leidas")
+    public Map<String, Long> noLeidas() {
+        Usuario u = authService.obtenerUsuarioActual();
+        return Map.of("count", service.contarNoLeidas(u));
+    }
+
+    @PatchMapping("/{id}/leer")
+    @Operation(summary = "Marcar notificacion como leida")
+    public ResponseEntity<Notificacion> marcarLeida(@PathVariable Long id) {
+        Usuario u = authService.obtenerUsuarioActual();
+        return ResponseEntity.ok(service.marcarLeida(id, u));
+    }
+
+    @PatchMapping("/leer-todas")
+    @Operation(summary = "Marcar todas mis notificaciones como leidas")
+    public ResponseEntity<Void> marcarTodasLeidas() {
+        Usuario u = authService.obtenerUsuarioActual();
+        service.marcarTodasLeidas(u);
+        return ResponseEntity.noContent().build();
+    }
+}
