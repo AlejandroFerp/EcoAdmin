@@ -25,6 +25,12 @@ public interface TrasladoService {
 
     List<EventoTraslado> historialDeTraslado(Long id);
 
+    EventoTraslado findEventoById(Long eventoId);
+
+    EventoTraslado saveEvento(EventoTraslado evento);
+
+    void actualizarComentarioEvento(Long eventoId, String comentario);
+
     List<Traslado> findByUsuario(Usuario usuario);
 
     List<Traslado> findByGestor(Usuario usuario);

@@ -1185,19 +1185,27 @@
                 try {
                     var t = await fetch('/api/traslados/' + id).then(function (r) { return r.json(); });
                     _detalleRutaData = t.ruta || null;
+                    var codigoTraslado = t.codigo || ('#' + t.id);
+                    document.getElementById('detalleTitulo').textContent = 'Traslado ' + codigoTraslado;
                     var prod = (t.centroProductor && t.centroProductor.nombre) || '—';
                     var gest = (t.centroGestor && t.centroGestor.nombre) || '—';
                     var res = (t.residuo && (t.residuo.descripcion || t.residuo.codigoLER)) || '—';
                     var transp = (t.transportista && t.transportista.nombre) || '—';
                     var rutaNombre = (t.ruta && t.ruta.nombre) || null;
                     document.getElementById('detalleInfo').innerHTML =
-                        '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd>' + estadoPill(t.estado) + '</dd></div>'
+                        '<div><dt class="text-xs text-slate-400 mb-0.5">Código</dt><dd class="font-mono font-medium">' + esc(codigoTraslado) + '</dd></div>'
+                        + '<div><dt class="text-xs text-slate-400 mb-0.5">Estado</dt><dd>' + estadoPill(t.estado) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Residuo</dt><dd class="font-medium">' + esc(res) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Productor</dt><dd>' + esc(prod) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Gestor</dt><dd>' + esc(gest) + '</dd></div>'
                         + '<div><dt class="text-xs text-slate-400 mb-0.5">Transportista</dt><dd>' + esc(transp) + '</dd></div>'
                         + (rutaNombre ? '<div><dt class="text-xs text-slate-400 mb-0.5">Ruta</dt><dd class="text-[#3b82f6] font-medium">' + esc(rutaNombre) + '</dd></div>' : '')
-                        + (t.observaciones ? '<div class="col-span-2"><dt class="text-xs text-slate-400 mb-0.5">Observaciones</dt><dd class="text-slate-600">' + esc(t.observaciones) + '</dd></div>' : '');
+                        + (t.observaciones ? '<div class="col-span-2"><dt class="text-xs text-slate-400 mb-0.5">Observaciones</dt><dd class="text-slate-600">' + esc(t.observaciones) + '</dd></div>' : '')
+                        + '<div class="col-span-2 flex flex-col items-center mt-4 pt-4 border-t border-slate-100">'
+                        + '  <p class="text-xs text-slate-400 mb-2">Código QR del traslado</p>'
+                        + '  <img src="/api/traslados/' + id + '/qr" alt="QR ' + esc(codigoTraslado) + '" class="w-40 h-40 rounded-lg border border-slate-200 shadow-sm">'
+                        + '  <p class="text-xs font-mono text-slate-500 mt-1.5">' + esc(codigoTraslado) + '</p>'
+                        + '</div>';
                     // Mostrar tab Mapa solo si hay ruta con coordenadas
                     var tabMapa = document.getElementById('tabMapa');
                     var tieneRutaCoords = t.ruta && t.ruta.origenLat != null && t.ruta.destinoLat != null;
@@ -1296,6 +1304,9 @@
                             var transicion = estadoAnt
                                 ? '<span class="text-[11px] text-slate-400">' + esc(estadoAnt) + '</span><span class="text-slate-300">→</span>' + estadoPill(estadoNuevo)
                                 : estadoPill(estadoNuevo);
+                            var comentarioHtml = '<p class="text-sm text-slate-600 mt-2 comentario-editable cursor-pointer hover:bg-slate-100 rounded px-1 -mx-1 py-0.5" data-evento-id="' + e.id + '" data-traslado-id="' + id + '" title="Clic para editar">'
+                                + (e.comentario ? esc(e.comentario) : '<span class="italic text-slate-400">Sin comentario</span>')
+                                + '</p>';
                             return '<li class="ml-6">'
                                 + '<span class="absolute -left-[7px] flex h-3.5 w-3.5 items-center justify-center rounded-full ring-2 ring-white" style="background:' + color + '"></span>'
                                 + '<div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">'
@@ -1303,11 +1314,49 @@
                                 + '<div class="flex items-center gap-1.5 flex-wrap">' + transicion + '</div>'
                                 + '<time class="text-[11px] text-slate-400">' + (fecha ? new Date(fecha).toLocaleString('es-ES') : '') + '</time>'
                                 + '</div>'
-                                + '<p class="text-sm text-slate-600 mt-2">' + (e.comentario ? esc(e.comentario) : '<span class="italic text-slate-400">Sin comentario</span>') + '</p>'
+                                + comentarioHtml
                                 + (usr ? '<p class="text-[11px] text-slate-400 mt-1">por ' + esc(usr) + '</p>' : '')
                                 + '</div></li>';
                         }).join('')
                         + '</ol>';
+                    // Inline edit: click on comment → textarea + save button
+                    panel.querySelectorAll('.comentario-editable').forEach(function (el) {
+                        el.addEventListener('click', function () {
+                            if (el.dataset.editing === 'true') return;
+                            el.dataset.editing = 'true';
+                            var actual = el.textContent.trim();
+                            if (actual === 'Sin comentario') actual = '';
+                            el.innerHTML = '<textarea class="w-full text-sm border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none" rows="2"></textarea>'
+                                + '<button type="button" class="mt-1 text-xs px-3 py-1 rounded-lg bg-[#3b82f6] text-white hover:bg-blue-600">Guardar</button>';
+                            var ta = el.querySelector('textarea');
+                            var btn = el.querySelector('button');
+                            ta.value = actual;
+                            ta.focus();
+                            function guardar() {
+                                var comentario = ta.value.trim();
+                                var eventoId = el.dataset.eventoId;
+                                var trasladoId = el.dataset.trasladoId;
+                                btn.disabled = true;
+                                btn.textContent = '...';
+                                fetch('/api/traslados/' + trasladoId + '/historial/' + eventoId + '?comentario=' + encodeURIComponent(comentario), { method: 'PATCH' })
+                                    .then(function (res) {
+                                        if (!res.ok) { console.error('Error guardando comentario:', res.status); }
+                                        el.dataset.editing = '';
+                                        if (res.ok || res.status === 204) {
+                                            el.innerHTML = comentario ? esc(comentario) : '<span class="italic text-slate-400">Sin comentario</span>';
+                                        } else {
+                                            el.innerHTML = actual ? esc(actual) : '<span class="italic text-slate-400">Sin comentario</span>';
+                                        }
+                                    })
+                                    .catch(function (err) { console.error('Fetch error:', err); el.dataset.editing = ''; el.innerHTML = actual ? esc(actual) : '<span class="italic text-slate-400">Sin comentario</span>'; });
+                            }
+                            btn.addEventListener('click', function (ev) { ev.stopPropagation(); guardar(); });
+                            ta.addEventListener('keydown', function (ev) {
+                                if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); guardar(); }
+                                if (ev.key === 'Escape') { el.dataset.editing = ''; el.innerHTML = actual ? esc(actual) : '<span class="italic text-slate-400">Sin comentario</span>'; }
+                            });
+                        });
+                    });
                 } catch (e) {
                     panel.innerHTML = '<p class="text-red-400">Error al cargar historial.</p>';
                 }

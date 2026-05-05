@@ -242,6 +242,24 @@ public class TrasladoServiceDB implements TrasladoService {
     }
 
     @Override
+    public EventoTraslado findEventoById(Long eventoId) {
+        return eventoRepo.findById(eventoId).orElse(null);
+    }
+
+    @Override
+    public EventoTraslado saveEvento(EventoTraslado evento) {
+        return eventoRepo.save(evento);
+    }
+
+    @Override
+    @Transactional
+    public void actualizarComentarioEvento(Long eventoId, String comentario) {
+        EventoTraslado evento = eventoRepo.findById(eventoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Evento no encontrado: " + eventoId));
+        evento.setComentario(comentario);
+    }
+
+    @Override
     public List<Traslado> findByUsuario(Usuario usuario) {
         return trasladoRepo.findByCentroProductorUsuario(usuario);
     }

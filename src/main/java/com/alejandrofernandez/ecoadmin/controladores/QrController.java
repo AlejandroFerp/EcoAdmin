@@ -55,8 +55,10 @@ public class QrController {
 
     /**
      * Punto de entrada al escanear un QR de traslado.
-     * Cambia el estado del traslado a EN_TRANSITO (si estaba PENDIENTE).
-     * Renderiza la vista de confirmacion o error.
+     * - PENDIENTE → EN_TRANSITO (salida/entrada registrada)
+     * - EN_TRANSITO → COMPLETADO (entrega confirmada)
+     * - COMPLETADO/ENTREGADO → ya registrado (sin cambio)
+     * - Otro estado → error
      */
     @GetMapping("/qr/entrada")
     public String entradaQr(@RequestParam("id") Long trasladoId, Model model) {
@@ -64,10 +66,8 @@ public class QrController {
             Traslado traslado = trasladoService.findById(trasladoId);
             EstadoTraslado estadoActual = traslado.getEstado();
 
-            if (estadoActual == EstadoTraslado.EN_TRANSITO
-                    || estadoActual == EstadoTraslado.COMPLETADO
+            if (estadoActual == EstadoTraslado.COMPLETADO
                     || estadoActual == EstadoTraslado.ENTREGADO) {
-                // Ya fue procesado; mostrar confirmacion sin cambiar estado
                 model.addAttribute("traslado", traslado);
                 model.addAttribute("nuevoEstado", estadoActual.name());
                 model.addAttribute("yaRegistrado", true);
@@ -75,23 +75,33 @@ public class QrController {
                 return "qr-confirmacion";
             }
 
-            if (estadoActual != EstadoTraslado.PENDIENTE) {
-                model.addAttribute("error", "El traslado está en estado " + estadoActual + " y no puede registrarse la entrada.");
-                model.addAttribute("trasladoId", trasladoId);
-                return "qr-error";
+            var usuario = authService.obtenerUsuarioActual();
+
+            if (estadoActual == EstadoTraslado.PENDIENTE) {
+                Traslado actualizado = trasladoService.cambiarEstado(
+                    trasladoId, EstadoTraslado.EN_TRANSITO,
+                    "Entrada registrada via QR", usuario);
+                model.addAttribute("traslado", actualizado);
+                model.addAttribute("nuevoEstado", "EN_TRANSITO");
+                model.addAttribute("yaRegistrado", false);
+                model.addAttribute("exito", true);
+                return "qr-confirmacion";
             }
 
-            // Cambiar estado: PENDIENTE → EN_TRANSITO
-            var usuario = authService.obtenerUsuarioActual();
-            Traslado actualizado = trasladoService.cambiarEstado(
-                trasladoId, EstadoTraslado.EN_TRANSITO,
-                "Entrada registrada via QR", usuario);
+            if (estadoActual == EstadoTraslado.EN_TRANSITO) {
+                Traslado actualizado = trasladoService.cambiarEstado(
+                    trasladoId, EstadoTraslado.COMPLETADO,
+                    "Entrega confirmada via QR", usuario);
+                model.addAttribute("traslado", actualizado);
+                model.addAttribute("nuevoEstado", "COMPLETADO");
+                model.addAttribute("yaRegistrado", false);
+                model.addAttribute("exito", true);
+                return "qr-confirmacion";
+            }
 
-            model.addAttribute("traslado", actualizado);
-            model.addAttribute("nuevoEstado", "EN_TRANSITO");
-            model.addAttribute("yaRegistrado", false);
-            model.addAttribute("exito", true);
-            return "qr-confirmacion";
+            model.addAttribute("error", "El traslado está en estado " + estadoActual + " y no puede procesarse via QR.");
+            model.addAttribute("trasladoId", trasladoId);
+            return "qr-error";
 
         } catch (RecursoNoEncontradoException e) {
             model.addAttribute("error", "Traslado #" + trasladoId + " no encontrado.");

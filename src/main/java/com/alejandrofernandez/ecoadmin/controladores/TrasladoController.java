@@ -119,6 +119,19 @@ public class TrasladoController {
         return ResponseEntity.ok(eventos);
     }
 
+    @PatchMapping("/{trasladoId}/historial/{eventoId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
+    public ResponseEntity<Void> editarComentarioEvento(
+            @PathVariable Long trasladoId,
+            @PathVariable Long eventoId,
+            @RequestParam(defaultValue = "") String comentario) {
+        Traslado t = service.findById(trasladoId);
+        if (t == null) throw new RecursoNoEncontradoException("Traslado no encontrado: " + trasladoId);
+        verificarAccesoTraslado(t);
+        service.actualizarComentarioEvento(eventoId, comentario);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GESTOR')")
     public ResponseEntity<TrasladoDTO> crear(@RequestBody TrasladoInputDTO input) {
