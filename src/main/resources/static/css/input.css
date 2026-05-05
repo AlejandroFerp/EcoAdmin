@@ -460,13 +460,10 @@ body.dark-mode .doc-item__title { color: var(--eco-text); }
 .swal2-styled.swal2-deny { background-color: #ef4444 !important; background-image: none !important; color: #fff !important; border: none !important; }
 .swal2-styled.swal2-deny:hover { background-color: #dc2626 !important; }
 
-
-  @charset "UTF-8";
-
 /* ============================================================
-   EcoAdmin — Sistema de clases CSS global (Phase 11.3)
-   Semantic utility classes that wrap repeated Tailwind patterns
-   ============================================================ */
+EcoAdmin — Sistema de clases CSS global (Phase 11.3)
+Semantic utility classes that wrap repeated Tailwind patterns
+============================================================ */
 
 /* ---------- Botones ---------- */
 

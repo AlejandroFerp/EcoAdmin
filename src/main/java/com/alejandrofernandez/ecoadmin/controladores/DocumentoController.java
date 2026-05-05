@@ -162,12 +162,7 @@ public class DocumentoController {
         Traslado t = d.getTraslado();
         if (t == null) return ResponseEntity.badRequest().build();
 
-        byte[] pdf = switch (d.getTipo()) {
-            case NOTIFICACION_PREVIA -> pdfService.generarNotificacionTraslado(t);
-            case FICHA_ACEPTACION, INFORME_FINAL -> pdfService.generarCertificadoRecepcion(t);
-            case DOCUMENTO_IDENTIFICACION, CONTRATO, HOJA_SEGUIMIENTO, ARCHIVO_CRONOLOGICO
-                    -> pdfService.generarCartaDePorte(t);
-        };
+        byte[] pdf = generarPdf(d.getTipo(), t);
 
         String ref = d.getNumeroReferencia() != null ? d.getNumeroReferencia() : ("doc-" + id);
         String disposition = (inline ? "inline" : "attachment")
