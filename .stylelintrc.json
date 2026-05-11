@@ -1,5 +1,6 @@
 {
   "extends": ["stylelint-config-standard"],
+  "ignoreFiles": ["src/main/resources/static/css/app.css"],
   "rules": {
     "at-rule-no-unknown": [
       true,
