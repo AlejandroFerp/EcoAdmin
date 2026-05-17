@@ -227,6 +227,9 @@ function limpiarFiltros() {
         var el = document.getElementById('filtro_' + f.name);
         if (el) el.value = '';
     });
+    document.getElementById('resumenInforme').textContent = 'Sin generar.';
+    document.getElementById('tablaCabeza').innerHTML = '<tr><th class="text-left px-4 py-3 text-[11px] uppercase text-slate-400 tracking-wide">Pulsa "Generar informe" para ver los datos</th></tr>';
+    document.getElementById('tablaCuerpo').innerHTML = '<tr><td class="text-center py-10 text-slate-400 text-xs">Sin datos.</td></tr>';
 }
 
 async function ejecutar() {
